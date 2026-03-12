@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Select webhook and title
+      - name: Select webhook and embed style
         id: select
         env:
           BRANCH_NAME: ${{ github.ref_name }}
@@ -42,34 +42,91 @@ jobs:
           if [ "$BRANCH_NAME" = "main" ]; then
             echo "webhook=$WEBHOOK_MAIN" >> $GITHUB_OUTPUT
             echo "title=🚀 正式分支更新" >> $GITHUB_OUTPUT
+            echo "color=15158332" >> $GITHUB_OUTPUT
           elif [ "$BRANCH_NAME" = "dev" ]; then
             echo "webhook=$WEBHOOK_DEV" >> $GITHUB_OUTPUT
             echo "title=🛠️ 開發分支更新" >> $GITHUB_OUTPUT
+            echo "color=3447003" >> $GITHUB_OUTPUT
           elif [ "$BRANCH_NAME" = "qa" ]; then
             echo "webhook=$WEBHOOK_QA" >> $GITHUB_OUTPUT
             echo "title=🧪 QA 分支更新" >> $GITHUB_OUTPUT
+            echo "color=16776960" >> $GITHUB_OUTPUT
           else
             echo "webhook=$WEBHOOK_FEATURE" >> $GITHUB_OUTPUT
             echo "title=✨ 功能分支更新" >> $GITHUB_OUTPUT
+            echo "color=10181046" >> $GITHUB_OUTPUT
           fi
 
       - name: Send push notification to Discord
         env:
           DISCORD_WEBHOOK: ${{ steps.select.outputs.webhook }}
           TITLE: ${{ steps.select.outputs.title }}
+          COLOR: ${{ steps.select.outputs.color }}
           BRANCH_NAME: ${{ github.ref_name }}
           ACTOR: ${{ github.actor }}
           REPOSITORY: ${{ github.repository }}
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
           COMMIT_URL: ${{ github.event.head_commit.url }}
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
         run: |
           jq -n \
-            --arg content "$TITLE\n\n分支：$BRANCH_NAME\n動作：push\n執行者：$ACTOR\n提交訊息：$COMMIT_MESSAGE\n專案：$REPOSITORY\n提交連結：$COMMIT_URL" \
-            '{content: $content}' \
-            | curl -H "Content-Type: application/json" \
-                -X POST \
-                -d @- \
-                "$DISCORD_WEBHOOK"
+            --arg title "$TITLE" \
+            --arg branch "$BRANCH_NAME" \
+            --arg actor "$ACTOR" \
+            --arg repo "$REPOSITORY" \
+            --arg message "$COMMIT_MESSAGE" \
+            --arg commit_url "$COMMIT_URL" \
+            --arg repo_url "$REPO_URL" \
+            --argjson color "$COLOR" \
+            '{
+              username: "Closy GitHub Bot",
+              embeds: [
+                {
+                  title: $title,
+                  color: $color,
+                  fields: [
+                    {
+                      name: "分支",
+                      value: $branch,
+                      inline: true
+                    },
+                    {
+                      name: "動作",
+                      value: "push",
+                      inline: true
+                    },
+                    {
+                      name: "執行者",
+                      value: $actor,
+                      inline: true
+                    },
+                    {
+                      name: "提交訊息",
+                      value: ("`" + $message + "`"),
+                      inline: false
+                    },
+                    {
+                      name: "專案",
+                      value: ("[" + $repo + "](" + $repo_url + ")"),
+                      inline: false
+                    },
+                    {
+                      name: "提交連結",
+                      value: ("[查看 Commit](" + $commit_url + ")"),
+                      inline: false
+                    }
+                  ],
+                  footer: {
+                    text: "GitHub Actions → Discord Notification"
+                  },
+                  timestamp: now | todateiso8601
+                }
+              ]
+            }' \
+          | curl -H "Content-Type: application/json" \
+              -X POST \
+              -d @- \
+              "$DISCORD_WEBHOOK"
 
   notify-pr:
     if: github.event_name == 'pull_request'
@@ -95,7 +152,7 @@ jobs:
             echo "webhook=$WEBHOOK_FEATURE" >> $GITHUB_OUTPUT
           fi
 
-      - name: Set PR title text
+      - name: Set PR embed style
         id: pr_status
         env:
           ACTION: ${{ github.event.action }}
@@ -104,18 +161,23 @@ jobs:
           if [ "$ACTION" = "opened" ]; then
             echo "title=📬 Pull Request 已建立" >> $GITHUB_OUTPUT
             echo "action_text=opened" >> $GITHUB_OUTPUT
+            echo "color=3447003" >> $GITHUB_OUTPUT
           elif [ "$ACTION" = "reopened" ]; then
             echo "title=📭 Pull Request 已重新開啟" >> $GITHUB_OUTPUT
             echo "action_text=reopened" >> $GITHUB_OUTPUT
+            echo "color=10181046" >> $GITHUB_OUTPUT
           elif [ "$ACTION" = "synchronize" ]; then
             echo "title=🔄 Pull Request 已更新" >> $GITHUB_OUTPUT
             echo "action_text=updated" >> $GITHUB_OUTPUT
+            echo "color=15844367" >> $GITHUB_OUTPUT
           elif [ "$ACTION" = "closed" ] && [ "$MERGED" = "true" ]; then
             echo "title=✅ Pull Request 已合併" >> $GITHUB_OUTPUT
             echo "action_text=merged" >> $GITHUB_OUTPUT
+            echo "color=5763719" >> $GITHUB_OUTPUT
           else
             echo "title=❌ Pull Request 已關閉" >> $GITHUB_OUTPUT
             echo "action_text=closed" >> $GITHUB_OUTPUT
+            echo "color=15548997" >> $GITHUB_OUTPUT
           fi
 
       - name: Send PR notification to Discord
@@ -123,17 +185,77 @@ jobs:
           DISCORD_WEBHOOK: ${{ steps.select.outputs.webhook }}
           TITLE: ${{ steps.pr_status.outputs.title }}
           ACTION_TEXT: ${{ steps.pr_status.outputs.action_text }}
+          COLOR: ${{ steps.pr_status.outputs.color }}
           PR_TITLE: ${{ github.event.pull_request.title }}
           HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
           BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
           ACTOR: ${{ github.actor }}
           REPOSITORY: ${{ github.repository }}
           PR_URL: ${{ github.event.pull_request.html_url }}
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
         run: |
           jq -n \
-            --arg content "$TITLE\n\n標題：$PR_TITLE\n來源分支：$HEAD_BRANCH\n目標分支：$BASE_BRANCH\n動作：$ACTION_TEXT\n執行者：$ACTOR\n專案：$REPOSITORY\nPR 連結：$PR_URL" \
-            '{content: $content}' \
-            | curl -H "Content-Type: application/json" \
-                -X POST \
-                -d @- \
-                "$DISCORD_WEBHOOK"
+            --arg title "$TITLE" \
+            --arg action "$ACTION_TEXT" \
+            --arg pr_title "$PR_TITLE" \
+            --arg head "$HEAD_BRANCH" \
+            --arg base "$BASE_BRANCH" \
+            --arg actor "$ACTOR" \
+            --arg repo "$REPOSITORY" \
+            --arg pr_url "$PR_URL" \
+            --arg repo_url "$REPO_URL" \
+            --argjson color "$COLOR" \
+            '{
+              username: "Closy GitHub Bot",
+              embeds: [
+                {
+                  title: $title,
+                  color: $color,
+                  fields: [
+                    {
+                      name: "標題",
+                      value: $pr_title,
+                      inline: false
+                    },
+                    {
+                      name: "來源分支",
+                      value: $head,
+                      inline: true
+                    },
+                    {
+                      name: "目標分支",
+                      value: $base,
+                      inline: true
+                    },
+                    {
+                      name: "動作",
+                      value: $action,
+                      inline: true
+                    },
+                    {
+                      name: "執行者",
+                      value: $actor,
+                      inline: true
+                    },
+                    {
+                      name: "專案",
+                      value: ("[" + $repo + "](" + $repo_url + ")"),
+                      inline: true
+                    },
+                    {
+                      name: "PR 連結",
+                      value: ("[查看 Pull Request](" + $pr_url + ")"),
+                      inline: false
+                    }
+                  ],
+                  footer: {
+                    text: "GitHub Actions → Discord Notification"
+                  },
+                  timestamp: now | todateiso8601
+                }
+              ]
+            }' \
+          | curl -H "Content-Type: application/json" \
+              -X POST \
+              -d @- \
+              "$DISCORD_WEBHOOK"
