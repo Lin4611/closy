@@ -1,1 +1,9 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+@import './common/_colors.css';
+@import './common/_typography.css';
+
+@layer base {
+  body {
+    color: var(--color-neutral-900);
+  }
+}
