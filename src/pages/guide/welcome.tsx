@@ -1,6 +1,6 @@
 import Image from 'next/image'
 
-import { PrimaryButton } from '@/modules/guide/components/PrimaryButtin'
+import { PrimaryButton } from '@/modules/guide/components/PrimaryButton'
 
 const Welcome = () => {
   return (
