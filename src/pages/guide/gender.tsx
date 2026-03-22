@@ -3,8 +3,8 @@ import { useRouter } from 'next/router'
 import { useState } from 'react'
 
 import { MobileLayout } from '@/modules/common/components/MobileLayout'
+import { PrimaryButton } from '@/modules/common/components/PrimaryButton'
 import { GenderButton } from '@/modules/guide/components/GenderButton'
-import { PrimaryButton } from '@/modules/guide/components/PrimaryButton'
 
 const Gender = () => {
   const router = useRouter()

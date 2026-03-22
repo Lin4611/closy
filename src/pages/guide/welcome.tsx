@@ -2,7 +2,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/router'
 
 import { MobileLayout } from '@/modules/common/components/MobileLayout'
-import { PrimaryButton } from '@/modules/guide/components/PrimaryButton'
+import { PrimaryButton } from '@/modules/common/components/PrimaryButton'
 
 const Welcome = () => {
   const router = useRouter()
