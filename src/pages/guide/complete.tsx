@@ -1,11 +1,9 @@
 import Image from 'next/image'
-import { useRouter } from 'next/router'
 
 import { MobileLayout } from '@/modules/common/components/MobileLayout'
 import { PrimaryButton } from '@/modules/common/components/PrimaryButton'
 
 const GuideComplete = () => {
-  const router = useRouter()
   return (
     <MobileLayout>
       <div className="flex flex-col items-center justify-center gap-[225px] px-4 pt-50 pb-12">
@@ -21,12 +19,7 @@ const GuideComplete = () => {
             <p className="text-paragraph-md text-neutral-600">讓我們進到首頁查看穿搭推薦</p>
           </div>
         </section>
-        <PrimaryButton
-          content="完成"
-          onClick={() => {
-            router.push('/guide/location-service')
-          }}
-        />
+        <PrimaryButton content="完成" href="/guide/location-service" />
       </div>
     </MobileLayout>
   )

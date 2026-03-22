@@ -1,11 +1,9 @@
 import Image from 'next/image'
-import { useRouter } from 'next/router'
 
 import { MobileLayout } from '@/modules/common/components/MobileLayout'
 import { PrimaryButton } from '@/modules/common/components/PrimaryButton'
 
 const Welcome = () => {
-  const router = useRouter()
   return (
     <MobileLayout>
       <div className="flex flex-col items-center justify-center gap-60 px-4 pt-16">
@@ -16,7 +14,7 @@ const Welcome = () => {
           </section>
           <Image src="/guide/guide-welcome-character.webp" alt="welcome" width={180} height={180} />
         </section>
-        <PrimaryButton content="開始" onClick={() => router.push('/guide/gender')} />
+        <PrimaryButton content="開始" href="/guide/gender" />
       </div>
     </MobileLayout>
   )
