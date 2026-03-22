@@ -1,10 +1,12 @@
 import Image from 'next/image'
+import { useRouter } from 'next/router'
 
 import { MobileLayout } from '@/modules/common/components/MobileLayout'
 import { PrimaryButton } from '@/modules/common/components/PrimaryButton'
 import { GuideInfoBlock } from '@/modules/guide/components/GuideInfoBlock'
 
 const GuideLocationService = () => {
+  const router = useRouter()
   return (
     <MobileLayout>
       <div className="flex flex-col items-center justify-center gap-45 px-4 pt-30">
@@ -17,7 +19,12 @@ const GuideLocationService = () => {
             subtext="未授權將預設地區為台北市"
           />
         </section>
-        <PrimaryButton content="了解" onClick={() => {}} />
+        <PrimaryButton
+          content="了解"
+          onClick={() => {
+            router.push('/guide/google-calendar')
+          }}
+        />
       </div>
     </MobileLayout>
   )
