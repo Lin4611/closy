@@ -1,12 +1,10 @@
 import Image from 'next/image'
-import { useRouter } from 'next/router'
 
 import { MobileLayout } from '@/modules/common/components/MobileLayout'
 import { PrimaryButton } from '@/modules/common/components/PrimaryButton'
 import { GuideInfoBlock } from '@/modules/guide/components/GuideInfoBlock'
 
 const GuideGoogleCalendar = () => {
-  const router = useRouter()
   return (
     <MobileLayout>
       <div className="flex flex-col gap-45 px-4 pt-32">
@@ -19,12 +17,7 @@ const GuideGoogleCalendar = () => {
             subtext="未授權將無法同步行事曆內容"
           />
         </div>
-        <PrimaryButton
-          content="連結Google行事曆"
-          onClick={() => {
-            router.push('/')
-          }}
-        />
+        <PrimaryButton content="連結Google行事曆" href="/" />
       </div>
     </MobileLayout>
   )
