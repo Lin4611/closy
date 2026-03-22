@@ -15,7 +15,7 @@ const Guide = () => {
     return () => window.clearInterval(timer)
   }, [])
   return (
-    <div className="mb-36 flex w-full max-w-93.75 flex-col items-center justify-center gap-30">
+    <div className="mb-36 flex w-full max-w-93.75 flex-col items-center justify-center gap-30 bg-neutral-100">
       <section className="mt-20 flex w-full max-w-70.25 flex-col items-center gap-12">
         <GuideIntroSlide
           imageUrl={currentSlide.imageUrl}

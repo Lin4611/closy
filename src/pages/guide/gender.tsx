@@ -9,7 +9,7 @@ const Gender = () => {
   const router = useRouter()
   const [selectedGender, setSelectedGender] = useState<string>('')
   return (
-    <div className="flex w-full max-w-[375px] flex-col px-4 pt-3">
+    <div className="flex w-full max-w-[375px] flex-col bg-neutral-100 px-4 pt-3">
       <section className="flex w-full flex-col gap-3">
         <button
           className="flex h-10 w-10 items-center justify-center"
