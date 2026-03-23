@@ -14,10 +14,10 @@ const arrowPositionClass = {
 
 export const GuideToolTip = ({ text, side = 'top' }: GuideToolTipProps) => {
   return (
-    <section className="bg-primary-900 relative inline-flex w-fit max-w-[240px] rounded-[12px] px-4 py-3">
-      <span className="text-label-xl wrap-break-word text-white">{text}</span>
+    <div className="bg-primary-900 relative inline-flex w-fit max-w-[240px] rounded-[12px] px-4 py-3">
+      <span className="font-label-xl wrap-break-word text-white">{text}</span>
 
       <ToolTipBeak className={`${arrowPositionClass[side]} text-primary-900`} />
-    </section>
+    </div>
   )
 }

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 type PrimaryButtonProps = {
   content: string
@@ -19,19 +20,25 @@ export const PrimaryButton = ({
   className = '',
   href,
 }: PrimaryButtonProps) => {
-  const buttonClassName = `h-14 w-full rounded-[30px] ${className} ${disabled ? 'bg-neutral-200' : 'bg-neutral-900'}`
-  const textClassName = `text-paragraph-md ${disabled ? 'text-neutral-400' : 'text-white'}`
+  const mergedClassName = cn('w-full', className)
   if (href && !disabled) {
     return (
-      <Link href={href} className={`${buttonClassName} inline-flex items-center justify-center`}>
-        <span className={textClassName}>{content}</span>
-      </Link>
+      <Button asChild variant="brand" size="xl" className={mergedClassName}>
+        <Link href={href}>{content}</Link>
+      </Button>
     )
   }
 
   return (
-    <Button className={buttonClassName} disabled={disabled} onClick={onClick} type={type}>
-      <span className={textClassName}>{content}</span>
+    <Button
+      variant="brand"
+      size="xl"
+      className={mergedClassName}
+      disabled={disabled}
+      onClick={onClick}
+      type={type}
+    >
+      {content}
     </Button>
   )
 }
