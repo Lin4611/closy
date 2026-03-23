@@ -21,7 +21,7 @@ const Gender = () => {
           >
             <ChevronLeft size={30} strokeWidth={2} className="text-neutral-700" />
           </button>
-          <h2 className="text-h2 p-2">請選擇您的性別</h2>
+          <h2 className="font-h2 p-2">請選擇您的性別</h2>
         </section>
         <section className="mt-12 flex w-full flex-col gap-3">
           <GenderButton
