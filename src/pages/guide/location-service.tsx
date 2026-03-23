@@ -1,0 +1,25 @@
+import Image from 'next/image'
+
+import { MobileLayout } from '@/modules/common/components/MobileLayout'
+import { PrimaryButton } from '@/modules/common/components/PrimaryButton'
+import { GuideInfoBlock } from '@/modules/guide/components/GuideInfoBlock'
+
+const GuideLocationService = () => {
+  return (
+    <MobileLayout>
+      <div className="flex flex-col items-center justify-center gap-45 px-4 pt-30">
+        <section className="flex flex-col items-center justify-center gap-10">
+          <Image src="/guide/location-pin.webp" alt="location-service" width={100} height={136} />
+          <GuideInfoBlock
+            title="位置服務"
+            description_1="連結你的位置"
+            description_2="讓「CLOSY」根據天氣為你推薦更合適的穿搭"
+            subtext="未授權將預設地區為台北市"
+          />
+        </section>
+        <PrimaryButton content="了解" href="/guide/google-calendar" />
+      </div>
+    </MobileLayout>
+  )
+}
+export default GuideLocationService
