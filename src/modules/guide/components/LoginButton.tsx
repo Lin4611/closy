@@ -1,13 +1,25 @@
 import Image from 'next/image'
 
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
-export const LoginButton = () => {
+type LoginButtonProps = {
+  className?: string
+  onClick?: () => void
+}
+
+export const LoginButton = ({ className, onClick }: LoginButtonProps) => {
   return (
-    <Button className="flex h-[54px] w-full max-w-[343px] items-center rounded-[20px] bg-white shadow-[0px_2px_3px_0px_#0000002B,0px_0px_3px_0px_#00000015]">
+    <Button
+      type="button"
+      variant="oauth"
+      size="auth"
+      className={cn('w-full max-w-[343px]', className)}
+      onClick={onClick}
+    >
       <span className="flex items-center gap-[15px]">
         <Image src="/guide/Google Logo.svg" alt="Google Logo" width={24} height={24} />
-        <span className="text-label-xxl text-neutral-500">Google登入</span>
+        <span className="text-label-xxl">Google登入</span>
       </span>
     </Button>
   )
