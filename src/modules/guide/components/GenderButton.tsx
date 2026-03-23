@@ -1,18 +1,32 @@
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 type GenderButtonProps = {
-  gender: string
+  gender: '男性' | '女性'
   onClick: () => void
   selected: boolean
+  className?: string
+  type?: 'button' | 'submit' | 'reset'
 }
 
-export const GenderButton = ({ gender, onClick, selected }: GenderButtonProps) => {
+export const GenderButton = ({
+  gender,
+  onClick,
+  selected = false,
+  className,
+  type = 'button',
+}: GenderButtonProps) => {
+  const mergedClassName = cn('w-full', className)
   return (
     <Button
+      type={type}
+      variant="choice"
+      size="xl"
+      data-state={selected ? 'checked' : 'unchecked'}
+      className={mergedClassName}
       onClick={onClick}
-      className={`h-14 w-full bg-white ${selected ? 'border-2 border-neutral-900' : 'border-[0.5px] border-neutral-300'}`}
     >
-      <span className="text-paragraph-md text-neutral-800">{gender}</span>
+      {gender}
     </Button>
   )
 }

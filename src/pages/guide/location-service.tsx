@@ -7,7 +7,7 @@ import { GuideInfoBlock } from '@/modules/guide/components/GuideInfoBlock'
 const GuideLocationService = () => {
   return (
     <MobileLayout>
-      <div className="flex flex-col items-center justify-center gap-45 px-4 pt-30">
+      <div className="flex min-h-screen flex-col items-center justify-between px-4 pt-30 pb-12">
         <section className="flex flex-col items-center justify-center gap-10">
           <Image src="/guide/location-pin.webp" alt="location-service" width={100} height={136} />
           <GuideInfoBlock
@@ -17,7 +17,7 @@ const GuideLocationService = () => {
             subtext="未授權將預設地區為台北市"
           />
         </section>
-        <PrimaryButton content="了解" href="/guide/google-calendar" />
+        <PrimaryButton content="了解" href="/guide/google-calendar" className="mt-auto" />
       </div>
     </MobileLayout>
   )
