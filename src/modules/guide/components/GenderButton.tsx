@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 type GenderButtonProps = {
-  gender: '男' | '女'
+  gender: '男性' | '女性'
   onClick: () => void
   selected: boolean
   className?: string

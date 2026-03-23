@@ -6,7 +6,7 @@ import { PrimaryButton } from '@/modules/common/components/PrimaryButton'
 const GuideComplete = () => {
   return (
     <MobileLayout>
-      <div className="flex flex-col items-center justify-center gap-[225px] px-4 pt-50 pb-12">
+      <div className="flex min-h-screen flex-col items-center justify-between px-4 pt-50 pb-12">
         <section className="flex w-full flex-col items-center gap-10">
           <Image
             src="/guide/guide-complete-charater.webp"
@@ -19,7 +19,7 @@ const GuideComplete = () => {
             <p className="text-paragraph-md text-neutral-600">讓我們進到首頁查看穿搭推薦</p>
           </div>
         </section>
-        <PrimaryButton content="完成" href="/guide/location-service" />
+        <PrimaryButton content="完成" href="/guide/location-service" className="mt-auto" />
       </div>
     </MobileLayout>
   )

@@ -11,12 +11,13 @@ const Gender = () => {
   const [selectedGender, setSelectedGender] = useState<string>('')
   return (
     <MobileLayout>
-      <div className="flex flex-col px-4 pt-3">
+      <div className="flex min-h-screen flex-col px-4 pt-3 pb-[143px]">
         <section className="flex w-full flex-col gap-3">
           <button
             className="flex h-10 w-10 items-center justify-center"
             type="button"
             onClick={() => router.push('/guide/welcome')}
+            aria-label="返回"
           >
             <ChevronLeft size={30} strokeWidth={2} className="text-neutral-700" />
           </button>
@@ -42,7 +43,7 @@ const Gender = () => {
           content="繼續"
           onClick={() => {}}
           disabled={!selectedGender}
-          className="mt-[328px]"
+          className="mt-auto"
         />
       </div>
     </MobileLayout>
