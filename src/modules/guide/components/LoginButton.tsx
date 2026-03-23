@@ -19,7 +19,7 @@ export const LoginButton = ({ className, onClick }: LoginButtonProps) => {
     >
       <span className="flex items-center gap-[15px]">
         <Image src="/guide/Google Logo.svg" alt="Google Logo" width={24} height={24} />
-        <span className="text-label-xxl">Google登入</span>
+        <span className="font-label-xxl">Google登入</span>
       </span>
     </Button>
   )

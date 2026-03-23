@@ -15,8 +15,8 @@ const GuideComplete = () => {
             height={111}
           />
           <div className="flex w-full flex-col items-center justify-center gap-4">
-            <h2 className="text-h3">恭喜你成功新增了一套衣服！</h2>
-            <p className="text-paragraph-md text-neutral-600">讓我們進到首頁查看穿搭推薦</p>
+            <h2 className="font-h3">恭喜你成功新增了一套衣服！</h2>
+            <p className="font-paragraph-md text-neutral-600">讓我們進到首頁查看穿搭推薦</p>
           </div>
         </section>
         <PrimaryButton content="完成" href="/guide/location-service" className="mt-auto" />
