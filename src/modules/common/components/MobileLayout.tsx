@@ -7,8 +7,8 @@ type MobileLayoutProps = {
 
 export const MobileLayout = ({ children, className }: MobileLayoutProps) => {
   return (
-    <main className={cn('mx-auto min-h-screen w-full max-w-[375px] bg-neutral-100', className)}>
+    <div className={cn('mx-auto min-h-screen w-full max-w-[375px] bg-neutral-100', className)}>
       {children}
-    </main>
+    </div>
   )
 }
