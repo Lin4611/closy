@@ -1,13 +1,13 @@
 import { House, Shirt, Settings2, ShelvingUnit } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
-type BottomNavItem = {
+export type TBottomNavItem = {
   id: string
   label: string
   href: string
   icon: LucideIcon
 }
-export const bottomNavItems: BottomNavItem[] = [
+export const bottomNavItems: TBottomNavItem[] = [
   {
     id: 'home',
     label: '首頁',
