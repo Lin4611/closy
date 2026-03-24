@@ -7,9 +7,11 @@ export const AddClothButton = ({ onClick }: AddClothButtonProps) => {
     <button
       type="button"
       onClick={onClick}
-      className="bg-primary-800 flex h-[45px] w-[45px] flex-col items-center justify-center rounded-[40px]"
+      className="flex h-[45px] flex-1 items-center justify-center"
     >
-      <Plus className="text-white" size={30} strokeWidth={2.45} />
+      <span className="bg-primary-800 flex h-[45px] w-[45px] items-center justify-center rounded-full">
+        <Plus className="text-white" size={30} strokeWidth={2.45} />
+      </span>
     </button>
   )
 }

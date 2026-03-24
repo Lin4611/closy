@@ -12,7 +12,7 @@ export const BottomNavItem = ({ label, active, onClick, icon: Icon }: BottomNavI
     <button
       type="button"
       onClick={onClick}
-      className="flex h-16 w-[73.4px] flex-col items-center justify-center gap-2"
+      className="flex h-16 flex-1 flex-col items-center justify-center gap-2"
     >
       <Icon
         size={24}
