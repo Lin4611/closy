@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 
-import { MobileBottomNav } from '@/modules/common/components/MobileBottomNav'
+import { AppShell } from '@/modules/common/components/AppShell'
 import { AddClothingSheet } from '@/modules/wardrobe/components/AddClothingSheet'
 import { DeleteClothingDialog } from '@/modules/wardrobe/components/DeleteClothingDialog'
 import { DeleteSuccessDialog } from '@/modules/wardrobe/components/DeleteSuccessDialog'
@@ -34,42 +34,39 @@ const WardrobePage = () => {
   }, [activeCategory, items])
 
   return (
-    <div className="relative pb-24">
-      <WardrobeHeader />
+    <AppShell activeTab="wardrobe" onAddClick={() => setIsSheetOpen(true)}>
+      <div className="relative">
+        <WardrobeHeader />
 
-      <main className="space-y-3">
-        <WardrobeFilterChips
-          activeCategory={activeCategory}
-          counts={counts}
-          onChange={setActiveCategory}
+        <main className="space-y-3">
+          <WardrobeFilterChips
+            activeCategory={activeCategory}
+            counts={counts}
+            onChange={setActiveCategory}
+          />
+
+          <WardrobeGrid items={filteredItems} onDelete={setDeleteTargetId} />
+        </main>
+
+        <AddClothingSheet open={isSheetOpen} onClose={() => setIsSheetOpen(false)} />
+
+        <DeleteClothingDialog
+          open={Boolean(deleteTargetId)}
+          onClose={() => setDeleteTargetId(null)}
+          onConfirm={() => {
+            if (!deleteTargetId) return
+            deleteItem(deleteTargetId)
+            setDeleteTargetId(null)
+            setIsDeleteSuccessOpen(true)
+          }}
         />
 
-        <WardrobeGrid
-          items={filteredItems}
-          onDelete={setDeleteTargetId}
+        <DeleteSuccessDialog
+          open={isDeleteSuccessOpen}
+          onClose={() => setIsDeleteSuccessOpen(false)}
         />
-      </main>
-
-      <AddClothingSheet open={isSheetOpen} onClose={() => setIsSheetOpen(false)} />
-
-      <DeleteClothingDialog
-        open={Boolean(deleteTargetId)}
-        onClose={() => setDeleteTargetId(null)}
-        onConfirm={() => {
-          if (!deleteTargetId) return
-          deleteItem(deleteTargetId)
-          setDeleteTargetId(null)
-          setIsDeleteSuccessOpen(true)
-        }}
-      />
-
-      <DeleteSuccessDialog
-        open={isDeleteSuccessOpen}
-        onClose={() => setIsDeleteSuccessOpen(false)}
-      />
-
-      <MobileBottomNav activeTab="wardrobe" onAddClick={() => setIsSheetOpen(true)} />
-    </div>
+      </div>
+    </AppShell>
   )
 }
 

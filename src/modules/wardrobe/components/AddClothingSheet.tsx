@@ -23,7 +23,7 @@ export const AddClothingSheet = ({ open, onClose }: AddClothingSheetProps) => {
   }
 
   return (
-    <div className="fixed inset-0 z-50 mx-auto w-full max-w-93.75">
+    <div className="fixed inset-0 z-60 mx-auto w-full max-w-93.75">
       <button
         type="button"
         className="absolute inset-0 w-full"
