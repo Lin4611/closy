@@ -2,6 +2,7 @@ import type { AppProps } from 'next/app'
 import { Inter } from 'next/font/google'
 
 import '@/styles/globals.css'
+import { MobileLayout } from '@/modules/common/components/MobileLayout'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -10,8 +11,8 @@ const inter = Inter({
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <main className={inter.className}>
+    <MobileLayout className={inter.className}>
       <Component {...pageProps} />
-    </main>
+    </MobileLayout>
   )
 }
