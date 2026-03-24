@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
 
 import { MobileBottomNav } from '@/modules/common/components/MobileBottomNav'
-import { MobileLayout } from '@/modules/common/components/MobileLayout'
 import { AddClothingSheet } from '@/modules/wardrobe/components/AddClothingSheet'
 import { DeleteClothingDialog } from '@/modules/wardrobe/components/DeleteClothingDialog'
 import { DeleteSuccessDialog } from '@/modules/wardrobe/components/DeleteSuccessDialog'
@@ -35,10 +34,10 @@ const WardrobePage = () => {
   }, [activeCategory, items])
 
   return (
-    <MobileLayout className="relative pb-24">
+    <div className="relative pb-24">
       <WardrobeHeader />
 
-      <main className="relative pt-4 space-y-4">
+      <main className="space-y-3">
         <WardrobeFilterChips
           activeCategory={activeCategory}
           counts={counts}
@@ -70,7 +69,7 @@ const WardrobePage = () => {
       />
 
       <MobileBottomNav activeTab="wardrobe" onAddClick={() => setIsSheetOpen(true)} />
-    </MobileLayout>
+    </div>
   )
 }
 

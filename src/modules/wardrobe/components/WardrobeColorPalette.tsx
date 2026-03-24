@@ -4,13 +4,23 @@ import { WardrobeColorKey } from '../types'
 type WardrobeColorPaletteProps = {
   selectedKeys: WardrobeColorKey[]
   onChange: (next: WardrobeColorKey[]) => void
+  displayKeys?: WardrobeColorKey[]
+  readOnly?: boolean
 }
 
 export const WardrobeColorPalette = ({
   selectedKeys,
   onChange,
+  displayKeys,
+  readOnly = false,
 }: WardrobeColorPaletteProps) => {
+  const visibleColors = wardrobeColorOptions.filter((color) =>
+    (displayKeys ?? wardrobeColorOptions.map((option) => option.key)).includes(color.key)
+  )
+
   const toggleColor = (key: WardrobeColorKey) => {
+    if (readOnly) return
+
     const hasKey = selectedKeys.includes(key)
     onChange(hasKey ? selectedKeys.filter((item) => item !== key) : [...selectedKeys, key])
   }
@@ -18,7 +28,7 @@ export const WardrobeColorPalette = ({
   return (
     <div className="overflow-x-auto pb-1">
       <div className="flex w-max gap-2">
-        {wardrobeColorOptions.map((color) => {
+        {visibleColors.map((color) => {
           const selected = selectedKeys.includes(color.key)
 
           return (
@@ -29,10 +39,10 @@ export const WardrobeColorPalette = ({
               className={`rounded-[12px] p-1.5 transition-all ${selected
                 ? 'bg-[#C9B089]'
                 : 'bg-transparent'
-                }`}
+                } ${readOnly ? 'cursor-default' : ''}`}
             >
               <div className="overflow-hidden rounded-[10px] border border-neutral-300 bg-white">
-                <div className="grid h-[60px] w-[60px] grid-cols-2">
+                <div className="grid h-15 w-15 grid-cols-2">
                   <span className="border border-white/70" style={{ backgroundColor: color.hex }} />
                   <span className="border border-white/70" style={{ backgroundColor: color.hex }} />
                   <span className="border border-white/70 opacity-90" style={{ backgroundColor: color.hex }} />

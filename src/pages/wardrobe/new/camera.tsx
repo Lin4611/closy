@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
 
-import { MobileLayout } from '@/modules/common/components/MobileLayout'
+const RECOGNITION_ENTRY_KEY = 'closy:recognition-entry'
 
 const WardrobeCameraPage = () => {
   const router = useRouter()
@@ -12,12 +12,16 @@ const WardrobeCameraPage = () => {
   const handleCapture = () => {
     if (isSubmitting) return
 
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.setItem(RECOGNITION_ENTRY_KEY, 'camera')
+    }
+
     setIsSubmitting(true)
     void router.push('/wardrobe/new/processing')
   }
 
   return (
-    <MobileLayout className="relative min-h-screen overflow-hidden bg-[#18181F] text-white">
+    <div className="relative min-h-screen overflow-hidden bg-[#18181F] text-white">
       <header className="flex items-center justify-between px-4 pt-5 pb-3">
         <Link href="/wardrobe" className="font-label-sm text-white/80">
           ×
@@ -36,7 +40,7 @@ const WardrobeCameraPage = () => {
             請先拍攝一件上衣
           </button>
 
-          <div className="relative mx-auto h-[198px] w-[154px]">
+          <div className="relative mx-auto h-49.5 w-38.5">
             <Image
               src="/wardrobe/tshirt.png"
               alt="拍攝示意衣物"
@@ -57,12 +61,12 @@ const WardrobeCameraPage = () => {
           type="button"
           disabled={isSubmitting}
           onClick={handleCapture}
-          className="flex h-[42px] w-[42px] items-center justify-center rounded-full border-2 border-white bg-[#D9D9D9] shadow-[0_6px_16px_rgba(0,0,0,0.28)] disabled:opacity-60"
+          className="flex h-10.5 w-10.5 items-center justify-center rounded-full border-2 border-white bg-[#D9D9D9] shadow-[0_6px_16px_rgba(0,0,0,0.28)] disabled:opacity-60"
         >
-          <span className="h-[28px] w-[28px] rounded-full border border-neutral-500 bg-white" />
+          <span className="h-7 w-7 rounded-full border border-neutral-500 bg-white" />
         </button>
       </div>
-    </MobileLayout>
+    </div>
   )
 }
 

@@ -1,15 +1,14 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 
-import { MobileLayout } from '@/modules/common/components/MobileLayout'
 import { RecognitionLoading } from '@/modules/wardrobe/components/RecognitionLoading'
-import { mockRecognitionDraft } from '@/modules/wardrobe/data/mockWardrobeItems'
+import {
+    mockAlbumRecognitionDraft,
+    mockRecognitionDraft,
+} from '@/modules/wardrobe/data/mockWardrobeItems'
 import { useWardrobeMock } from '@/modules/wardrobe/hooks/useWardrobeMock'
 
-const runMockRecognition = async () => {
-    await new Promise((resolve) => window.setTimeout(resolve, 1500))
-    return mockRecognitionDraft
-}
+const RECOGNITION_ENTRY_KEY = 'closy:recognition-entry'
 
 const WardrobeProcessingPage = () => {
     const router = useRouter()
@@ -21,7 +20,15 @@ const WardrobeProcessingPage = () => {
 
         const startRecognition = async () => {
             try {
-                const draft = await runMockRecognition()
+                await new Promise((resolve) => window.setTimeout(resolve, 1500))
+
+                const recognitionEntry =
+                    typeof window === 'undefined'
+                        ? 'camera'
+                        : window.sessionStorage.getItem(RECOGNITION_ENTRY_KEY) ?? 'camera'
+
+                const draft =
+                    recognitionEntry === 'album' ? mockAlbumRecognitionDraft : mockRecognitionDraft
 
                 if (isCancelled) return
 
@@ -30,10 +37,18 @@ const WardrobeProcessingPage = () => {
             } catch {
                 if (isCancelled) return
 
-                setErrorMessage('辨識失敗，將返回拍攝頁面')
+                const recognitionEntry =
+                    typeof window === 'undefined'
+                        ? 'camera'
+                        : window.sessionStorage.getItem(RECOGNITION_ENTRY_KEY) ?? 'camera'
+
+                const fallbackPath =
+                    recognitionEntry === 'album' ? '/wardrobe/new/album' : '/wardrobe/new/camera'
+
+                setErrorMessage('辨識失敗，將返回上一頁')
 
                 window.setTimeout(() => {
-                    void router.replace('/wardrobe/new/camera')
+                    void router.replace(fallbackPath)
                 }, 1200)
             }
         }
@@ -45,16 +60,12 @@ const WardrobeProcessingPage = () => {
         }
     }, [router, saveRecognitionDraft])
 
-    return (
-        <MobileLayout>
-            {errorMessage ? (
-                <section className="flex min-h-screen items-center justify-center px-6 text-center">
-                    <p className="font-label-md text-neutral-900">{errorMessage}</p>
-                </section>
-            ) : (
-                <RecognitionLoading />
-            )}
-        </MobileLayout>
+    return errorMessage ? (
+        <section className="flex min-h-screen items-center justify-center px-6 text-center">
+            <p className="font-label-md text-neutral-900">{errorMessage}</p>
+        </section>
+    ) : (
+        <RecognitionLoading />
     )
 }
 

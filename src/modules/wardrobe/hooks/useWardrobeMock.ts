@@ -7,12 +7,28 @@ import { WardrobeDraftItem, WardrobeItem } from '../types'
 const WARDROBE_STORAGE_KEY = 'closy:wardrobe-items'
 const RECOGNITION_DRAFT_STORAGE_KEY = 'closy:wardrobe-recognition-draft'
 
+const mockItemMap = new Map(mockWardrobeItems.map((item) => [item.id, item]))
+
+const normalizeItem = (item: WardrobeItem) => {
+  const fallbackItem = mockItemMap.get(item.id)
+
+  return {
+    ...item,
+    imageUrl: item.imageUrl ?? fallbackItem?.imageUrl,
+  }
+}
+
 const safeParseItems = (value: string | null) => {
   if (!value) return mockWardrobeItems
 
   try {
     const parsed = JSON.parse(value) as WardrobeItem[]
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : mockWardrobeItems
+
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      return mockWardrobeItems
+    }
+
+    return parsed.map(normalizeItem)
   } catch {
     return mockWardrobeItems
   }
@@ -22,7 +38,13 @@ const safeParseDraft = (value: string | null) => {
   if (!value) return null
 
   try {
-    return JSON.parse(value) as WardrobeDraftItem
+    const parsed = JSON.parse(value) as WardrobeDraftItem
+
+    return {
+      ...mockRecognitionDraft,
+      ...parsed,
+      imageUrl: parsed.imageUrl ?? mockRecognitionDraft.imageUrl,
+    }
   } catch {
     return null
   }

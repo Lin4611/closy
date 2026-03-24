@@ -33,8 +33,8 @@ export const WardrobeItemCard = ({ item, onDelete }: WardrobeItemCardProps) => {
           src={item.imageUrl}
           alt={item.name}
           fill
-          sizes="(max-width: 375px) 44vw, 160px"
-          className="object-contain px-3 py-2"
+          sizes="(max-width: 375px) 40vw, 156px"
+          className="object-contain"
         />
       )
     }
@@ -43,26 +43,35 @@ export const WardrobeItemCard = ({ item, onDelete }: WardrobeItemCardProps) => {
   }, [item.imageUrl, item.name])
 
   return (
-    <article className="relative min-h-[128px] w-full rounded-[12px] border border-neutral-300 bg-white px-3 pt-3 pb-2 shadow-[0_1px_3px_rgba(15,23,42,0.04)]">
-      <div className="relative">
-        <Link href={`/wardrobe/${item.id}`} className="block">
-          <div className="relative h-[92px] overflow-hidden rounded-[8px]">
-            <div className="absolute inset-0 flex items-center justify-center">{preview}</div>
+    <article className="rounded-[12px] border border-neutral-200 bg-white px-3 pt-3 pb-2">
+      <Link href={`/wardrobe/${item.id}`} className="block">
+        <div className="relative flex h-24 items-center justify-center overflow-hidden rounded-[8px]">
+          <div className="relative h-full w-full px-3 py-1">{preview}</div>
+        </div>
+      </Link>
+
+      <div className="mt-2 flex items-end justify-between gap-2">
+        <Link href={`/wardrobe/${item.id}`} className="min-w-0 flex-1">
+          <div className="space-y-0.5">
+            <p className="truncate font-label-xs text-neutral-900">{item.name}</p>
+            <p className="font-label-xxs-r text-neutral-500">{item.createdAt}</p>
+            <p className="truncate font-label-xxs-r text-neutral-400">{item.brand}</p>
           </div>
         </Link>
 
-        <div ref={menuRef} className="absolute top-0 right-[-4px] z-20">
+        <div ref={menuRef} className="relative shrink-0">
           <button
             type="button"
             onClick={() => setIsMenuOpen((prev) => !prev)}
-            className="flex h-6 w-6 items-center justify-center text-neutral-500"
+            className="flex h-6 w-6 items-center justify-center text-neutral-400"
             aria-label={`${item.name} 更多操作`}
           >
-            <EllipsisVertical className="h-[14px] w-[14px]" strokeWidth={2.1} />
+            <EllipsisVertical className="h-3.5 w-3.5" strokeWidth={2.1} />
           </button>
 
           <WardrobeItemMenu
             open={isMenuOpen}
+            align="card"
             onEdit={() => {
               setIsMenuOpen(false)
               window.location.href = `/wardrobe/${item.id}/edit`
@@ -73,12 +82,6 @@ export const WardrobeItemCard = ({ item, onDelete }: WardrobeItemCardProps) => {
             }}
           />
         </div>
-      </div>
-
-      <div className="mt-1 space-y-0.5">
-        <p className="truncate font-label-xs text-neutral-900">{item.name}</p>
-        <p className="font-label-xxs-r text-neutral-500">{item.createdAt}</p>
-        <p className="font-label-xxs-r text-neutral-400">{item.brand}</p>
       </div>
     </article>
   )

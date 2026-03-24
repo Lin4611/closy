@@ -76,11 +76,23 @@ export const mockWardrobeItems: WardrobeItem[] = [
 ]
 
 export const mockRecognitionDraft: WardrobeDraftItem = {
-  name: '黑色短袖 T 恤',
+  name: 'T-shirt',
   brand: 'UNIQLO',
   category: 'top',
   occasionKeys: ['campus_casual'],
   seasonKeys: ['summer', 'spring'],
-  colorKeys: ['light_beige', 'dark_gray_black', 'neutral_gray'],
+  colorKeys: ['dark_gray_black'],
+  imageUrl: '/wardrobe/tshirt.png',
   note: '由 mock 辨識流程自動帶入，可於此頁繼續調整。',
+}
+
+export const mockAlbumRecognitionDraft: WardrobeDraftItem = {
+  name: '休閒褲',
+  brand: 'UNIQLO',
+  category: 'pants',
+  occasionKeys: ['campus_casual', 'business_casual'],
+  seasonKeys: ['spring', 'autumn'],
+  colorKeys: ['natural_green'],
+  imageUrl: '/wardrobe/cargo-pants.png',
+  note: '由相簿 mock 辨識流程自動帶入，可於此頁繼續調整。',
 }

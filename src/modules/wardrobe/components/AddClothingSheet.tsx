@@ -12,13 +12,18 @@ export const AddClothingSheet = ({ open, onClose }: AddClothingSheetProps) => {
 
   if (!open) return null
 
-  const handleNavigate = () => {
+  const handleNavigateCamera = () => {
     onClose()
     void router.push('/wardrobe/new/camera')
   }
 
+  const handleNavigateAlbum = () => {
+    onClose()
+    void router.push('/wardrobe/new/album')
+  }
+
   return (
-    <div className="fixed inset-0 z-50 mx-auto w-full max-w-[375px]">
+    <div className="fixed inset-0 z-50 mx-auto w-full max-w-93.75">
       <button
         type="button"
         className="absolute inset-0 w-full"
@@ -28,20 +33,20 @@ export const AddClothingSheet = ({ open, onClose }: AddClothingSheetProps) => {
         <Overlay />
       </button>
 
-      <section className="absolute right-0 bottom-0 left-0 rounded-t-[28px] bg-white px-6 pt-5 pb-8 shadow-[0_-8px_24px_rgba(15,23,42,0.08)]">
-        <h2 className="mb-6 text-center font-label-xxl text-neutral-900">選擇新增方式</h2>
-        <div className="space-y-4">
+      <section className="absolute right-0 bottom-0 left-0 rounded-t-[28px] bg-white px-6 pt-6 pb-8 shadow-[0_-8px_24px_rgba(15,23,42,0.08)]">
+        <h2 className="mb-5 text-center font-label-xxl text-neutral-900">選擇新增方式</h2>
+        <div className="space-y-3">
           <button
             type="button"
-            onClick={handleNavigate}
-            className="flex h-[56px] w-full items-center justify-center rounded-[10px] bg-neutral-200 font-label-md text-neutral-700"
+            onClick={handleNavigateCamera}
+            className="flex h-12 w-full items-center justify-center rounded-[10px] bg-neutral-200 font-label-md text-neutral-700"
           >
             相機
           </button>
           <button
             type="button"
-            onClick={handleNavigate}
-            className="flex h-[56px] w-full items-center justify-center rounded-[10px] bg-neutral-200 font-label-md text-neutral-700"
+            onClick={handleNavigateAlbum}
+            className="flex h-12 w-full items-center justify-center rounded-[10px] bg-neutral-200 font-label-md text-neutral-700"
           >
             從相簿上傳
           </button>

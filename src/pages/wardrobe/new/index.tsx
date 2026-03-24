@@ -1,8 +1,6 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/router'
 
-import { MobileLayout } from '@/modules/common/components/MobileLayout'
-
 const WardrobeNewEntryPage = () => {
   const router = useRouter()
 
@@ -10,7 +8,7 @@ const WardrobeNewEntryPage = () => {
     void router.replace('/wardrobe/new/camera')
   }, [router])
 
-  return <MobileLayout className="min-h-screen"><div /></MobileLayout>
+  return <div />
 }
 
 export default WardrobeNewEntryPage

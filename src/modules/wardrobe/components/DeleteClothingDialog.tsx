@@ -14,7 +14,7 @@ export const DeleteClothingDialog = ({
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 mx-auto w-full max-w-[375px]">
+    <div className="fixed inset-0 z-50 mx-auto w-full max-w-93.75">
       <button
         type="button"
         className="absolute inset-0 w-full"
@@ -24,7 +24,7 @@ export const DeleteClothingDialog = ({
         <Overlay />
       </button>
 
-      <section className="absolute top-1/2 left-1/2 w-[304px] -translate-x-1/2 -translate-y-1/2 rounded-[16px] bg-white px-5 pt-5 pb-4 text-center shadow-[0_8px_24px_rgba(15,23,42,0.18)]">
+      <section className="absolute top-1/2 left-1/2 w-76 -translate-x-1/2 -translate-y-1/2 rounded-[16px] bg-white px-5 pt-5 pb-4 text-center shadow-[0_8px_24px_rgba(15,23,42,0.18)]">
         <h2 className="font-label-xl text-neutral-900">確定要刪除嗎？</h2>
         <p className="mt-2 mb-5 font-paragraph-sm text-neutral-600">刪除後將無法恢復所有資訊</p>
 

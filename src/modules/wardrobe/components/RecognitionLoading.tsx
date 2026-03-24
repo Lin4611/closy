@@ -9,10 +9,10 @@ export const RecognitionLoading = ({
 }: RecognitionLoadingProps) => {
   return (
     <section className="flex min-h-screen flex-col items-center justify-center px-6 text-center">
-      <div className="mb-5 flex items-center gap-[7px]">
-        <span className="h-[7px] w-[7px] animate-bounce rounded-full bg-primary-900 [animation-delay:-0.3s]" />
-        <span className="h-[7px] w-[7px] animate-bounce rounded-full bg-primary-900 [animation-delay:-0.15s]" />
-        <span className="h-[7px] w-[7px] animate-bounce rounded-full bg-primary-900" />
+      <div className="mb-5 flex items-center gap-1.75">
+        <span className="h-1.75 w-1.75 animate-bounce rounded-full bg-primary-900 [animation-delay:-0.3s]" />
+        <span className="h-1.75 w-1.75 animate-bounce rounded-full bg-primary-900 [animation-delay:-0.15s]" />
+        <span className="h-1.75 w-1.75 animate-bounce rounded-full bg-primary-900" />
       </div>
       <div>
         <p className="font-label-md text-neutral-900">{title}</p>

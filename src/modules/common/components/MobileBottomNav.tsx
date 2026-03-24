@@ -17,7 +17,7 @@ const items = [
 
 export const MobileBottomNav = ({ activeTab, onAddClick }: MobileBottomNavProps) => {
   return (
-    <nav className="fixed right-0 bottom-0 left-0 z-40 mx-auto w-full max-w-[375px] border-t border-neutral-200 bg-white px-5 pt-3 pb-[max(12px,env(safe-area-inset-bottom))]">
+    <nav className="fixed right-0 bottom-0 left-0 z-40 mx-auto w-full max-w-93.75 border-t border-neutral-200 bg-white px-5 pt-3 pb-[max(12px,env(safe-area-inset-bottom))]">
       <div className="relative grid grid-cols-5 items-end">
         {items.slice(0, 2).map((item) => {
           const Icon = item.icon
@@ -30,7 +30,7 @@ export const MobileBottomNav = ({ activeTab, onAddClick }: MobileBottomNavProps)
               className="flex flex-col items-center gap-1 text-center"
             >
               <Icon
-                className={cn('h-[19px] w-[19px]', isActive ? 'text-primary-900' : 'text-neutral-400')}
+                className={cn('h-4.75 w-4.75', isActive ? 'text-primary-900' : 'text-neutral-400')}
                 strokeWidth={1.9}
               />
               <span
@@ -67,7 +67,7 @@ export const MobileBottomNav = ({ activeTab, onAddClick }: MobileBottomNavProps)
               className="flex flex-col items-center gap-1 text-center"
             >
               <Icon
-                className={cn('h-[19px] w-[19px]', isActive ? 'text-primary-900' : 'text-neutral-400')}
+                className={cn('h-4.75 w-4.75', isActive ? 'text-primary-900' : 'text-neutral-400')}
                 strokeWidth={1.9}
               />
               <span

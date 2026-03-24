@@ -2,7 +2,6 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useEffect, useMemo, useState } from 'react'
 
-import { MobileLayout } from '@/modules/common/components/MobileLayout'
 import { RecognitionSuccessToast } from '@/modules/wardrobe/components/RecognitionSuccessToast'
 import { WardrobeReviewForm } from '@/modules/wardrobe/components/WardrobeReviewForm'
 import { useWardrobeMock } from '@/modules/wardrobe/hooks/useWardrobeMock'
@@ -37,21 +36,21 @@ const WardrobeEditPage = () => {
 
   if (!item || !draft) {
     return (
-      <MobileLayout className="px-4 py-10">
+      <div className="px-4 py-10">
         <Link href="/wardrobe" className="font-label-sm text-neutral-500">
           ← 返回我的衣櫃
         </Link>
         <div className="mt-10 rounded-[24px] bg-white p-6 text-center">
           <p className="font-label-md text-neutral-900">找不到可編輯的衣物</p>
         </div>
-      </MobileLayout>
+      </div>
     )
   }
 
   const isDisabled = !draft.name.trim() || !draft.brand.trim() || draft.colorKeys.length === 0
 
   return (
-    <MobileLayout className="bg-neutral-100 pb-24">
+    <div className="bg-neutral-100 pb-24">
       <header className="flex items-center justify-between px-4 pt-5 pb-4">
         <Link href={`/wardrobe/${item.id}`} className="font-label-sm text-neutral-500">
           ←
@@ -62,7 +61,7 @@ const WardrobeEditPage = () => {
 
       <WardrobeReviewForm value={draft} onChange={setDraft} />
 
-      <div className="fixed right-0 bottom-0 left-0 z-40 mx-auto w-full max-w-[375px] bg-neutral-100 px-4 py-4">
+      <div className="fixed right-0 bottom-0 left-0 z-40 mx-auto w-full max-w-93.75 bg-neutral-100 px-4 py-4">
         <button
           type="button"
           disabled={isDisabled}
@@ -83,7 +82,7 @@ const WardrobeEditPage = () => {
       </div>
 
       <RecognitionSuccessToast open={isSuccessOpen} message="儲存成功" />
-    </MobileLayout>
+    </div>
   )
 }
 
