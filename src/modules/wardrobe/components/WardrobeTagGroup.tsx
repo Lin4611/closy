@@ -40,9 +40,9 @@ export const WardrobeTagGroup = <T extends string>({
             key={option.key}
             type="button"
             onClick={() => handleClick(option.key)}
-            className={`font-label-xs inline-flex items-center gap-1 rounded-full border px-3 py-1.5 transition-colors ${selected
-                ? 'border-primary-900 bg-primary-900 text-white'
-                : 'border-neutral-300 bg-white text-neutral-500'
+            className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 font-label-xs transition-colors ${selected
+              ? 'border-primary-900 bg-primary-900 text-white'
+              : 'border-neutral-300 bg-neutral-100 text-neutral-400'
               }`}
           >
             {option.label}

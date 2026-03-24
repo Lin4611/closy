@@ -24,7 +24,7 @@ export const WardrobeFilterChips = ({
             type="button"
             onClick={() => onChange(option.key)}
             className={[
-              'shrink-0 rounded-full border px-3 py-1 font-lable-sm transition-colors',
+              'shrink-0 rounded-full border px-3 py-1 font-label-xs transition-colors',
               isActive
                 ? 'border-primary-900 bg-primary-900 text-white'
                 : 'border-neutral-300 bg-white text-neutral-400',

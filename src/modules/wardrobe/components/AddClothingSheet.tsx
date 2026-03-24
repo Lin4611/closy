@@ -18,26 +18,30 @@ export const AddClothingSheet = ({ open, onClose }: AddClothingSheetProps) => {
   }
 
   return (
-    <div className="fixed inset-0 z-50 mx-auto w-full max-w-93.75">
-      <button type="button" className="absolute inset-0 w-full" onClick={onClose} aria-label="close sheet">
+    <div className="fixed inset-0 z-50 mx-auto w-full max-w-[375px]">
+      <button
+        type="button"
+        className="absolute inset-0 w-full"
+        onClick={onClose}
+        aria-label="close sheet"
+      >
         <Overlay />
       </button>
 
-      <section className="absolute right-0 bottom-0 left-0 rounded-t-[32px] bg-white px-6 pt-4 pb-8">
-        <div className="mx-auto mb-6 h-1.5 w-12 rounded-full bg-neutral-300" />
-        <h2 className="font-label-xl mb-5 text-center text-neutral-900">選擇新增方式</h2>
-        <div className="space-y-3">
+      <section className="absolute right-0 bottom-0 left-0 rounded-t-[28px] bg-white px-6 pt-5 pb-8 shadow-[0_-8px_24px_rgba(15,23,42,0.08)]">
+        <h2 className="mb-6 text-center font-label-xxl text-neutral-900">選擇新增方式</h2>
+        <div className="space-y-4">
           <button
             type="button"
             onClick={handleNavigate}
-            className="font-label-md flex h-14 w-full items-center justify-center rounded-[16px] bg-neutral-100 text-neutral-900"
+            className="flex h-[56px] w-full items-center justify-center rounded-[10px] bg-neutral-200 font-label-md text-neutral-700"
           >
             相機
           </button>
           <button
             type="button"
             onClick={handleNavigate}
-            className="font-label-md flex h-14 w-full items-center justify-center rounded-[16px] bg-neutral-100 text-neutral-900"
+            className="flex h-[56px] w-full items-center justify-center rounded-[10px] bg-neutral-200 font-label-md text-neutral-700"
           >
             從相簿上傳
           </button>

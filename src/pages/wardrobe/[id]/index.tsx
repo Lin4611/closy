@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useMemo, useState } from 'react'
@@ -40,107 +41,116 @@ const WardrobeDetailPage = () => {
   }
 
   return (
-    <MobileLayout className="relative px-4 pt-6 pb-24">
-      <div className="mb-4 flex items-center justify-between">
-        <Link href="/wardrobe" className="font-label-sm text-neutral-500">
-          ←
-        </Link>
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => setIsMenuOpen((prev) => !prev)}
-            className="font-label-xl h-8 w-8 text-neutral-700"
-          >
-            ⋮
-          </button>
-          <WardrobeItemMenu
-            open={isMenuOpen}
-            onEdit={() => {
-              setIsMenuOpen(false)
-              void router.push(`/wardrobe/${item.id}/edit`)
-            }}
-            onDelete={() => {
-              setIsMenuOpen(false)
-              setIsDeleteOpen(true)
-            }}
-          />
+    <MobileLayout className="relative min-h-screen bg-neutral-100 pb-24">
+      <div className="px-4 pt-5 pb-3">
+        <div className="mb-3 flex items-center justify-between">
+          <Link href="/wardrobe" className="font-label-sm text-neutral-500">
+            ←
+          </Link>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsMenuOpen((prev) => !prev)}
+              className="flex h-6 w-6 items-center justify-center font-label-xl text-neutral-700"
+            >
+              ⋮
+            </button>
+            <WardrobeItemMenu
+              open={isMenuOpen}
+              onEdit={() => {
+                setIsMenuOpen(false)
+                void router.push(`/wardrobe/${item.id}/edit`)
+              }}
+              onDelete={() => {
+                setIsMenuOpen(false)
+                setIsDeleteOpen(true)
+              }}
+            />
+          </div>
         </div>
+
+        <section className="pb-4">
+          <div className="mx-auto flex h-[188px] items-center justify-center overflow-hidden">
+            {item.imageUrl ? (
+              <div className="relative h-full w-[180px]">
+                <Image
+                  src={item.imageUrl}
+                  alt={item.name}
+                  fill
+                  sizes="180px"
+                  className="object-contain"
+                />
+              </div>
+            ) : null}
+          </div>
+        </section>
       </div>
 
-      <section className="mb-4 rounded-[24px] bg-white p-4">
-        <div className="mx-auto flex aspect-square max-w-60 items-center justify-center rounded-[20px] bg-neutral-100 text-8xl">
-          {item.category === 'top' && '👕'}
-          {item.category === 'pants' && '👖'}
-          {item.category === 'skirt' && '🩳'}
-          {item.category === 'dress' && '👗'}
-          {item.category === 'outer' && '🧥'}
-          {item.category === 'shoes' && '👟'}
-        </div>
-      </section>
-
-      <section className="space-y-5 rounded-[28px] bg-white p-5">
+      <section className="min-h-[calc(100vh-248px)] rounded-t-[28px] bg-white px-4 pt-4 pb-24 shadow-[0_-2px_8px_rgba(15,23,42,0.04)]">
         <div>
-          <h1 className="text-h3 text-neutral-900">{item.name}</h1>
-          <p className="font-paragraph-sm mt-1 text-neutral-500">新增日期：{item.createdAt}</p>
+          <h1 className="text-h3 text-neutral-900">{item.brand} {item.name}</h1>
+          <p className="mt-1 font-paragraph-sm text-neutral-500">新增日期：{item.createdAt}</p>
         </div>
 
-        <WardrobeDetailSection title="類別">
-          <div className="font-label-xs inline-flex rounded-full bg-primary-900 px-3 py-1.5 text-white">
-            {wardrobeCategoryOptions.find((option) => option.key === item.category)?.label}
-          </div>
-        </WardrobeDetailSection>
+        <div className="mt-4 space-y-5">
+          <WardrobeDetailSection title="類別">
+            <div className="inline-flex rounded-full bg-primary-900 px-3 py-1 font-label-xs text-white">
+              {wardrobeCategoryOptions.find((option) => option.key === item.category)?.label}
+            </div>
+          </WardrobeDetailSection>
 
-        <WardrobeDetailSection title="場合">
-          <div className="flex flex-wrap gap-2">
-            {item.occasionKeys.map((key) => (
-              <span key={key} className="font-label-xs rounded-full bg-primary-900 px-3 py-1.5 text-white">
-                {wardrobeOccasionOptions.find((option) => option.key === key)?.label}
-              </span>
-            ))}
-          </div>
-        </WardrobeDetailSection>
+          <WardrobeDetailSection title="場合">
+            <div className="flex flex-wrap gap-2">
+              {item.occasionKeys.map((key) => (
+                <span key={key} className="rounded-full bg-primary-900 px-3 py-1 font-label-xs text-white">
+                  {wardrobeOccasionOptions.find((option) => option.key === key)?.label}
+                </span>
+              ))}
+            </div>
+          </WardrobeDetailSection>
 
-        <WardrobeDetailSection title="季節">
-          <div className="flex flex-wrap gap-2">
-            {item.seasonKeys.map((key) => (
-              <span key={key} className="font-label-xs rounded-full bg-primary-900 px-3 py-1.5 text-white">
-                {wardrobeSeasonOptions.find((option) => option.key === key)?.label}
-              </span>
-            ))}
-          </div>
-        </WardrobeDetailSection>
+          <WardrobeDetailSection title="季節">
+            <div className="flex flex-wrap gap-2">
+              {item.seasonKeys.map((key) => (
+                <span key={key} className="rounded-full bg-primary-900 px-3 py-1 font-label-xs text-white">
+                  {wardrobeSeasonOptions.find((option) => option.key === key)?.label}
+                </span>
+              ))}
+            </div>
+          </WardrobeDetailSection>
 
-        <WardrobeDetailSection title="色系">
-          <div className="flex flex-wrap gap-3">
-            {item.colorKeys.map((key) => {
-              const color = wardrobeColorOptions.find((option) => option.key === key)
-              if (!color) return null
+          <WardrobeDetailSection title="色系">
+            <div className="flex flex-wrap gap-3">
+              {item.colorKeys.map((key) => {
+                const color = wardrobeColorOptions.find((option) => option.key === key)
+                if (!color) return null
 
-              return (
-                <div key={key} className="space-y-1">
-                  <div className="grid h-18 w-18 grid-cols-2 overflow-hidden rounded-[16px] border border-neutral-200">
-                    <span style={{ backgroundColor: color.hex }} />
-                    <span style={{ backgroundColor: color.hex }} />
-                    <span style={{ backgroundColor: color.hex, opacity: 0.9 }} />
-                    <span style={{ backgroundColor: color.hex, opacity: 0.8 }} />
+                return (
+                  <div key={key}>
+                    <div className="grid h-[60px] w-[60px] grid-cols-2 overflow-hidden rounded-[10px] border border-neutral-300">
+                      <span style={{ backgroundColor: color.hex }} />
+                      <span style={{ backgroundColor: color.hex }} />
+                      <span style={{ backgroundColor: color.hex, opacity: 0.9 }} />
+                      <span style={{ backgroundColor: color.hex, opacity: 0.8 }} />
+                    </div>
+                    <span
+                      className={`mt-1 inline-flex rounded-full px-2 py-0.5 font-label-xxs-sb ${color.textClassName ?? 'text-white'}`}
+                      style={{ backgroundColor: color.hex }}
+                    >
+                      {color.label}
+                    </span>
                   </div>
-                  <span
-                    className={`font-label-xxs-sb inline-flex rounded-full px-2 py-1 ${color.textClassName ?? 'text-white'}`}
-                    style={{ backgroundColor: color.hex }}
-                  >
-                    {color.label}
-                  </span>
-                </div>
-              )
-            })}
-          </div>
-        </WardrobeDetailSection>
+                )
+              })}
+            </div>
+          </WardrobeDetailSection>
 
-        <WardrobeDetailSection title="品牌">
-          <span className="font-label-xs inline-flex rounded-full bg-primary-900 px-3 py-1.5 text-white">
-            {item.brand}
-          </span>
-        </WardrobeDetailSection>
+          <WardrobeDetailSection title="品牌">
+            <span className="inline-flex rounded-full bg-primary-900 px-3 py-1 font-label-xs text-white">
+              {item.brand}
+            </span>
+          </WardrobeDetailSection>
+        </div>
       </section>
 
       <DeleteClothingDialog

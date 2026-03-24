@@ -16,38 +16,40 @@ export const WardrobeColorPalette = ({
   }
 
   return (
-    <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
-      {wardrobeColorOptions.map((color) => {
-        const selected = selectedKeys.includes(color.key)
+    <div className="overflow-x-auto pb-1">
+      <div className="flex w-max gap-2">
+        {wardrobeColorOptions.map((color) => {
+          const selected = selectedKeys.includes(color.key)
 
-        return (
-          <button
-            key={color.key}
-            type="button"
-            onClick={() => toggleColor(color.key)}
-            className={`rounded-[16px] border p-2 transition-all ${selected
-                ? 'border-primary-900 bg-primary-100 shadow-[inset_0_0_0_1px_#0f172a]'
-                : 'border-neutral-200 bg-white'
-              }`}
-          >
-            <div className="overflow-hidden rounded-[12px] border border-white/50">
-              <div className="grid grid-cols-2">
-                <span className="aspect-square border border-white/70" style={{ backgroundColor: color.hex }} />
-                <span className="aspect-square border border-white/70" style={{ backgroundColor: color.hex }} />
-                <span className="aspect-square border border-white/70 opacity-90" style={{ backgroundColor: color.hex }} />
-                <span className="aspect-square border border-white/70 opacity-80" style={{ backgroundColor: color.hex }} />
-              </div>
-            </div>
-            <span
-              className={`font-label-xs mt-2 inline-flex rounded-full px-2 py-1 ${color.textClassName ?? 'text-white'
+          return (
+            <button
+              key={color.key}
+              type="button"
+              onClick={() => toggleColor(color.key)}
+              className={`rounded-[12px] p-1.5 transition-all ${selected
+                ? 'bg-[#C9B089]'
+                : 'bg-transparent'
                 }`}
-              style={{ backgroundColor: color.hex }}
             >
-              {color.label}
-            </span>
-          </button>
-        )
-      })}
+              <div className="overflow-hidden rounded-[10px] border border-neutral-300 bg-white">
+                <div className="grid h-[60px] w-[60px] grid-cols-2">
+                  <span className="border border-white/70" style={{ backgroundColor: color.hex }} />
+                  <span className="border border-white/70" style={{ backgroundColor: color.hex }} />
+                  <span className="border border-white/70 opacity-90" style={{ backgroundColor: color.hex }} />
+                  <span className="border border-white/70 opacity-80" style={{ backgroundColor: color.hex }} />
+                </div>
+              </div>
+              <span
+                className={`mt-1 inline-flex rounded-full px-2 py-0.5 font-label-xxs-sb ${color.textClassName ?? 'text-white'
+                  }`}
+                style={{ backgroundColor: color.hex }}
+              >
+                {color.label}
+              </span>
+            </button>
+          )
+        })}
+      </div>
     </div>
   )
 }

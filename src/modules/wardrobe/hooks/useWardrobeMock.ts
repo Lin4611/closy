@@ -19,12 +19,12 @@ const safeParseItems = (value: string | null) => {
 }
 
 const safeParseDraft = (value: string | null) => {
-  if (!value) return mockRecognitionDraft
+  if (!value) return null
 
   try {
     return JSON.parse(value) as WardrobeDraftItem
   } catch {
-    return mockRecognitionDraft
+    return null
   }
 }
 
@@ -86,7 +86,7 @@ export const useWardrobeMock = () => {
   }, [])
 
   const getRecognitionDraft = useCallback(() => {
-    if (typeof window === 'undefined') return mockRecognitionDraft
+    if (typeof window === 'undefined') return null
     return safeParseDraft(window.localStorage.getItem(RECOGNITION_DRAFT_STORAGE_KEY))
   }, [])
 

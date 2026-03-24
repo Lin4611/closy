@@ -1,46 +1,23 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { MobileLayout } from '@/modules/common/components/MobileLayout'
-import { RecognitionLoading } from '@/modules/wardrobe/components/RecognitionLoading'
-import { RecognitionSuccessToast } from '@/modules/wardrobe/components/RecognitionSuccessToast'
-import { mockRecognitionDraft } from '@/modules/wardrobe/data/mockWardrobeItems'
-import { useWardrobeMock } from '@/modules/wardrobe/hooks/useWardrobeMock'
 
 const WardrobeCameraPage = () => {
   const router = useRouter()
-  const { saveRecognitionDraft } = useWardrobeMock()
-  const [stage, setStage] = useState<'camera' | 'loading' | 'success'>('camera')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  useEffect(() => {
-    if (stage !== 'loading') return
+  const handleCapture = () => {
+    if (isSubmitting) return
 
-    const loadingTimer = window.setTimeout(() => {
-      setStage('success')
-    }, 1200)
-
-    const nextTimer = window.setTimeout(() => {
-      saveRecognitionDraft(mockRecognitionDraft)
-      void router.push('/wardrobe/new/review')
-    }, 2100)
-
-    return () => {
-      window.clearTimeout(loadingTimer)
-      window.clearTimeout(nextTimer)
-    }
-  }, [router, saveRecognitionDraft, stage])
-
-  if (stage === 'loading') {
-    return (
-      <MobileLayout>
-        <RecognitionLoading />
-      </MobileLayout>
-    )
+    setIsSubmitting(true)
+    void router.push('/wardrobe/new/processing')
   }
 
   return (
-    <MobileLayout className="relative min-h-screen bg-neutral-900 text-white">
+    <MobileLayout className="relative min-h-screen overflow-hidden bg-[#18181F] text-white">
       <header className="flex items-center justify-between px-4 pt-5 pb-3">
         <Link href="/wardrobe" className="font-label-sm text-white/80">
           ×
@@ -48,37 +25,43 @@ const WardrobeCameraPage = () => {
         <span className="w-4" />
       </header>
 
-      <div className="px-4 pt-2 pb-6">
-        <div className="rounded-[20px] bg-white/10 p-4 backdrop-blur-sm">
+      <div className="px-4 pt-1 pb-6">
+        <div className="rounded-none bg-[#D9D9D9] px-3 pt-12 pb-12">
           <button
             type="button"
-            onClick={() => setStage('loading')}
-            className="font-label-sm mx-auto mb-4 flex rounded-full bg-white px-4 py-2 text-neutral-900"
+            disabled={isSubmitting}
+            onClick={handleCapture}
+            className="mx-auto mb-3 flex h-10 items-center rounded-[10px] bg-primary-800 px-4 font-label-xs text-white disabled:opacity-60"
           >
-            請先拍攝一件上身衣服
+            請先拍攝一件上衣
           </button>
 
-          <div className="flex aspect-3/4 items-center justify-center rounded-[20px] bg-[#2A2E3A] text-8xl">
-            👕
+          <div className="relative mx-auto h-[198px] w-[154px]">
+            <Image
+              src="/wardrobe/tshirt.png"
+              alt="拍攝示意衣物"
+              fill
+              sizes="154px"
+              className="object-contain"
+            />
           </div>
+        </div>
 
-          <div className="mt-4 rounded-full bg-white/90 px-4 py-2 text-center font-paragraph-sm text-neutral-500">
-            小訣竅：在乾淨的背景上拍攝，辨識更快速！
-          </div>
+        <div className="mt-1 rounded-full bg-white/95 px-3 py-1.5 text-center font-label-xxs-r text-neutral-500">
+          小訣竅：在乾淨的背景上拍攝，辨識更快速！
         </div>
       </div>
 
-      <div className="absolute right-0 bottom-8 left-0 flex justify-center">
+      <div className="absolute right-0 bottom-5 left-0 flex justify-center">
         <button
           type="button"
-          onClick={() => setStage('loading')}
-          className="flex h-18 w-18 items-center justify-center rounded-full border-4 border-white bg-neutral-200 text-neutral-900 shadow-[0_10px_24px_rgba(0,0,0,0.3)]"
+          disabled={isSubmitting}
+          onClick={handleCapture}
+          className="flex h-[42px] w-[42px] items-center justify-center rounded-full border-2 border-white bg-[#D9D9D9] shadow-[0_6px_16px_rgba(0,0,0,0.28)] disabled:opacity-60"
         >
-          <span className="h-14 w-14 rounded-full border border-neutral-400 bg-white" />
+          <span className="h-[28px] w-[28px] rounded-full border border-neutral-500 bg-white" />
         </button>
       </div>
-
-      <RecognitionSuccessToast open={stage === 'success'} />
     </MobileLayout>
   )
 }

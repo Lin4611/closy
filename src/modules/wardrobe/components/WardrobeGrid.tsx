@@ -13,7 +13,7 @@ export const WardrobeGrid = ({ items, onDelete }: WardrobeGridProps) => {
   }
 
   return (
-    <section className="grid grid-cols-2 gap-x-5.75 gap-y-3 px-4">
+    <section className="grid grid-cols-2 gap-x-3 gap-y-3 px-4">
       {items.map((item) => (
         <WardrobeItemCard key={item.id} item={item} onDelete={onDelete} />
       ))}

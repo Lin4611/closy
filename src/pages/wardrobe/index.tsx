@@ -35,10 +35,10 @@ const WardrobePage = () => {
   }, [activeCategory, items])
 
   return (
-    <MobileLayout className="relative">
+    <MobileLayout className="relative pb-24">
       <WardrobeHeader />
 
-      <main className="relative pt-5 space-y-6">
+      <main className="relative pt-4 space-y-4">
         <WardrobeFilterChips
           activeCategory={activeCategory}
           counts={counts}
