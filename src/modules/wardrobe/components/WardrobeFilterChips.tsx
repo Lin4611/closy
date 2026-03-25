@@ -1,5 +1,7 @@
+import { cn } from '@/lib/utils'
+
 import { wardrobeCategoryOptions } from '../constants/categoryOptions'
-import { WardrobeCategoryKey } from '../types'
+import type { WardrobeCategoryKey } from '../types'
 
 type WardrobeFilterChipsProps = {
   activeCategory: WardrobeCategoryKey
@@ -23,12 +25,12 @@ export const WardrobeFilterChips = ({
             key={option.key}
             type="button"
             onClick={() => onChange(option.key)}
-            className={[
+            className={cn(
               'shrink-0 rounded-full border px-3 py-1 font-label-xs transition-colors',
               isActive
                 ? 'border-primary-900 bg-primary-900 text-white'
-                : 'border-neutral-300 bg-white text-neutral-500',
-            ].join(' ')}
+                : 'border-neutral-300 bg-white text-neutral-500'
+            )}
           >
             {option.label}({count})
           </button>
