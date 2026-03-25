@@ -1,8 +1,13 @@
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
+import { cn } from '@/lib/utils'
 import { WardrobeReviewForm } from '@/modules/wardrobe/components/WardrobeReviewForm'
+import {
+  RECOGNITION_ENTRY_KEY,
+  type RecognitionEntry,
+} from '@/modules/wardrobe/constants/recognition'
 import {
   mockAlbumRecognitionDraft,
   mockRecognitionDraft,
@@ -10,39 +15,41 @@ import {
 import { useWardrobeMock } from '@/modules/wardrobe/hooks/useWardrobeMock'
 import type { WardrobeDraftItem } from '@/modules/wardrobe/types'
 
-const RECOGNITION_ENTRY_KEY = 'closy:recognition-entry'
+const getRecognitionEntry = (): RecognitionEntry => {
+  if (typeof window === 'undefined') {
+    return 'camera'
+  }
+
+  return window.sessionStorage.getItem(RECOGNITION_ENTRY_KEY) === 'album' ? 'album' : 'camera'
+}
+
+const getInitialDraft = (
+  getRecognitionDraft: () => WardrobeDraftItem | null
+): WardrobeDraftItem => {
+  const savedDraft = getRecognitionDraft()
+
+  if (savedDraft) {
+    return savedDraft
+  }
+
+  return getRecognitionEntry() === 'album' ? mockAlbumRecognitionDraft : mockRecognitionDraft
+}
 
 const WardrobeReviewPage = () => {
   const router = useRouter()
   const { addItem, clearRecognitionDraft, getRecognitionDraft } = useWardrobeMock()
-  const [draft, setDraft] = useState<WardrobeDraftItem>(mockRecognitionDraft)
-  const [recognitionEntry, setRecognitionEntry] = useState<'camera' | 'album'>('camera')
+  const [draft, setDraft] = useState<WardrobeDraftItem>(() => getInitialDraft(getRecognitionDraft))
   const [isSuccessOpen, setIsSuccessOpen] = useState(false)
-
-  useEffect(() => {
-    const entry =
-      typeof window === 'undefined'
-        ? 'camera'
-        : ((window.sessionStorage.getItem(RECOGNITION_ENTRY_KEY) as 'camera' | 'album' | null) ??
-          'camera')
-
-    setRecognitionEntry(entry)
-
-    const savedDraft = getRecognitionDraft()
-
-    if (savedDraft) {
-      setDraft(savedDraft)
-      return
-    }
-
-    setDraft(entry === 'album' ? mockAlbumRecognitionDraft : mockRecognitionDraft)
-  }, [getRecognitionDraft])
 
   const isDisabled = !draft.name.trim() || !draft.brand.trim() || draft.colorKeys.length === 0
 
   const backHref = useMemo(() => {
-    return recognitionEntry === 'album' ? '/wardrobe/new/album' : '/wardrobe/new/camera'
-  }, [recognitionEntry])
+    if (!router.isReady) {
+      return '/wardrobe/new/camera'
+    }
+
+    return getRecognitionEntry() === 'album' ? '/wardrobe/new/album' : '/wardrobe/new/camera'
+  }, [router.isReady])
 
   const handleSave = () => {
     addItem(draft)
@@ -76,9 +83,10 @@ const WardrobeReviewPage = () => {
           type="button"
           disabled={isDisabled}
           onClick={handleSave}
-          className={`font-label-md h-11 w-full rounded-full ${
+          className={cn(
+            'h-11 w-full rounded-full font-label-md',
             isDisabled ? 'bg-neutral-300 text-neutral-500' : 'bg-primary-900 text-white'
-          }`}
+          )}
         >
           儲存
         </button>
@@ -87,11 +95,11 @@ const WardrobeReviewPage = () => {
       {isSuccessOpen ? (
         <div className="fixed inset-0 z-50 mx-auto flex w-full max-w-93.75 items-center justify-center bg-black/20 px-10">
           <div className="w-full rounded-[16px] bg-white px-5 pt-6 pb-5 shadow-[0_12px_32px_rgba(15,23,42,0.18)]">
-            <p className="font-label-md mb-5 text-center text-neutral-900">新增成功</p>
+            <p className="mb-5 text-center font-label-md text-neutral-900">新增成功</p>
             <button
               type="button"
               onClick={handleConfirm}
-              className="bg-primary-900 font-label-md h-10 w-full rounded-full text-white"
+              className="h-10 w-full rounded-full bg-primary-900 font-label-md text-white"
             >
               確認
             </button>

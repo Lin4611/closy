@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
 
-const RECOGNITION_ENTRY_KEY = 'closy:recognition-entry'
+import { RECOGNITION_ENTRY_KEY } from '@/modules/wardrobe/constants/recognition'
 
 const WardrobeCameraPage = () => {
   const router = useRouter()
