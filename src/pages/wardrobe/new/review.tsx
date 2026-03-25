@@ -8,7 +8,7 @@ import {
   mockRecognitionDraft,
 } from '@/modules/wardrobe/data/mockWardrobeItems'
 import { useWardrobeMock } from '@/modules/wardrobe/hooks/useWardrobeMock'
-import { WardrobeDraftItem } from '@/modules/wardrobe/types'
+import type { WardrobeDraftItem } from '@/modules/wardrobe/types'
 
 const RECOGNITION_ENTRY_KEY = 'closy:recognition-entry'
 
@@ -23,8 +23,8 @@ const WardrobeReviewPage = () => {
     const entry =
       typeof window === 'undefined'
         ? 'camera'
-        : (window.sessionStorage.getItem(RECOGNITION_ENTRY_KEY) as 'camera' | 'album' | null) ??
-        'camera'
+        : ((window.sessionStorage.getItem(RECOGNITION_ENTRY_KEY) as 'camera' | 'album' | null) ??
+          'camera')
 
     setRecognitionEntry(entry)
 
@@ -76,8 +76,9 @@ const WardrobeReviewPage = () => {
           type="button"
           disabled={isDisabled}
           onClick={handleSave}
-          className={`h-11 w-full rounded-full font-label-md ${isDisabled ? 'bg-neutral-300 text-neutral-500' : 'bg-primary-900 text-white'
-            }`}
+          className={`font-label-md h-11 w-full rounded-full ${
+            isDisabled ? 'bg-neutral-300 text-neutral-500' : 'bg-primary-900 text-white'
+          }`}
         >
           儲存
         </button>
@@ -86,11 +87,11 @@ const WardrobeReviewPage = () => {
       {isSuccessOpen ? (
         <div className="fixed inset-0 z-50 mx-auto flex w-full max-w-93.75 items-center justify-center bg-black/20 px-10">
           <div className="w-full rounded-[16px] bg-white px-5 pt-6 pb-5 shadow-[0_12px_32px_rgba(15,23,42,0.18)]">
-            <p className="mb-5 text-center font-label-md text-neutral-900">新增成功</p>
+            <p className="font-label-md mb-5 text-center text-neutral-900">新增成功</p>
             <button
               type="button"
               onClick={handleConfirm}
-              className="h-10 w-full rounded-full bg-primary-900 font-label-md text-white"
+              className="bg-primary-900 font-label-md h-10 w-full rounded-full text-white"
             >
               確認
             </button>
