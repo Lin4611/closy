@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { RecognitionSuccessToast } from '@/modules/wardrobe/components/RecognitionSuccessToast'
 import { WardrobeReviewForm } from '@/modules/wardrobe/components/WardrobeReviewForm'
 import { useWardrobeMock } from '@/modules/wardrobe/hooks/useWardrobeMock'
-import { WardrobeDraftItem } from '@/modules/wardrobe/types'
+import type { WardrobeDraftItem } from '@/modules/wardrobe/types'
 
 const WardrobeEditPage = () => {
   const router = useRouter()
@@ -74,8 +74,9 @@ const WardrobeEditPage = () => {
               void router.push(`/wardrobe/${id}`)
             }, 900)
           }}
-          className={`h-11 w-full rounded-full font-label-md ${isDisabled ? 'bg-neutral-300 text-neutral-500' : 'bg-primary-900 text-white'
-            }`}
+          className={`font-label-md h-11 w-full rounded-full ${
+            isDisabled ? 'bg-neutral-300 text-neutral-500' : 'bg-primary-900 text-white'
+          }`}
         >
           儲存
         </button>
