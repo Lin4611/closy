@@ -8,7 +8,7 @@ import { WardrobeFilterChips } from '@/modules/wardrobe/components/WardrobeFilte
 import { WardrobeGrid } from '@/modules/wardrobe/components/WardrobeGrid'
 import { WardrobeHeader } from '@/modules/wardrobe/components/WardrobeHeader'
 import { useWardrobeMock } from '@/modules/wardrobe/hooks/useWardrobeMock'
-import { WardrobeCategoryKey } from '@/modules/wardrobe/types'
+import type { WardrobeCategoryKey } from '@/modules/wardrobe/types'
 
 const WardrobePage = () => {
   const { items, deleteItem } = useWardrobeMock()
@@ -24,7 +24,7 @@ const WardrobePage = () => {
         acc[item.category] = (acc[item.category] ?? 0) + 1
         return acc
       },
-      {} as Partial<Record<WardrobeCategoryKey, number>>
+      {} as Partial<Record<WardrobeCategoryKey, number>>,
     )
   }, [items])
 

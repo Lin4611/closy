@@ -1,6 +1,6 @@
+import { EllipsisVertical, Package } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { EllipsisVertical, Package } from 'lucide-react'
 import { useRouter } from 'next/router'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
@@ -108,12 +108,12 @@ const WardrobeDetailPage = () => {
             <h1 className="text-h3 text-neutral-900">
               {item.brand} {item.name}
             </h1>
-            <p className="mt-1 font-paragraph-sm text-neutral-500">新增日期：{item.createdAt}</p>
+            <p className="font-paragraph-sm mt-1 text-neutral-500">新增日期：{item.createdAt}</p>
           </div>
 
           <div className="mt-5 space-y-5">
             <WardrobeDetailSection title="類別">
-              <div className="inline-flex rounded-full bg-primary-900 px-3 py-1 font-label-xs text-white">
+              <div className="bg-primary-900 font-label-xs inline-flex rounded-full px-3 py-1 text-white">
                 {wardrobeCategoryOptions.find((option) => option.key === item.category)?.label}
               </div>
             </WardrobeDetailSection>
@@ -123,7 +123,7 @@ const WardrobeDetailPage = () => {
                 {item.occasionKeys.map((key) => (
                   <span
                     key={key}
-                    className="rounded-full bg-primary-900 px-3 py-1 font-label-xs text-white"
+                    className="bg-primary-900 font-label-xs rounded-full px-3 py-1 text-white"
                   >
                     {wardrobeOccasionOptions.find((option) => option.key === key)?.label}
                   </span>
@@ -136,7 +136,7 @@ const WardrobeDetailPage = () => {
                 {item.seasonKeys.map((key) => (
                   <span
                     key={key}
-                    className="rounded-full bg-primary-900 px-3 py-1 font-label-xs text-white"
+                    className="bg-primary-900 font-label-xs rounded-full px-3 py-1 text-white"
                   >
                     {wardrobeSeasonOptions.find((option) => option.key === key)?.label}
                   </span>
@@ -157,10 +157,10 @@ const WardrobeDetailPage = () => {
 
             <WardrobeDetailSection title="品牌">
               <div className="flex flex-wrap gap-2">
-                <span className="inline-flex rounded-full bg-primary-900 px-3 py-1 font-label-xs text-white">
+                <span className="bg-primary-900 font-label-xs inline-flex rounded-full px-3 py-1 text-white">
                   {item.brand}
                 </span>
-                <span className="inline-flex items-center font-label-xs text-neutral-500">
+                <span className="font-label-xs inline-flex items-center text-neutral-500">
                   新增品牌 +
                 </span>
               </div>
