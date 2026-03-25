@@ -25,6 +25,8 @@ const buttonVariants = cva(
           'border-[0.5px] border-neutral-300 bg-white text-neutral-800 data-[state=checked]:border-neutral-900 data-[state=checked]:border-2',
         oauth:
           'bg-white text-neutral-500 shadow-[0px_2px_3px_0px_#0000002B,0px_0px_3px_0px_#00000015]',
+        daySwitch_active: 'bg-primary-800 text-white',
+        daySwitch_inactive: 'bg-none text-neutral-500',
       },
       size: {
         default:
@@ -38,6 +40,7 @@ const buttonVariants = cva(
         'icon-lg': 'size-10',
         xl: 'h-14 rounded-[30px] font-paragraph-md',
         auth: 'h-[54px] rounded-[20px]',
+        daySwitch: 'h-8.75 w-24 rounded-[24px] font-label-md',
       },
     },
     defaultVariants: {
