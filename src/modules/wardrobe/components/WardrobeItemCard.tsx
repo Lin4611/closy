@@ -1,9 +1,10 @@
+import { EllipsisVertical, Package } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { EllipsisVertical, Package } from 'lucide-react'
+import { useRouter } from 'next/router'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-import { WardrobeItem } from '../types'
+import type { WardrobeItem } from '../types'
 import { WardrobeItemMenu } from './WardrobeItemMenu'
 
 type WardrobeItemCardProps = {
@@ -12,6 +13,7 @@ type WardrobeItemCardProps = {
 }
 
 export const WardrobeItemCard = ({ item, onDelete }: WardrobeItemCardProps) => {
+  const router = useRouter()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement | null>(null)
 
@@ -74,7 +76,7 @@ export const WardrobeItemCard = ({ item, onDelete }: WardrobeItemCardProps) => {
             align="card"
             onEdit={() => {
               setIsMenuOpen(false)
-              window.location.href = `/wardrobe/${item.id}/edit`
+              void router.push(`/wardrobe/${item.id}/edit`)
             }}
             onDelete={() => {
               setIsMenuOpen(false)
