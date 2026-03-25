@@ -2,7 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 
-const RECOGNITION_ENTRY_KEY = 'closy:recognition-entry'
+import { RECOGNITION_ENTRY_KEY } from '@/modules/wardrobe/constants/recognition'
 
 const WardrobeAlbumPage = () => {
     const router = useRouter()

@@ -2,13 +2,12 @@ import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 
 import { RecognitionLoading } from '@/modules/wardrobe/components/RecognitionLoading'
+import { RECOGNITION_ENTRY_KEY } from '@/modules/wardrobe/constants/recognition'
 import {
   mockAlbumRecognitionDraft,
   mockRecognitionDraft,
 } from '@/modules/wardrobe/data/mockWardrobeItems'
 import { useWardrobeMock } from '@/modules/wardrobe/hooks/useWardrobeMock'
-
-const RECOGNITION_ENTRY_KEY = 'closy:recognition-entry'
 
 const WardrobeProcessingPage = () => {
   const router = useRouter()

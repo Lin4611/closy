@@ -1,13 +1,13 @@
 import Image from 'next/image'
-import { ChangeEvent } from 'react'
+import type { ChangeEvent } from 'react'
 
-import { wardrobeCategoryOptions } from '../constants/categoryOptions'
-import { wardrobeOccasionOptions } from '../constants/occasionOptions'
-import { wardrobeSeasonOptions } from '../constants/seasonOptions'
-import { WardrobeDraftItem } from '../types'
 import { WardrobeColorPalette } from './WardrobeColorPalette'
 import { WardrobeDetailSection } from './WardrobeDetailSection'
 import { WardrobeTagGroup } from './WardrobeTagGroup'
+import { wardrobeCategoryOptions } from '../constants/categoryOptions'
+import { wardrobeOccasionOptions } from '../constants/occasionOptions'
+import { wardrobeSeasonOptions } from '../constants/seasonOptions'
+import type { WardrobeDraftItem } from '../types'
 
 type WardrobeReviewFormProps = {
   value: WardrobeDraftItem
@@ -83,7 +83,7 @@ export const WardrobeReviewForm = ({ value, onChange }: WardrobeReviewFormProps)
           />
         </WardrobeDetailSection>
 
-        <WardrobeDetailSection title="場合" required>
+        <WardrobeDetailSection title="場合" multiple>
           <WardrobeTagGroup
             options={wardrobeOccasionOptions}
             selectedKeys={value.occasionKeys}
@@ -91,7 +91,7 @@ export const WardrobeReviewForm = ({ value, onChange }: WardrobeReviewFormProps)
           />
         </WardrobeDetailSection>
 
-        <WardrobeDetailSection title="季節" required>
+        <WardrobeDetailSection title="季節" multiple>
           <WardrobeTagGroup
             options={wardrobeSeasonOptions}
             selectedKeys={value.seasonKeys}
@@ -117,7 +117,7 @@ export const WardrobeReviewForm = ({ value, onChange }: WardrobeReviewFormProps)
             </button>
             <button
               type="button"
-              className="inline-flex h-8 items-center rounded-full text-neutral-500 font-label-xs"
+              className="inline-flex h-8 items-center font-label-xs text-neutral-500"
               onClick={(event) => event.preventDefault()}
             >
               新增品牌 +
