@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
 
 import { AppShell } from '@/modules/common/components/AppShell'
-import { AddClothingSheet } from '@/modules/wardrobe/components/AddClothingSheet'
 import { DeleteClothingDialog } from '@/modules/wardrobe/components/DeleteClothingDialog'
 import { DeleteSuccessDialog } from '@/modules/wardrobe/components/DeleteSuccessDialog'
 import { WardrobeFilterChips } from '@/modules/wardrobe/components/WardrobeFilterChips'
@@ -13,7 +12,6 @@ import type { WardrobeCategoryKey } from '@/modules/wardrobe/types'
 const WardrobePage = () => {
   const { items, deleteItem } = useWardrobeMock()
   const [activeCategory, setActiveCategory] = useState<WardrobeCategoryKey>('all')
-  const [isSheetOpen, setIsSheetOpen] = useState(false)
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
   const [isDeleteSuccessOpen, setIsDeleteSuccessOpen] = useState(false)
 
@@ -34,7 +32,7 @@ const WardrobePage = () => {
   }, [activeCategory, items])
 
   return (
-    <AppShell activeTab="wardrobe" onAddClick={() => setIsSheetOpen(true)}>
+    <AppShell activeTab="wardrobe">
       <div className="relative">
         <WardrobeHeader />
 
@@ -47,8 +45,6 @@ const WardrobePage = () => {
 
           <WardrobeGrid items={filteredItems} onDelete={setDeleteTargetId} />
         </main>
-
-        <AddClothingSheet open={isSheetOpen} onClose={() => setIsSheetOpen(false)} />
 
         <DeleteClothingDialog
           open={Boolean(deleteTargetId)}
