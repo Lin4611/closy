@@ -1,3 +1,5 @@
+import { cn } from '@/lib/utils'
+
 type WardrobeItemMenuProps = {
   open: boolean
   align?: 'card' | 'detail'
@@ -15,10 +17,10 @@ export const WardrobeItemMenu = ({
 
   return (
     <div
-      className={[
+      className={cn(
         'absolute z-30 min-w-22 overflow-hidden rounded-[14px] bg-white py-1 shadow-[0_8px_20px_rgba(15,23,42,0.14)]',
-        align === 'card' ? 'right-0 bottom-7' : 'top-8 right-0',
-      ].join(' ')}
+        align === 'card' ? 'right-0 bottom-7' : 'top-8 right-0'
+      )}
     >
       <button
         type="button"
