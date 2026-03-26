@@ -23,7 +23,7 @@ export const OccasionSelect = ({
 }: OccasionSelectProps) => {
   return (
     <Select value={value} onValueChange={onValueChange}>
-      <SelectTrigger className="font-paragraph-sm h-9 min-w-20 rounded-[20px] border-none bg-neutral-100 px-4 py-2 text-neutral-500">
+      <SelectTrigger className="font-paragraph-sm h-10 min-w-20 rounded-[20px] border-none bg-neutral-100 px-4 py-2 text-neutral-500">
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent

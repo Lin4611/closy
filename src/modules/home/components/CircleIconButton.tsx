@@ -23,13 +23,10 @@ export const CircleIconButton = ({
 
   const enabledClassName =
     kind === 'like'
-      ? 'bg-primary-800 text-white active:bg-primary-800 active:text-neutral-400'
-      : 'bg-white text-neutral-900 active:bg-white active:text-neutral-400'
+      ? 'bg-white text-[#FF8B8B] active:bg-[#FF5656] active:text-white'
+      : 'bg-white text-neutral-900 active:bg-neutral-800 active:text-neutral-100'
 
-  const disabledClassName =
-    kind === 'like'
-      ? 'bg-neutral-200 text-neutral-400 opacity-100 shadow-[0px_4px_4px_0px_#18181B14]'
-      : 'bg-neutral-100 text-neutral-400 opacity-100 shadow-[0px_4px_4px_0px_#18181B14]'
+  const disabledClassName = 'bg-neutral-200 text-neutral-400'
   return (
     <Button
       aria-label={ariaLabel}
@@ -38,7 +35,13 @@ export const CircleIconButton = ({
       size="circle"
       disabled={disabled}
     >
-      <Icon className="size-[28px]" strokeWidth={2} />
+      <Icon
+        className={cn(
+          'size-[28px] transition-none',
+          kind === 'like' && 'fill-none group-active/button:fill-current',
+        )}
+        strokeWidth={2}
+      />
     </Button>
   )
 }

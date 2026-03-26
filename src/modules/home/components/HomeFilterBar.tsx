@@ -1,9 +1,19 @@
+import { cn } from '@/lib/utils'
+
 import { DaySwitch } from './DaySwitch'
 import { OccasionSelect } from './OccasionSelect'
 
-export const HomeFilterBar = () => {
+type HomeFilterBarProps = {
+  className?: string
+}
+export const HomeFilterBar = ({ className }: HomeFilterBarProps) => {
   return (
-    <div className="flex h-16 w-full items-center justify-between bg-white px-4 py-[14.5px]">
+    <div
+      className={cn(
+        'flex h-16 w-full items-center justify-between bg-white px-4 py-[10.5px]',
+        className,
+      )}
+    >
       <DaySwitch />
       <OccasionSelect />
     </div>

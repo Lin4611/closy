@@ -41,7 +41,7 @@ const buttonVariants = cva(
         xl: 'h-14 rounded-[30px] font-paragraph-md',
         auth: 'h-[54px] rounded-[20px]',
         daySwitch: 'h-8.75 w-24 rounded-[24px] font-label-md',
-        circle: 'rounded-full size-12',
+        circle: 'rounded-full size-15',
       },
     },
     defaultVariants: {
