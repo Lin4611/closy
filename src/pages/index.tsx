@@ -7,7 +7,7 @@ const SplashPage = () => {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      const isLoggedIn = false
+      const isLoggedIn = true
       if (isLoggedIn) {
         router.replace('/home')
       } else {
