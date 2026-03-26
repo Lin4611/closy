@@ -10,7 +10,7 @@ export const HomeFilterBar = ({ className }: HomeFilterBarProps) => {
   return (
     <div
       className={cn(
-        'flex h-16 w-full items-center justify-between bg-white px-4 py-[10.5px]',
+        'flex h-16 w-full max-w-93.75 items-center justify-between bg-white px-4 py-[10.5px] shadow-[0px_1px_3px_0px_#18181B0D]',
         className,
       )}
     >

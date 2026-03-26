@@ -24,12 +24,12 @@ export const HomeOutfitPreview = ({ src, alt }: HomeOutfitPreviewProps) => {
     }, 3000)
   }
   return (
-    <div className="relative flex w-full flex-col items-center justify-center pt-5">
-      <Image src={src} alt={alt} width={130} height={484} />
+    <div className="relative flex w-full flex-col items-center justify-center">
+      <Image src={src} alt={alt} width={126} height={440} />
       <div className="absolute right-4 bottom-16">
         <AdjustOutfitButton expanded={isAdjustPromptOpen} onClick={() => {}} disabled={false} />
       </div>
-      <div className="absolute bottom-0 left-1/2 flex w-full max-w-[343px] -translate-x-1/2 items-center justify-between">
+      <div className="absolute bottom-0 left-1/2 flex w-full max-w-[283px] -translate-x-1/2 items-center justify-between">
         <CircleIconButton
           kind="dislike"
           icon={X}
