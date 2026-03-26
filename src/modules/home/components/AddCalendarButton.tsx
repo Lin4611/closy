@@ -9,7 +9,7 @@ export const AddCalendarButton = ({ onClick }: AddCalendarButtonProps) => {
     <button
       type="button"
       onClick={onClick}
-      aria-label="新增衣物"
+      aria-label="新增行事曆"
       className="bg-primary-200 flex size-11 items-center justify-center rounded-full"
     >
       <Plus className="text-primary-800" size={24} strokeWidth={2} />
