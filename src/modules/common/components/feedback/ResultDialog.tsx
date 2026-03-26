@@ -6,7 +6,7 @@ type ResultDialogProps = {
     message: string
     confirmText: string
     onConfirm: () => void
-    onClose?: () => void
+    onClose: () => void
     ariaLabel: string
     widthClassName?: string
     contentClassName?: string
@@ -33,7 +33,7 @@ export const ResultDialog = ({
             <button
                 type="button"
                 className="absolute inset-0 w-full"
-                onClick={closeOnOverlayClick ? onClose ?? onConfirm : undefined}
+                onClick={closeOnOverlayClick ? onClose : undefined}
                 aria-label={ariaLabel}
             >
                 <Overlay />

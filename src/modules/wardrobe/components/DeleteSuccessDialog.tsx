@@ -12,6 +12,7 @@ export const DeleteSuccessDialog = ({ open, onClose }: DeleteSuccessDialogProps)
       message="已刪除此件衣服"
       confirmText="確定"
       onConfirm={onClose}
+      onClose={onClose}
       ariaLabel="close success dialog"
     />
   )
