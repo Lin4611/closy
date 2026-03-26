@@ -32,9 +32,19 @@ export const AlertDialog = ({
                 <Overlay />
             </button>
 
-            <section className="absolute top-1/2 left-1/2 w-76 -translate-x-1/2 -translate-y-1/2 rounded-[16px] bg-white px-5 pt-5 pb-4 text-center shadow-[0_8px_24px_rgba(15,23,42,0.18)]">
-                <h2 className="font-label-xl text-neutral-900">{title}</h2>
-                <p className="mt-2 mb-5 font-paragraph-sm text-neutral-600">{description}</p>
+            <section
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+                className="absolute top-1/2 left-1/2 w-76 -translate-x-1/2 -translate-y-1/2 rounded-[16px] bg-white px-5 pt-5 pb-4 text-center shadow-[0_8px_24px_rgba(15,23,42,0.18)]"
+            >
+                <h2 id="alert-dialog-title" className="font-label-xl text-neutral-900">
+                    {title}
+                </h2>
+                <p id="alert-dialog-description" className="mt-2 mb-5 font-paragraph-sm text-neutral-600">
+                    {description}
+                </p>
 
                 <div className="space-y-2">
                     <button
