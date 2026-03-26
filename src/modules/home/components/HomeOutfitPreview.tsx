@@ -1,39 +1,22 @@
 import { Heart, X } from 'lucide-react'
 import Image from 'next/image'
-import { useRef, useState } from 'react'
 
-import { AdjustOutfitButton } from './AdjustOutfitButton'
 import { CircleIconButton } from './CircleIconButton'
 
 type HomeOutfitPreviewProps = {
   src: string
   alt: string
+  onDislikeClick?: () => void
 }
-export const HomeOutfitPreview = ({ src, alt }: HomeOutfitPreviewProps) => {
-  const [isAdjustPromptOpen, setIsAdjustPromptOpen] = useState(false)
-  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const handleDislikeClick = () => {
-    setIsAdjustPromptOpen(true)
-
-    if (hideTimerRef.current) {
-      clearTimeout(hideTimerRef.current)
-    }
-
-    hideTimerRef.current = setTimeout(() => {
-      setIsAdjustPromptOpen(false)
-    }, 3000)
-  }
+export const HomeOutfitPreview = ({ src, alt, onDislikeClick }: HomeOutfitPreviewProps) => {
   return (
     <div className="relative flex w-full flex-col items-center justify-center">
       <Image src={src} alt={alt} width={126} height={440} />
-      <div className="absolute right-4 bottom-16">
-        <AdjustOutfitButton expanded={isAdjustPromptOpen} onClick={() => {}} disabled={false} />
-      </div>
       <div className="absolute bottom-0 left-1/2 flex w-full max-w-[283px] -translate-x-1/2 items-center justify-between">
         <CircleIconButton
           kind="dislike"
           icon={X}
-          onClick={handleDislikeClick}
+          onClick={onDislikeClick}
           ariaLabel="不喜歡這套穿搭"
         />
         <CircleIconButton kind="like" icon={Heart} onClick={() => {}} ariaLabel="喜歡這套穿搭" />
