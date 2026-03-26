@@ -11,7 +11,7 @@ export const bottomNavItems: TBottomNavItem[] = [
   {
     id: 'home',
     label: '首頁',
-    href: '/',
+    href: '/home',
     icon: House,
   },
   {
