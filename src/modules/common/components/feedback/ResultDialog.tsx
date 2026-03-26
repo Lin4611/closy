@@ -1,3 +1,4 @@
+import { cn } from '@/lib/utils'
 import { Overlay } from '@/modules/common/components/Overlay'
 
 type ResultDialogProps = {
@@ -5,6 +6,7 @@ type ResultDialogProps = {
     message: string
     confirmText: string
     onConfirm: () => void
+    onClose?: () => void
     ariaLabel: string
     widthClassName?: string
     contentClassName?: string
@@ -17,6 +19,7 @@ export const ResultDialog = ({
     message,
     confirmText,
     onConfirm,
+    onClose,
     ariaLabel,
     widthClassName = 'w-69',
     contentClassName = 'px-5 py-7',
@@ -30,20 +33,24 @@ export const ResultDialog = ({
             <button
                 type="button"
                 className="absolute inset-0 w-full"
-                onClick={closeOnOverlayClick ? onConfirm : undefined}
+                onClick={closeOnOverlayClick ? onClose ?? onConfirm : undefined}
                 aria-label={ariaLabel}
             >
                 <Overlay />
             </button>
 
             <section
-                className={`absolute top-1/2 left-1/2 ${widthClassName} -translate-x-1/2 -translate-y-1/2 rounded-[16px] bg-white text-center shadow-[0_8px_24px_rgba(15,23,42,0.18)] ${contentClassName}`}
+                className={cn(
+                    'absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-[16px] bg-white text-center shadow-[0_8px_24px_rgba(15,23,42,0.18)]',
+                    widthClassName,
+                    contentClassName,
+                )}
             >
                 <p className="mb-4 font-label-sm text-neutral-700">{message}</p>
                 <button
                     type="button"
                     onClick={onConfirm}
-                    className={`w-full font-label-sm ${buttonClassName}`}
+                    className={cn('w-full font-label-sm', buttonClassName)}
                 >
                     {confirmText}
                 </button>
