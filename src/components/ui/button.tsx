@@ -9,7 +9,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: 'bg-primary text-primary-foreground hover:bg-primary/80 text-sm font-medium',
+        default: 'bg-primary text-primary-foreground text-sm font-medium',
         outline:
           'border-border bg-input/30 hover:bg-input/50 hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground text-sm font-medium',
         secondary:
@@ -41,6 +41,7 @@ const buttonVariants = cva(
         xl: 'h-14 rounded-[30px] font-paragraph-md',
         auth: 'h-[54px] rounded-[20px]',
         daySwitch: 'h-8.75 w-24 rounded-[24px] font-label-md',
+        circle: 'rounded-full size-12',
       },
     },
     defaultVariants: {
