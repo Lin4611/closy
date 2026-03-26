@@ -17,6 +17,8 @@ export const Toast = ({ open, message, tone = 'default' }: ToastProps) => {
 
     return (
         <div
+            role="status"
+            aria-live="polite"
             className={cn(
                 'fixed top-1/2 left-1/2 z-50 -translate-x-1/2 -translate-y-1/2 rounded-[12px] px-4 py-3 shadow-[0_8px_18px_rgba(15,23,42,0.12)]',
                 toneClassNameMap[tone],

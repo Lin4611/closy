@@ -33,8 +33,15 @@ export const AddClothingSheet = ({ open, onClose }: AddClothingSheetProps) => {
                 <Overlay />
             </button>
 
-            <section className="absolute right-0 bottom-0 left-0 rounded-t-[28px] bg-white px-6 pt-6 pb-8 shadow-[0_-8px_24px_rgba(15,23,42,0.08)]">
-                <h2 className="mb-5 text-center font-label-xxl text-neutral-900">選擇新增方式</h2>
+            <section
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="add-clothing-sheet-title"
+                className="absolute right-0 bottom-0 left-0 rounded-t-[28px] bg-white px-6 pt-6 pb-8 shadow-[0_-8px_24px_rgba(15,23,42,0.08)]"
+            >
+                <h2 id="add-clothing-sheet-title" className="mb-5 text-center font-label-xxl text-neutral-900">
+                    選擇新增方式
+                </h2>
                 <div className="space-y-3">
                     <button
                         type="button"

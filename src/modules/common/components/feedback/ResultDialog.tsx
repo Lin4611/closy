@@ -40,13 +40,18 @@ export const ResultDialog = ({
             </button>
 
             <section
+                role="dialog"
+                aria-modal="true"
+                aria-describedby="result-dialog-message"
                 className={cn(
                     'absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-[16px] bg-white text-center shadow-[0_8px_24px_rgba(15,23,42,0.18)]',
                     widthClassName,
                     contentClassName,
                 )}
             >
-                <p className="mb-4 font-label-sm text-neutral-700">{message}</p>
+                <p id="result-dialog-message" className="mb-4 font-label-sm text-neutral-700">
+                    {message}
+                </p>
                 <button
                     type="button"
                     onClick={onConfirm}
