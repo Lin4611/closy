@@ -16,22 +16,20 @@ const Home = () => {
       hideTimerRef.current = null
     }
   }
-
-  const showAdjustPrompt = (duration: number) => {
-    setIsAdjustPromptOpen(true)
-    clearHideTimer()
-
+  const setHideTimer = (duration: number) => {
     hideTimerRef.current = setTimeout(() => {
       setIsAdjustPromptOpen(false)
       hideTimerRef.current = null
     }, duration)
   }
+  const showAdjustPrompt = (duration: number) => {
+    setIsAdjustPromptOpen(true)
+    clearHideTimer()
+    setHideTimer(duration)
+  }
 
   useEffect(() => {
-    hideTimerRef.current = setTimeout(() => {
-      setIsAdjustPromptOpen(false)
-      hideTimerRef.current = null
-    }, 2000)
+    setHideTimer(2000)
 
     return () => {
       clearHideTimer()
