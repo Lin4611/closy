@@ -17,10 +17,10 @@ export const AdjustOutfitButton = ({
   ariaLabel = '調整穿搭',
 }: AdjustOutfitButtonProps) => {
   const baseClassName =
-    'rounded-full transition-all duration-300  ease-in-out shadow-[0px_2px_8px_0px_#18181B1F] bg-neutral-100 text-neutral-600'
+    'rounded-full transition-all duration-300  ease-in-out shadow-[0px_2px_8px_0px_#18181B1F] bg-neutral-500 text-neutral-100'
   const expandedClassName = expanded
-    ? 'w-[212px] justify-center gap-1 px-7.5 py-2'
-    : 'size-12 justify-center p-0'
+    ? 'w-[212px] justify-center gap-1 px-7.5  py-2 bg-neutral-100 text-neutral-400'
+    : 'size-10 justify-center p-0'
   const disabledClassName = 'bg-neutral-200 text-neutral-400 opacity-100'
   return (
     <Button

@@ -14,14 +14,14 @@ export const WeatherSummaryCard = ({
   iconSrc,
 }: WeatherSummaryCardProps) => {
   return (
-    <section className="flex h-16 w-full max-w-[124px] flex-col items-center justify-center rounded-[16px] bg-white px-[11px] py-1 shadow-[0px_4px_12px_0px_#18181B1F]">
-      <div className="flex w-full items-center justify-between">
-        <Image src={iconSrc} alt={conditonLabel} width={36} height={36} />
-        <p className="font-h3">{temperature}°C</p>
+    <section className="flex h-33.75 w-full max-w-15 flex-col items-start justify-between px-0.5">
+      <div className="flex w-full flex-col items-center justify-between">
+        <Image src={iconSrc} alt={conditonLabel} width={40} height={40} />
+        <p className="font-paragraph-sm text-neutral-800">{conditonLabel}</p>
       </div>
-      <div className="flex w-full items-center justify-between px-[5px]">
-        <p className="font-paragraph-xs text-neutral-500">{conditonLabel}</p>
-        <p className="font-paragraph-xs text-neutral-800">{CityLabel}</p>
+      <div className="flex w-full flex-col items-start justify-between px-[3px]">
+        <p className="font-h3">{temperature}°</p>
+        <p className="font-paragraph-sm text-neutral-800">{CityLabel}</p>
       </div>
     </section>
   )
