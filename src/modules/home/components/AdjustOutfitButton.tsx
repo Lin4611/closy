@@ -19,7 +19,7 @@ export const AdjustOutfitButton = ({
   const baseClassName =
     'rounded-full transition-all duration-300  ease-in-out shadow-[0px_2px_8px_0px_#18181B1F] bg-neutral-500 text-neutral-100'
   const expandedClassName = expanded
-    ? 'w-[212px] justify-center gap-1 px-7.5  py-2 bg-neutral-100 text-neutral-400'
+    ? 'max-w-[212px] min-w-0 justify-center gap-1 px-7.5  py-2 bg-neutral-100 text-neutral-600'
     : 'size-10 justify-center p-0'
   const disabledClassName = 'bg-neutral-200 text-neutral-400 opacity-100'
   return (
@@ -27,12 +27,20 @@ export const AdjustOutfitButton = ({
       onClick={onClick}
       aria-label={ariaLabel}
       disabled={disabled}
-      className={cn(baseClassName, expandedClassName, disabled && disabledClassName)}
+      className={cn(
+        baseClassName,
+        expandedClassName,
+        'overflow-hidden',
+        disabled && disabledClassName,
+      )}
     >
       <BotMessageSquare className="size-6" strokeWidth={2} />
       {expanded && (
         <span
-          className={cn('font-label-sm ml-1', disabled ? 'text-neutral-400' : 'text-neutral-600')}
+          className={cn(
+            'font-label-sm ml-1 min-w-0',
+            disabled ? 'text-neutral-400' : 'text-neutral-600',
+          )}
         >
           想調整這套穿搭嗎？
         </span>
