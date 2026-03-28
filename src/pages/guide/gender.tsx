@@ -39,7 +39,9 @@ const Gender = () => {
       </section>
       <PrimaryButton
         content="繼續"
-        onClick={() => {}}
+        onClick={() => {
+          router.push('/guide/add-top')
+        }}
         disabled={!selectedGender}
         className="mt-auto"
       />
