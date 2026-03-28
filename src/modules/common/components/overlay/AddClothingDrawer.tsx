@@ -7,6 +7,7 @@ type AddClothingDrawerProps = {
   onCameraClick?: () => void
   onAlbumClick?: () => void
   dismissible?: boolean
+  context?: string
 }
 
 export const AddClothingDrawer = ({
@@ -15,6 +16,7 @@ export const AddClothingDrawer = ({
   onCameraClick,
   onAlbumClick,
   dismissible = false,
+  context,
 }: AddClothingDrawerProps) => {
   return (
     <Drawer open={open} onOpenChange={onOpenChange} dismissible={dismissible}>
@@ -29,8 +31,8 @@ export const AddClothingDrawer = ({
           className="absolute inset-0 z-10 rounded-t-[40px] bg-[#191B23]/50"
         />
 
-        <div className="absolute top-[32px] left-1/2 z-30 -translate-x-1/2">
-          <GuideToolTip text="請選擇新增方式" side="top" />
+        <div className="absolute top-[32px] left-1/2 z-30 max-w-[248px] -translate-x-1/2">
+          <GuideToolTip text={context || '請選擇新增方式'} side="top" />
         </div>
 
         <div className="relative z-20 flex flex-col gap-5 pt-10">

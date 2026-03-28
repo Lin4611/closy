@@ -15,7 +15,7 @@ const arrowPositionClass = {
 export const GuideToolTip = ({ text, side = 'top' }: GuideToolTipProps) => {
   return (
     <div className="bg-primary-800 relative inline-flex w-fit max-w-[248px] rounded-[12px] px-4 py-3 shadow-[0px_4px_8px_0px_rgba(15,23,42,0.15)]">
-      <span className="font-label-xl wrap-break-word text-white">{text}</span>
+      <span className="font-label-xl whitespace-nowrap text-white">{text}</span>
 
       <ToolTipBeak className={`${arrowPositionClass[side]} text-primary-800`} />
     </div>

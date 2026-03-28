@@ -11,7 +11,7 @@ import { HomeInsightsSection } from '@/modules/home/components/HomeInsightsSecti
 import { HomeOutfitPreview } from '@/modules/home/components/HomeOutfitPreview'
 import { HomePreviewTopBar } from '@/modules/home/components/HomePreviewTopBar'
 
-const AddTopPage = () => {
+const GuideAddBottomPage = () => {
   const router = useRouter()
 
   const [isAddClothingDrawerOpen, setIsAddClothingDrawerOpen] = useState(false)
@@ -23,13 +23,13 @@ const AddTopPage = () => {
   const handleCameraClick = () => {
     setIsAddClothingDrawerOpen(false)
     // TODO: 導向到相機頁面
-    void router.push('/guide/add-bottom')
+    void router.push('/guide/complete')
   }
 
   const handleAlbumClick = () => {
     setIsAddClothingDrawerOpen(false)
     // TODO: 導向到相簿頁面
-    void router.push('/guide/add-bottom')
+    void router.push('/guide/complete')
   }
   return (
     <>
@@ -55,7 +55,7 @@ const AddTopPage = () => {
           <div className="pointer-events-none fixed right-0 bottom-4.5 left-0 z-70 flex justify-center">
             <div className="relative flex flex-col items-center">
               <div className="pointer-events-auto mb-3">
-                <GuideToolTip text="點選+號開始新增衣物" side="top" />
+                <GuideToolTip text="點選+號開始新增下身單品" side="top" />
               </div>
 
               <div className="pointer-events-auto relative">
@@ -73,8 +73,9 @@ const AddTopPage = () => {
         onCameraClick={handleCameraClick}
         onAlbumClick={handleAlbumClick}
         dismissible={false}
+        context="再新增一件褲子或裙子吧！"
       />
     </>
   )
 }
-export default AddTopPage
+export default GuideAddBottomPage
