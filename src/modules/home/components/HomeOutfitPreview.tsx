@@ -6,9 +6,15 @@ import { CircleIconButton } from './CircleIconButton'
 type HomeOutfitPreviewProps = {
   src: string
   alt: string
+  disable?: boolean
   onDislikeClick?: () => void
 }
-export const HomeOutfitPreview = ({ src, alt, onDislikeClick }: HomeOutfitPreviewProps) => {
+export const HomeOutfitPreview = ({
+  src,
+  alt,
+  onDislikeClick,
+  disable,
+}: HomeOutfitPreviewProps) => {
   return (
     <div className="relative flex w-full flex-col items-center justify-center">
       <Image src={src} alt={alt} width={126} height={440} />
@@ -18,8 +24,15 @@ export const HomeOutfitPreview = ({ src, alt, onDislikeClick }: HomeOutfitPrevie
           icon={X}
           onClick={onDislikeClick}
           ariaLabel="不喜歡這套穿搭"
+          disabled={disable}
         />
-        <CircleIconButton kind="like" icon={Heart} onClick={() => {}} ariaLabel="喜歡這套穿搭" />
+        <CircleIconButton
+          kind="like"
+          icon={Heart}
+          onClick={() => {}}
+          ariaLabel="喜歡這套穿搭"
+          disabled={disable}
+        />
       </div>
     </div>
   )

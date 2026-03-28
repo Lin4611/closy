@@ -5,14 +5,22 @@ type BottomNavItemProps = {
   active: boolean
   onClick: () => void
   icon: React.ElementType
+  disabled?: boolean
 }
 
-export const BottomNavItem = ({ label, active, onClick, icon: Icon }: BottomNavItemProps) => {
+export const BottomNavItem = ({
+  label,
+  active,
+  onClick,
+  icon: Icon,
+  disabled,
+}: BottomNavItemProps) => {
   return (
     <button
       type="button"
       onClick={onClick}
       className="flex h-16 flex-1 flex-col items-center justify-center gap-2"
+      disabled={disabled}
     >
       <Icon
         size={24}
