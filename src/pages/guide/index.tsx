@@ -7,8 +7,11 @@ import { GoogleAuthButton } from '@/modules/guide/components/GoogleAuthButton'
 import { GuideCarouselIndicator } from '@/modules/guide/components/GuideCarouselIndicator'
 import { GuideIntroSlide } from '@/modules/guide/components/GuideIntroSlide'
 import { guideIntroSlides } from '@/modules/guide/data/guideIntroSlides'
+import { useAppDispatch } from '@/store/hooks'
+import { setUser } from '@/store/slices/userSlice'
 
 const Guide = () => {
+  const dispatch = useAppDispatch()
   const router = useRouter()
   const [currentIndex, setCurrentIndex] = useState(0)
   const currentSlide = guideIntroSlides[currentIndex]
@@ -16,6 +19,7 @@ const Guide = () => {
     if (!response.credential) return
     try {
       const result = await loginWithGoogle(response.credential)
+      dispatch(setUser(result.user))
       const isProfileCompleted = result.user.isProfileCompleted
       if (isProfileCompleted) {
         router.push('/home')
