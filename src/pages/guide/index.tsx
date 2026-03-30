@@ -1,13 +1,32 @@
+import type { CredentialResponse } from '@react-oauth/google'
+import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 
+import { loginWithGoogle } from '@/modules/guide/api/auth'
+import { GoogleAuthButton } from '@/modules/guide/components/GoogleAuthButton'
 import { GuideCarouselIndicator } from '@/modules/guide/components/GuideCarouselIndicator'
 import { GuideIntroSlide } from '@/modules/guide/components/GuideIntroSlide'
-import { LoginButton } from '@/modules/guide/components/LoginButton'
 import { guideIntroSlides } from '@/modules/guide/data/guideIntroSlides'
 
 const Guide = () => {
+  const router = useRouter()
   const [currentIndex, setCurrentIndex] = useState(0)
   const currentSlide = guideIntroSlides[currentIndex]
+  const handleGoogleSuccess = async (response: CredentialResponse) => {
+    if (!response.credential) return
+    try {
+      const result = await loginWithGoogle(response.credential)
+      const isProfileCompleted = result.user.isProfileCompleted
+      if (isProfileCompleted) {
+        router.push('/home')
+        return
+      }
+
+      router.push('/guide/welcome')
+    } catch (e) {
+      console.error(e)
+    }
+  }
   useEffect(() => {
     const timer = window.setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % guideIntroSlides.length)
@@ -25,7 +44,7 @@ const Guide = () => {
         />
         <GuideCarouselIndicator currentIndex={currentIndex} />
       </section>
-      <LoginButton />
+      <GoogleAuthButton onSuccess={handleGoogleSuccess} />
     </main>
   )
 }
