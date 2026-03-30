@@ -1,6 +1,8 @@
 import type { CredentialResponse } from '@react-oauth/google'
 import { GoogleLogin } from '@react-oauth/google'
 
+import { showToast } from '@/components/ui/sonner'
+
 type GoogleLoginOverlayProps = {
   onSuccess: (response: CredentialResponse) => void
 }
@@ -12,6 +14,7 @@ export const GoogleLoginOverlay = ({ onSuccess }: GoogleLoginOverlayProps) => {
         onSuccess={onSuccess}
         onError={() => {
           console.error('Google 登入失敗')
+          showToast.error('Google 登入失敗，請稍後再試')
         }}
         width="343"
         theme="outline"
