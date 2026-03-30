@@ -29,17 +29,17 @@ const ToastPortal = ({ message, tone }: { message: string; tone: keyof typeof to
 }
 
 export const showToast = {
-  success: (message: string) =>
+  success: (message: string, duration: number = 2000) =>
     toast.custom(() => <ToastPortal message={message} tone="success" />, {
-      duration: 2000,
+      duration,
     }),
-  error: (message: string) =>
+  error: (message: string, duration: number = 2000) =>
     toast.custom(() => <ToastPortal message={message} tone="error" />, {
-      duration: 2000,
+      duration,
     }),
-  info: (message: string) =>
+  info: (message: string, duration: number = 2000) =>
     toast.custom(() => <ToastPortal message={message} tone="info" />, {
-      duration: 2000,
+      duration,
     }),
 }
 
