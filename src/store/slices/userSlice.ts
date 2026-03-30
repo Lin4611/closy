@@ -4,11 +4,11 @@ import type { LoginUser } from '@/modules/guide/types/auth'
 
 type UserState = {
   user: LoginUser | null
-  isLoogedIn: boolean
+  isLoggedIn: boolean
 }
 const initialState: UserState = {
   user: null,
-  isLoogedIn: false,
+  isLoggedIn: false,
 }
 const userSlice = createSlice({
   name: 'user',
@@ -16,11 +16,11 @@ const userSlice = createSlice({
   reducers: {
     setUser: (state, action: PayloadAction<LoginUser>) => {
       state.user = action.payload
-      state.isLoogedIn = true
+      state.isLoggedIn = true
     },
     clearUser: (state) => {
       state.user = null
-      state.isLoogedIn = false
+      state.isLoggedIn = false
     },
   },
 })
