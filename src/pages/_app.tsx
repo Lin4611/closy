@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google'
 import { Provider } from 'react-redux'
 
 import '@/styles/globals.css'
+import { Toaster } from '@/components/ui/sonner'
 import { MobileLayout } from '@/modules/common/components/MobileLayout'
 import { store } from '@/store'
 
@@ -19,6 +20,7 @@ export default function App({ Component, pageProps }: AppProps) {
         <MobileLayout className={inter.className}>
           <Component {...pageProps} />
         </MobileLayout>
+        <Toaster />
       </GoogleOAuthProvider>
     </Provider>
   )

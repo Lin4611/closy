@@ -2,6 +2,8 @@ import type { CredentialResponse } from '@react-oauth/google'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 
+import { showToast } from '@/components/ui/sonner'
+import { ApiError } from '@/lib/api/client'
 import { loginWithGoogle } from '@/modules/guide/api/auth'
 import { GoogleAuthButton } from '@/modules/guide/components/GoogleAuthButton'
 import { GuideCarouselIndicator } from '@/modules/guide/components/GuideCarouselIndicator'
@@ -29,6 +31,11 @@ const Guide = () => {
       router.push('/guide/welcome')
     } catch (e) {
       console.error(e)
+      if (e instanceof ApiError) {
+        showToast.error(e.message)
+      } else {
+        showToast.error('登入失敗，請稍後再試')
+      }
     }
   }
   useEffect(() => {
