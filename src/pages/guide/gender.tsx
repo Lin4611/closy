@@ -10,7 +10,7 @@ import { GenderButton } from '@/modules/guide/components/GenderButton'
 
 const Gender = () => {
   const router = useRouter()
-  const [selectedGender, setSelectedGender] = useState<string>('')
+  const [selectedGender, setSelectedGender] = useState<'男性' | '女性' | ''>('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSubmit = async () => {
