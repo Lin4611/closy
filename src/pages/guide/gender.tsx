@@ -2,12 +2,37 @@ import { ChevronLeft } from 'lucide-react'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
 
+import { showToast } from '@/components/ui/sonner'
+import { ApiError } from '@/lib/api/client'
 import { PrimaryButton } from '@/modules/common/components/PrimaryButton'
+import { updateGender } from '@/modules/guide/api/gender'
 import { GenderButton } from '@/modules/guide/components/GenderButton'
 
 const Gender = () => {
   const router = useRouter()
-  const [selectedGender, setSelectedGender] = useState<string>('')
+  const [selectedGender, setSelectedGender] = useState<'男性' | '女性' | ''>('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const handleSubmit = async () => {
+    if (!selectedGender || isSubmitting) return
+
+    const gender = selectedGender === '男性' ? 'male' : 'female'
+
+    try {
+      setIsSubmitting(true)
+      await updateGender(gender)
+      router.push('/guide/add-top')
+    } catch (error) {
+      if (error instanceof ApiError) {
+        showToast.error(error.message)
+      } else {
+        showToast.error('更新性別失敗，請稍後再試')
+      }
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   return (
     <main className="flex min-h-screen flex-col px-4 pt-3 pb-[143px]">
       <section className="flex w-full flex-col gap-3">
@@ -39,10 +64,8 @@ const Gender = () => {
       </section>
       <PrimaryButton
         content="繼續"
-        onClick={() => {
-          router.push('/guide/add-top')
-        }}
-        disabled={!selectedGender}
+        onClick={handleSubmit}
+        disabled={!selectedGender || isSubmitting}
         className="mt-auto"
       />
     </main>
