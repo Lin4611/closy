@@ -15,7 +15,9 @@ export const HomeFilterBar = ({ className }: HomeFilterBarProps) => {
       )}
     >
       <DaySwitch />
-      <OccasionSelect />
+      <div id="occasion-trigger">
+        <OccasionSelect />
+      </div>
     </div>
   )
 }

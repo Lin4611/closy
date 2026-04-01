@@ -33,6 +33,7 @@ export const CircleIconButton = ({
       className={cn(baseClassName, disabled ? disabledClassName : enabledClassName)}
       onClick={onClick}
       size="circle"
+      id={kind}
       disabled={disabled}
     >
       <Icon
