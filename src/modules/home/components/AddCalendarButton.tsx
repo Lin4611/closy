@@ -11,6 +11,7 @@ export const AddCalendarButton = ({ onClick }: AddCalendarButtonProps) => {
       onClick={onClick}
       aria-label="新增行事曆"
       className="bg-primary-200 flex size-11 items-center justify-center rounded-full"
+      id="add-calendar-button"
     >
       <Plus className="text-primary-800" size={24} strokeWidth={2} />
     </button>
