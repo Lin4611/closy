@@ -1,3 +1,4 @@
+import dynamic from 'next/dynamic'
 import { useRef, useState } from 'react'
 import { useEffect } from 'react'
 
@@ -6,9 +7,39 @@ import { HomeFilterBar } from '@/modules/home/components/HomeFilterBar'
 import { HomeInsightsSection } from '@/modules/home/components/HomeInsightsSection'
 import { HomeOutfitPreview } from '@/modules/home/components/HomeOutfitPreview'
 import { HomePreviewTopBar } from '@/modules/home/components/HomePreviewTopBar'
-
+const HomeOnboardingOverlay = dynamic(
+  () =>
+    import('@/modules/home/components/onboarding/HomeOnboardingOverlay').then((m) => ({
+      default: m.HomeOnboardingOverlay,
+    })),
+  { ssr: false },
+)
 const Home = () => {
   const [isAdjustPromptOpen, setIsAdjustPromptOpen] = useState(true)
+
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return localStorage.getItem('home-onboarding-done') !== 'true'
+  })
+  useEffect(() => {
+    if (!showOnboarding) return
+
+    const originalOverflow = document.body.style.overflow
+    const originalTouchAction = document.body.style.touchAction
+
+    document.body.style.overflow = 'hidden'
+    document.body.style.touchAction = 'none'
+
+    return () => {
+      document.body.style.overflow = originalOverflow
+      document.body.style.touchAction = originalTouchAction
+    }
+  }, [showOnboarding])
+
+  const handleFinish = () => {
+    localStorage.setItem('home-onboarding-done', 'true')
+    setShowOnboarding(false)
+  }
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const clearHideTimer = () => {
     if (hideTimerRef.current) {
@@ -41,22 +72,25 @@ const Home = () => {
   }
 
   return (
-    <AppShell>
-      <div className="sticky top-0 z-10">
-        <HomeFilterBar />
-      </div>
-      <div className="relative">
-        <HomePreviewTopBar expanded={isAdjustPromptOpen} />
-        <div className="flex flex-col items-center justify-center pt-13">
-          <HomeOutfitPreview
-            src="/home/model_man.webp"
-            alt="model"
-            onDislikeClick={handleDislikeClick}
-          />
+    <>
+      <AppShell>
+        <div className="sticky top-0 z-10">
+          <HomeFilterBar />
         </div>
-      </div>
-      <HomeInsightsSection />
-    </AppShell>
+        <div className="relative">
+          <HomePreviewTopBar expanded={isAdjustPromptOpen} />
+          <div className="flex flex-col items-center justify-center pt-13">
+            <HomeOutfitPreview
+              src="/home/model_man.webp"
+              alt="model"
+              onDislikeClick={handleDislikeClick}
+            />
+          </div>
+        </div>
+        <HomeInsightsSection />
+      </AppShell>
+      {showOnboarding && <HomeOnboardingOverlay onFinish={handleFinish} />}
+    </>
   )
 }
 export default Home
