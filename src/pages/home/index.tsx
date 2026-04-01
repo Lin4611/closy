@@ -7,22 +7,19 @@ import { HomeFilterBar } from '@/modules/home/components/HomeFilterBar'
 import { HomeInsightsSection } from '@/modules/home/components/HomeInsightsSection'
 import { HomeOutfitPreview } from '@/modules/home/components/HomeOutfitPreview'
 import { HomePreviewTopBar } from '@/modules/home/components/HomePreviewTopBar'
-const HomeOnboardingOverlay = dynamic(
+const HomeOnboardingGate = dynamic(
   () =>
-    import('@/modules/home/components/onboarding/HomeOnboardingOverlay').then((m) => ({
-      default: m.HomeOnboardingOverlay,
+    import('@/modules/home/components/onboarding/HomeOnboardingGate').then((m) => ({
+      default: m.HomeOnboardingGate,
     })),
   { ssr: false },
 )
 const Home = () => {
   const [isAdjustPromptOpen, setIsAdjustPromptOpen] = useState(true)
+  const [isOnboardingVisible, setIsOnboardingVisible] = useState(false)
 
-  const [showOnboarding, setShowOnboarding] = useState(() => {
-    if (typeof window === 'undefined') return false
-    return localStorage.getItem('home-onboarding-done') !== 'true'
-  })
   useEffect(() => {
-    if (!showOnboarding) return
+    if (!isOnboardingVisible) return
 
     const originalOverflow = document.body.style.overflow
     const originalTouchAction = document.body.style.touchAction
@@ -34,12 +31,8 @@ const Home = () => {
       document.body.style.overflow = originalOverflow
       document.body.style.touchAction = originalTouchAction
     }
-  }, [showOnboarding])
+  }, [isOnboardingVisible])
 
-  const handleFinish = () => {
-    localStorage.setItem('home-onboarding-done', 'true')
-    setShowOnboarding(false)
-  }
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const clearHideTimer = () => {
     if (hideTimerRef.current) {
@@ -89,7 +82,7 @@ const Home = () => {
         </div>
         <HomeInsightsSection />
       </AppShell>
-      {showOnboarding && <HomeOnboardingOverlay onFinish={handleFinish} />}
+      <HomeOnboardingGate onVisibilityChange={setIsOnboardingVisible} />
     </>
   )
 }

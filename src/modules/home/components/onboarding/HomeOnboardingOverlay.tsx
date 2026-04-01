@@ -349,6 +349,7 @@ export const HomeOnboardingOverlay = ({ onFinish }: Props) => {
           description={currentStep.description}
           step={stepNumber}
           onClose={onFinish}
+          totalSteps={ONBOARDING_STEPS.length}
         />
       </div>
 
