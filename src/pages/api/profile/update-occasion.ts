@@ -12,7 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method !== 'PATCH') return res.status(405).end()
 
   const accessToken = req.cookies.accessToken
-  const { occasionId } = req.body as UpdateOccasionBody
+  const { occasionId } = (req.body || {}) as UpdateOccasionBody
 
   if (!accessToken) {
     return res.status(401).json({ message: '尚未登入' })

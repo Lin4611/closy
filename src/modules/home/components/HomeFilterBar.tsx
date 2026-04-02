@@ -19,7 +19,7 @@ export const HomeFilterBar = ({ className }: HomeFilterBarProps) => {
   const selectedOccasion = useAppSelector((state) => state.user.user?.preferences.occasions ?? '')
   const dispatch = useAppDispatch()
   const handleOccasionChange = async (value: string) => {
-    if (isSubmitting) return
+    if (isSubmitting || value === selectedOccasion) return
 
     try {
       setIsSubmitting(true)
