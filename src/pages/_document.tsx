@@ -1,13 +1,15 @@
-import { Html, Head, Main, NextScript } from "next/document";
+import { Html, Head, Main, NextScript } from 'next/document'
+
+import { inter } from '@/lib/font'
 
 export default function Document() {
   return (
-    <Html lang="zh-TW">
+    <Html lang="zh-TW" className={inter.className}>
       <Head />
-      <body className="antialiased">
+      <body>
         <Main />
         <NextScript />
       </body>
     </Html>
-  );
+  )
 }
