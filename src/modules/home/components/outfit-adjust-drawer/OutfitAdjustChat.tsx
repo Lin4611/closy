@@ -1,5 +1,5 @@
 import { OutfitAdjustMessageBubble } from './OutfitAdjustMessageBubble'
-import type { OutfitAdjustChatMessage } from '../types/outfitAdjustChat'
+import type { OutfitAdjustChatMessage } from '../../types/outfitAdjustChat'
 type OutfitAdjustChatProps = {
   messages: OutfitAdjustChatMessage[]
 }

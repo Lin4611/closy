@@ -1,5 +1,5 @@
 import { AdjustSuggestionChip } from './AdjustSuggestionChip'
-import { outfitAdjustPromptOptions } from '../data/outfitAdjustOptions'
+import { outfitAdjustPromptOptions } from '../../data/outfitAdjustOptions'
 type QuickAdjustOptionsProps = {
   onSelectOption: (option: string) => void
 }
