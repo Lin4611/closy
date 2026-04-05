@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { Drawer, DrawerContent } from '@/components/ui/drawer'
 import { useAppSelector } from '@/store/hooks'
@@ -8,6 +8,7 @@ import { OutfitAdjustChat } from './OutfitAdjustChat'
 import { OutfitAdjustResultView } from './OutfitAdjustResultView'
 import { QuickAdjustOptions } from './QuickAdjustOptions'
 import type { OutfitAdjustChatMessage } from '../../types/outfitAdjustChat'
+
 type OutfitAdjustDrawerProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -17,6 +18,37 @@ type OutfitAdjustDrawerProps = {
   outfitId: string
 }
 type DrawerMode = 'initial' | 'chat' | 'result'
+type OutfitAdjustCountStorage = {
+  date: string
+  remainingCount: number
+}
+
+const DAILY_OUTFIT_ADJUST_LIMIT = 3
+const OUTFIT_ADJUST_COUNT_STORAGE_KEY = 'closy:outfit-adjust-daily-count'
+
+const getTodayStorageDate = () => {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+
+  return `${year}-${month}-${day}`
+}
+
+const getInitialCount = (): number => {
+  try {
+    const stored = window.localStorage.getItem(OUTFIT_ADJUST_COUNT_STORAGE_KEY)
+    if (!stored) return DAILY_OUTFIT_ADJUST_LIMIT
+
+    const parsed = JSON.parse(stored) as OutfitAdjustCountStorage
+    if (parsed.date !== getTodayStorageDate()) return DAILY_OUTFIT_ADJUST_LIMIT
+
+    return parsed.remainingCount
+  } catch {
+    return DAILY_OUTFIT_ADJUST_LIMIT
+  }
+}
+
 export const OutfitAdjustDrawer = ({
   open,
   onOpenChange,
@@ -27,10 +59,23 @@ export const OutfitAdjustDrawer = ({
 
   const [mode, setMode] = useState<DrawerMode>('initial')
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [count, setCount] = useState(3)
+  const [count, setCount] = useState<number | null>(null)
 
   const name = useAppSelector((state) => state.user.user?.name)
-  const isComposerDisabled = isSubmitting || count <= 0
+  const isComposerDisabled = isSubmitting || count === null || count <= 0
+
+  useEffect(() => {
+    setCount(getInitialCount())
+  }, [])
+
+  useEffect(() => {
+    if (count === null) return
+    const payload: OutfitAdjustCountStorage = {
+      date: getTodayStorageDate(),
+      remainingCount: count,
+    }
+    window.localStorage.setItem(OUTFIT_ADJUST_COUNT_STORAGE_KEY, JSON.stringify(payload))
+  }, [count])
 
   const resetDrawerState = () => {
     setMessage('')
@@ -43,7 +88,7 @@ export const OutfitAdjustDrawer = ({
     const trimmed = text.trim()
 
     if (!trimmed) return
-    if (count <= 0) return
+    if (count === null || count <= 0) return
     if (isSubmitting) return
 
     const userMessage: OutfitAdjustChatMessage = {
@@ -87,7 +132,8 @@ export const OutfitAdjustDrawer = ({
       )
       setTimeout(() => {
         setMode('result')
-      }, 2000) //模擬打完後跳轉
+      }, 2000)
+      // 模擬打完後跳轉
     } catch (error) {
       setMessages((prev) =>
         prev.map((msg) =>
@@ -104,9 +150,10 @@ export const OutfitAdjustDrawer = ({
       setIsSubmitting(false)
     }
   }
+
   const handleUpdateCount = () => {
-    if (count <= 0) return
-    setCount((prev) => prev - 1)
+    if (count === null || count <= 0) return
+    setCount((prev) => (prev ?? 0) - 1)
   }
 
   const handleQuickOptionClick = (option: string) => {
@@ -130,11 +177,7 @@ export const OutfitAdjustDrawer = ({
   }
 
   return (
-    <Drawer
-      open={open}
-      onOpenChange={handleOpenChange}
-      dismissible={dismissible}
-    >
+    <Drawer open={open} onOpenChange={handleOpenChange} dismissible={dismissible}>
       <DrawerContent className="mx-auto h-[666px] w-full max-w-[375px] gap-10 rounded-t-[40px] border-none bg-[#FFFEFE] px-4 pb-10 shadow-[0_1px_16px_rgba(0,0,0,0.1)]">
         {mode === 'initial' && (
           <>
@@ -158,7 +201,11 @@ export const OutfitAdjustDrawer = ({
             disabled={isComposerDisabled}
           />
           <span className="font-paragraph-xs text-neutral-500">
-            {count > 0 ? `今天還可以調整${count}次` : '今日調整次數已達上限'}
+            {count === null
+              ? null
+              : count > 0
+                ? `今天還可以調整${count}次`
+                : '今日調整次數已達上限'}
           </span>
         </div>
       </DrawerContent>
