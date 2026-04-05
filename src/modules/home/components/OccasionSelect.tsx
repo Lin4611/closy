@@ -6,8 +6,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
-import { occasionOptions } from '../data/OccasionOptions'
-import type { OccasionOption } from '../data/OccasionOptions'
+import { occasionOptions } from '../data/occasionOptions'
+import type { OccasionOption } from '../data/occasionOptions'
 
 type OccasionSelectProps = {
   options?: OccasionOption[]

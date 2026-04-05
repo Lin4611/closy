@@ -7,6 +7,7 @@ import { HomeFilterBar } from '@/modules/home/components/HomeFilterBar'
 import { HomeInsightsSection } from '@/modules/home/components/HomeInsightsSection'
 import { HomeOutfitPreview } from '@/modules/home/components/HomeOutfitPreview'
 import { HomePreviewTopBar } from '@/modules/home/components/HomePreviewTopBar'
+import { OutfitAdjustDrawer } from '@/modules/home/components/outfit-adjust-drawer/OutfitAdjustDrawer'
 const HomeOnboardingGate = dynamic(
   () =>
     import('@/modules/home/components/onboarding/HomeOnboardingGate').then((m) => ({
@@ -17,7 +18,7 @@ const HomeOnboardingGate = dynamic(
 const Home = () => {
   const [isAdjustPromptOpen, setIsAdjustPromptOpen] = useState(true)
   const [isOnboardingVisible, setIsOnboardingVisible] = useState(false)
-
+  const [isOutfitAdjustDrawerOpen, setIsOutfitAdjustDrawerOpen] = useState(false)
   useEffect(() => {
     if (!isOnboardingVisible) return
 
@@ -71,7 +72,10 @@ const Home = () => {
           <HomeFilterBar />
         </div>
         <div className="relative">
-          <HomePreviewTopBar expanded={isAdjustPromptOpen} />
+          <HomePreviewTopBar
+            expanded={isAdjustPromptOpen}
+            onClick={() => setIsOutfitAdjustDrawerOpen(true)}
+          />
           <div className="flex flex-col items-center justify-center pt-13">
             <HomeOutfitPreview
               src="/home/model_man.webp"
@@ -81,6 +85,12 @@ const Home = () => {
           </div>
         </div>
         <HomeInsightsSection />
+        <OutfitAdjustDrawer
+          open={isOutfitAdjustDrawerOpen}
+          onOpenChange={setIsOutfitAdjustDrawerOpen}
+          outfitImageUrl="/home/model_man.webp"
+          outfitId="1"
+        />
       </AppShell>
       <HomeOnboardingGate onVisibilityChange={setIsOnboardingVisible} />
     </>
