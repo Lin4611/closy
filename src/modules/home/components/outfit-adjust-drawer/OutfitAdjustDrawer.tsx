@@ -7,7 +7,7 @@ import { MessageComposer } from './MessageComposer'
 import { OutfitAdjustChat } from './OutfitAdjustChat'
 import { OutfitAdjustResultView } from './OutfitAdjustResultView'
 import { QuickAdjustOptions } from './QuickAdjustOptions'
-import type { OutfitAdjustChatMessage } from '../types/outfitAdjustChat'
+import type { OutfitAdjustChatMessage } from '../../types/outfitAdjustChat'
 type OutfitAdjustDrawerProps = {
   open: boolean
   onOpenChange: (open: boolean) => void

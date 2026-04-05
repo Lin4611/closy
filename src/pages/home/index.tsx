@@ -7,7 +7,7 @@ import { HomeFilterBar } from '@/modules/home/components/HomeFilterBar'
 import { HomeInsightsSection } from '@/modules/home/components/HomeInsightsSection'
 import { HomeOutfitPreview } from '@/modules/home/components/HomeOutfitPreview'
 import { HomePreviewTopBar } from '@/modules/home/components/HomePreviewTopBar'
-import { OutfitAdjustDrawer } from '@/modules/home/components/OutfitAdjustDrawer'
+import { OutfitAdjustDrawer } from '@/modules/home/components/outfit-adjust-drawer/OutfitAdjustDrawer'
 const HomeOnboardingGate = dynamic(
   () =>
     import('@/modules/home/components/onboarding/HomeOnboardingGate').then((m) => ({
