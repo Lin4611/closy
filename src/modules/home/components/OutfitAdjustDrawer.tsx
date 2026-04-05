@@ -5,9 +5,9 @@ import { useAppSelector } from '@/store/hooks'
 
 import { MessageComposer } from './MessageComposer'
 import { OutfitAdjustChat } from './OutfitAdjustChat'
+import { OutfitAdjustResultView } from './OutfitAdjustResultView'
 import { QuickAdjustOptions } from './QuickAdjustOptions'
 import type { OutfitAdjustChatMessage } from '../types/outfitAdjustChat'
-
 type OutfitAdjustDrawerProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -16,7 +16,7 @@ type OutfitAdjustDrawerProps = {
   outfitImageUrl: string
   outfitId: string
 }
-
+type DrawerMode = 'initial' | 'chat' | 'result'
 export const OutfitAdjustDrawer = ({
   open,
   onOpenChange,
@@ -24,7 +24,8 @@ export const OutfitAdjustDrawer = ({
 }: OutfitAdjustDrawerProps) => {
   const [message, setMessage] = useState('')
   const [messages, setMessages] = useState<OutfitAdjustChatMessage[]>([])
-  const [isChatStarted, setIsChatStarted] = useState(false)
+
+  const [mode, setMode] = useState<DrawerMode>('initial')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [count, setCount] = useState(3)
 
@@ -52,7 +53,7 @@ export const OutfitAdjustDrawer = ({
       status: 'idle',
     }
 
-    setIsChatStarted(true)
+    setMode('chat')
     setIsSubmitting(true)
 
     setMessages((prev) => [...prev, userMessage, loadingMessage])
@@ -77,6 +78,9 @@ export const OutfitAdjustDrawer = ({
             : msg,
         ),
       )
+      setTimeout(() => {
+        setMode('result')
+      }, 2000) //模擬打完後跳轉
     } catch (error) {
       setMessages((prev) =>
         prev.map((msg) =>
@@ -112,10 +116,8 @@ export const OutfitAdjustDrawer = ({
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange} dismissible={dismissible}>
-      <DrawerContent className="mx-auto h-[600px] w-full max-w-[375px] gap-10 rounded-t-[40px] border-none bg-[#FFFEFE] px-4 pb-10 shadow-[0_1px_16px_rgba(0,0,0,0.1)]">
-        {isChatStarted ? (
-          <OutfitAdjustChat messages={messages} />
-        ) : (
+      <DrawerContent className="mx-auto h-[666px] w-full max-w-[375px] gap-10 rounded-t-[40px] border-none bg-[#FFFEFE] px-4 pb-10 shadow-[0_1px_16px_rgba(0,0,0,0.1)]">
+        {mode === 'initial' && (
           <>
             <div className="flex flex-col items-center justify-center text-center">
               <h4 className="font-h4 text-neutral-800">{name}</h4>
@@ -126,6 +128,8 @@ export const OutfitAdjustDrawer = ({
             </div>
           </>
         )}
+        {mode === 'chat' && <OutfitAdjustChat messages={messages} />}
+        {mode === 'result' && <OutfitAdjustResultView />}
         <div className="flex flex-col items-center gap-4">
           <MessageComposer
             value={message}
