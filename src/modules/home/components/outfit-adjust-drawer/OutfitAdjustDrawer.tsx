@@ -32,6 +32,13 @@ export const OutfitAdjustDrawer = ({
   const name = useAppSelector((state) => state.user.user?.name)
   const isComposerDisabled = isSubmitting || count <= 0
 
+  const resetDrawerState = () => {
+    setMessage('')
+    setMessages([])
+    setMode('initial')
+    setIsSubmitting(false)
+  }
+
   const submitPrompt = async (text: string) => {
     const trimmed = text.trim()
 
@@ -114,8 +121,20 @@ export const OutfitAdjustDrawer = ({
     console.log('voice input')
   }
 
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) {
+      resetDrawerState()
+    }
+
+    onOpenChange(nextOpen)
+  }
+
   return (
-    <Drawer open={open} onOpenChange={onOpenChange} dismissible={dismissible}>
+    <Drawer
+      open={open}
+      onOpenChange={handleOpenChange}
+      dismissible={dismissible}
+    >
       <DrawerContent className="mx-auto h-[666px] w-full max-w-[375px] gap-10 rounded-t-[40px] border-none bg-[#FFFEFE] px-4 pb-10 shadow-[0_1px_16px_rgba(0,0,0,0.1)]">
         {mode === 'initial' && (
           <>
