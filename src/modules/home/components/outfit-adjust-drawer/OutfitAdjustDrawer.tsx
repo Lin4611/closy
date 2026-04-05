@@ -53,6 +53,8 @@ export const OutfitAdjustDrawer = ({
   open,
   onOpenChange,
   dismissible = true,
+  outfitImageUrl,
+  outfitId,
 }: OutfitAdjustDrawerProps) => {
   const [message, setMessage] = useState('')
   const [messages, setMessages] = useState<OutfitAdjustChatMessage[]>([])
