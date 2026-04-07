@@ -22,8 +22,8 @@ export const OutfitCard = ({ footLabel, onDelete, modelImage }: OutfitCardProps)
       >
         <Trash2 className="text-neutral-600" size={16} strokeWidth={2} />
       </Button>
-      <div className="absolute bottom-7 left-1/2 w-[90px] -translate-x-1/2 rounded-[20px] bg-[#E5EFFF] px-3 py-1">
-        <p className="font-label-sm text-primary-800">#{footLabel}</p>
+      <div className="absolute bottom-7 left-1/2 -translate-x-1/2 rounded-[20px] bg-[#E5EFFF] px-3 py-1">
+        <p className="font-label-sm text-primary-800 whitespace-nowrap">#{footLabel}</p>
       </div>
     </div>
   )

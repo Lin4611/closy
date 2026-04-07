@@ -17,8 +17,8 @@ export const OutfitsOverview = ({ outfits, onDelete, tab }: OutfitsOverviewProps
         {sortedOutfits.map((outfit) => {
           const footLabel =
             tab === 'overview'
-              ? outfit.savedAt.replaceAll('-', '/')
-              : occasionLabelMap[outfit.occasionName]
+              ? occasionLabelMap[outfit.occasionName]
+              : outfit.savedAt.replaceAll('-', '/')
           return (
             <OutfitCard
               key={outfit.outfitId}
