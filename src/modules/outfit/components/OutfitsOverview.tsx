@@ -12,11 +12,13 @@ export const OutfitsOverview = ({ outfits, onDelete, tab }: OutfitsOverviewProps
     (a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime(),
   )
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto px-4">
+    <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
       <div className="grid grid-cols-2 place-content-center justify-items-center gap-4">
         {sortedOutfits.map((outfit) => {
           const footLabel =
-            tab === 'overview' ? occasionLabelMap[outfit.occasionKey] : outfit.savedAt.replaceAll('-', '/')
+            tab === 'overview'
+              ? occasionLabelMap[outfit.occasionKey]
+              : outfit.savedAt.replaceAll('-', '/')
           return (
             <OutfitCard
               key={outfit.id}
