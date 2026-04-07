@@ -1,9 +1,9 @@
 import { OutfitCard } from './OutfitCard'
-import type { OutfitItem } from '../types/outfitTypes'
+import type { OutfitSummary } from '../types/outfitTypes'
 import { occasionLabelMap, type OutfitTab } from '../types/outfitTypes'
 
 type OutfitsOverviewProps = {
-  outfits: OutfitItem[]
+  outfits: OutfitSummary[]
   onDelete: (outfitId: string) => void
   tab: OutfitTab
 }
@@ -16,15 +16,14 @@ export const OutfitsOverview = ({ outfits, onDelete, tab }: OutfitsOverviewProps
       <div className="grid grid-cols-2 place-content-center justify-items-center gap-4">
         {sortedOutfits.map((outfit) => {
           const footLabel =
-            tab === 'overview'
-              ? occasionLabelMap[outfit.occasionName]
-              : outfit.savedAt.replaceAll('-', '/')
+            tab === 'overview' ? occasionLabelMap[outfit.occasionKey] : outfit.savedAt.replaceAll('-', '/')
           return (
             <OutfitCard
-              key={outfit.outfitId}
+              key={outfit.id}
+              outfitId={outfit.id}
               modelImage={outfit.imageUrl}
               footLabel={footLabel}
-              onDelete={() => onDelete(outfit.outfitId)}
+              onDelete={() => onDelete(outfit.id)}
             />
           )
         })}

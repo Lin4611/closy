@@ -4,12 +4,13 @@ import { useState } from 'react'
 import { OutfitsOccasionList } from './OutfitsOccasionList'
 import { OutfitsOverview } from './OutfitsOverview'
 import { OutfitsTabs } from './OutfitsTabs'
-import type { OutfitItem, OutfitTab } from '../types/outfitTypes'
+import { type OutfitSummary, type OutfitTab } from '../types/outfitTypes'
 
 type OutfitsContentSectionProps = {
-  outfits: OutfitItem[]
+  outfits: OutfitSummary[]
   onDelete: (outfitId: string) => void
 }
+
 const occasionsData = [
   {
     occasionId: '1',
@@ -48,6 +49,7 @@ const occasionsData = [
 export const OutfitsContentSection = ({ outfits, onDelete }: OutfitsContentSectionProps) => {
   const router = useRouter()
   const [tab, setTab] = useState<OutfitTab>('overview')
+
   const handleSelectOccasion = (occasionId: string) => {
     void router.push(`/outfit/occasion/${occasionId}`)
   }
