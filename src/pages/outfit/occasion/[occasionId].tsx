@@ -7,38 +7,11 @@ import { AppShell } from '@/modules/common/components/AppShell'
 import { ConfirmAlertDialog } from '@/modules/common/components/ConfirmAlertDialog'
 import { OutfitEmptyOverView } from '@/modules/outfit/components/OutfitEmptyOverView'
 import { OutfitsOverview } from '@/modules/outfit/components/OutfitsOverview'
-import type { OutfitItem } from '@/modules/outfit/types/outfitTypes'
-import type { OccasionId } from '@/modules/outfit/types/outfitTypes'
+import { mockOutfits } from '@/modules/outfit/data/mockOutfits'
 import { occasionMetaMap } from '@/modules/outfit/types/outfitTypes'
-const outfits: OutfitItem[] = [
-  {
-    outfitId: '1',
-    imageUrl: '/outfit/mock-1.webp',
-    occasionName: 'campusCasual',
-    savedAt: '2022-01-01',
-  },
-  {
-    outfitId: '2',
-    imageUrl: '/outfit/mock-2.webp',
-    occasionName: 'socialGathering',
-    savedAt: '2022-01-01',
-  },
-  {
-    outfitId: '3',
-    imageUrl: '/outfit/mock-1.webp',
-    occasionName: 'businessCasual',
-    savedAt: '2022-01-01',
-  },
-  {
-    outfitId: '4',
-    imageUrl: '/outfit/mock-2.webp',
-    occasionName: 'professional',
-    savedAt: '2022-01-01',
-  },
-]
 
-const isValidOccasionId = (value: string): value is OccasionId => {
-  return value in occasionMetaMap
+const isValidOccasionId = (value: string) => {
+  return occasionMetaMap.some((item) => item.id === value)
 }
 
 const OutfitOccasionDetail = () => {
@@ -98,8 +71,8 @@ const OutfitOccasionDetail = () => {
     )
   }
 
-  const occasion = occasionMetaMap[occasionId]
-  const filteredOutfits = outfits.filter((outfit) => outfit.occasionName === occasion.key)
+  const occasion = occasionMetaMap.find((item) => item.id === occasionId)
+  const filteredOutfits = mockOutfits.filter((outfit) => outfit.occasionKey === occasion?.key)
 
   return (
     <AppShell activeTab="outfit">
@@ -112,7 +85,7 @@ const OutfitOccasionDetail = () => {
             >
               <ChevronLeft className="text-neutral-700" size={24} strokeWidth={2} />
             </Link>
-            <h1 className="font-label-xxl">{occasion.name}</h1>
+            <h1 className="font-label-xxl">{occasion?.name}</h1>
           </div>
         </header>
 
