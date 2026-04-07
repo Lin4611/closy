@@ -13,7 +13,7 @@ export const AppShell = ({ children, activeTab }: AppShellProps) => {
 
   return (
     <>
-      <main className="pb-20">{children}</main>
+      <main className="flex min-h-screen flex-col pb-20">{children}</main>
       <BottomNav activeTab={activeTab} onAddClick={() => setIsAddClothingSheetOpen(true)} />
       <AddClothingSheet
         open={isAddClothingSheetOpen}
