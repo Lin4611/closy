@@ -1,8 +1,10 @@
 import { ChevronLeft } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
+import { useRef, useState } from 'react'
 
 import { AppShell } from '@/modules/common/components/AppShell'
+import { ConfirmAlertDialog } from '@/modules/common/components/ConfirmAlertDialog'
 import { OutfitEmptyOverView } from '@/modules/outfit/components/OutfitEmptyOverView'
 import { OutfitsOverview } from '@/modules/outfit/components/OutfitsOverview'
 import type { OutfitItem } from '@/modules/outfit/types/outfitTypes'
@@ -39,15 +41,40 @@ const isValidOccasionId = (value: string): value is OccasionId => {
   return value in occasionMetaMap
 }
 
-const handleDelete = (outfitId: string) => {
-  console.log('delete', outfitId)
-}
-
 const OutfitOccasionDetail = () => {
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [dialogMode, setDialogMode] = useState<'confirm' | 'success'>('confirm')
+  const [selectedOutfitId, setSelectedOutfitId] = useState<string | null>(null)
+
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   const router = useRouter()
+
   const { occasionId } = router.query
   if (typeof occasionId !== 'string') {
     return null
+  }
+
+  const handleClickDelete = (outfitId: string) => {
+    setSelectedOutfitId(outfitId)
+    setDialogMode('confirm')
+    setIsDialogOpen(true)
+  }
+
+  const handleConfirmDelete = () => {
+    if (!selectedOutfitId) return
+
+    console.log('delete', selectedOutfitId)
+    setDialogMode('success')
+  }
+
+  const handleCloseDialog = () => {
+    setIsDialogOpen(false)
+    if (timerRef.current) clearTimeout(timerRef.current)
+    timerRef.current = setTimeout(() => {
+      setDialogMode('confirm')
+      setSelectedOutfitId(null)
+    }, 150)
   }
 
   if (!isValidOccasionId(occasionId)) {
@@ -93,13 +120,19 @@ const OutfitOccasionDetail = () => {
           {filteredOutfits.length > 0 ? (
             <OutfitsOverview
               outfits={filteredOutfits}
-              onDelete={handleDelete}
+              onDelete={handleClickDelete}
               tab="groupByOccasion"
             />
           ) : (
             <OutfitEmptyOverView />
           )}
         </div>
+        <ConfirmAlertDialog
+          open={isDialogOpen}
+          mode={dialogMode}
+          onConfirm={handleConfirmDelete}
+          onClose={handleCloseDialog}
+        />
       </div>
     </AppShell>
   )
