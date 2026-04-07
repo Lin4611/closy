@@ -11,8 +11,8 @@ type OutfitCardProps = {
 
 export const OutfitCard = ({ footLabel, onDelete, modelImage }: OutfitCardProps) => {
   return (
-    <div className="relative h-[224px] w-[164px]">
-      <div className="flex items-center justify-center rounded-[24px] bg-white py-3">
+    <div className="relative">
+      <div className="flex h-[224px] w-[164px] items-center justify-center rounded-[24px] bg-white py-3">
         <Image src={modelImage} alt="outfit" width={54} height={200} />
       </div>
       <Button
