@@ -24,7 +24,7 @@ export const OutfitCard = ({ footLabel, onDelete, modelImage, outfitId }: Outfit
       </Link>
       <Button
         variant="ghost"
-        className="absolute top-[14px] right-[14px] size-4"
+        className="absolute top-[14px] right-[14px] size-10"
         onClick={onDelete}
       >
         <Trash2 className="text-neutral-600" size={16} strokeWidth={2} />

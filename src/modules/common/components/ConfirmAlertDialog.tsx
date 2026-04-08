@@ -43,14 +43,14 @@ export const ConfirmAlertDialog = ({ open, mode, onConfirm, onClose }: ConfirmAl
           <AlertDialogFooter>
             <AlertDialogCancel
               onClick={onClose}
-              variant={'ghost'}
+              variant={'default'}
               className="font-label-sm h-11 w-full justify-center rounded-[12px] border border-neutral-400 bg-white/10 text-neutral-800"
             >
               取消
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleActionClick}
-              variant={'ghost'}
+              variant={'default'}
               className="bg-danger-300 font-label-sm h-11 w-full justify-center rounded-[12px] text-white shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]"
             >
               刪除
