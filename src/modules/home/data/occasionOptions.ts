@@ -4,8 +4,8 @@ export type OccasionOption = {
 }
 
 export const occasionOptions: OccasionOption[] = [
-  { label: '社交聚會', value: 'social' },
-  { label: '校園休閒', value: 'campus' },
-  { label: '商務休閒', value: 'business' },
+  { label: '社交聚會', value: 'socialGathering' },
+  { label: '校園休閒', value: 'campusCasual' },
+  { label: '商務休閒', value: 'businessCasual' },
   { label: '專業職場', value: 'professional' },
 ]
