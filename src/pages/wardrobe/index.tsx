@@ -36,7 +36,7 @@ const WardrobePage = () => {
       <div className="relative">
         <WardrobeHeader />
 
-        <main className="space-y-3">
+        <main className="mt-16 pt-5 space-y-6">
           <WardrobeFilterChips
             activeCategory={activeCategory}
             counts={counts}
