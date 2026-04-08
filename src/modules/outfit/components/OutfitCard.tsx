@@ -22,11 +22,7 @@ export const OutfitCard = ({ footLabel, onDelete, modelImage, outfitId }: Outfit
           <p className="font-label-sm text-primary-800 whitespace-nowrap">#{footLabel}</p>
         </div>
       </Link>
-      <Button
-        variant="ghost"
-        className="absolute top-[14px] right-[14px] size-10"
-        onClick={onDelete}
-      >
+      <Button variant="ghost" className="absolute top-2 right-1 size-10" onClick={onDelete}>
         <Trash2 className="text-neutral-600" size={16} strokeWidth={2} />
       </Button>
     </div>
