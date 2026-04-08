@@ -27,6 +27,7 @@ export const AdjustOutfitButton = ({
       onClick={onClick}
       aria-label={ariaLabel}
       disabled={disabled}
+      id="adjustOutfitBtn"
       className={cn(
         baseClassName,
         expandedClassName,

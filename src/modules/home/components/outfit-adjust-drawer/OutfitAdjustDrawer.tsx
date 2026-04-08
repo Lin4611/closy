@@ -5,6 +5,7 @@ import { useAppSelector } from '@/store/hooks'
 
 import { MessageComposer } from './MessageComposer'
 import { OutfitAdjustChat } from './OutfitAdjustChat'
+import { OutfitAdjustLoadingView } from './OutfitAdjustLoadingView'
 import { OutfitAdjustResultView } from './OutfitAdjustResultView'
 import { QuickAdjustOptions } from './QuickAdjustOptions'
 import type { OutfitAdjustChatMessage } from '../../types/outfitAdjustChat'
@@ -17,7 +18,7 @@ type OutfitAdjustDrawerProps = {
   outfitImageUrl: string
   outfitId: string
 }
-type DrawerMode = 'initial' | 'chat' | 'result'
+type DrawerMode = 'initial' | 'chat' | 'loading' | 'result'
 type OutfitAdjustCountStorage = {
   date: string
   remainingCount: number
@@ -132,9 +133,11 @@ export const OutfitAdjustDrawer = ({
             : msg,
         ),
       )
-      setTimeout(() => {
-        setMode('result')
-      }, 2000)
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+      setMode('loading')
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+      setMode('result')
+
       // 模擬打完後跳轉
     } catch (error) {
       setMessages((prev) =>
@@ -193,23 +196,26 @@ export const OutfitAdjustDrawer = ({
           </>
         )}
         {mode === 'chat' && <OutfitAdjustChat messages={messages} />}
+        {mode === 'loading' && <OutfitAdjustLoadingView />}
         {mode === 'result' && <OutfitAdjustResultView />}
-        <div className="flex flex-col items-center gap-4">
-          <MessageComposer
-            value={message}
-            onChange={setMessage}
-            onSubmit={handleSubmit}
-            onVoiceInput={handleVoiceInput}
-            disabled={isComposerDisabled}
-          />
-          <span className="font-paragraph-xs text-neutral-500">
-            {count === null
-              ? null
-              : count > 0
-                ? `今天還可以調整${count}次`
-                : '今日調整次數已達上限'}
-          </span>
-        </div>
+        {mode !== 'loading' && (
+          <div className="flex flex-col items-center gap-4">
+            <MessageComposer
+              value={message}
+              onChange={setMessage}
+              onSubmit={handleSubmit}
+              onVoiceInput={handleVoiceInput}
+              disabled={isComposerDisabled}
+            />
+            <span className="font-paragraph-xs text-neutral-500">
+              {count === null
+                ? null
+                : count > 0
+                  ? `今天還可以調整${count}次`
+                  : '今日調整次數已達上限'}
+            </span>
+          </div>
+        )}
       </DrawerContent>
     </Drawer>
   )
