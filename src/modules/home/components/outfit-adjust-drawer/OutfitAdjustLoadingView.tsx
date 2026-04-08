@@ -2,7 +2,7 @@ import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 
 export const OutfitAdjustLoadingView = () => {
-  const s = 'skeleton-two-tone animate-none'
+  const s = 'skeleton-two-tone'
 
   return (
     <>

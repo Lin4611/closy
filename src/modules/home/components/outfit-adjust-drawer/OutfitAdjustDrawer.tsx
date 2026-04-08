@@ -133,12 +133,10 @@ export const OutfitAdjustDrawer = ({
             : msg,
         ),
       )
-      setTimeout(() => {
-        setMode('loading')
-        setTimeout(() => {
-          setMode('result')
-        }, 2000)
-      }, 2000)
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+      setMode('loading')
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+      setMode('result')
 
       // 模擬打完後跳轉
     } catch (error) {
@@ -200,7 +198,7 @@ export const OutfitAdjustDrawer = ({
         {mode === 'chat' && <OutfitAdjustChat messages={messages} />}
         {mode === 'loading' && <OutfitAdjustLoadingView />}
         {mode === 'result' && <OutfitAdjustResultView />}
-        {mode !== 'result' && mode !== 'loading' && (
+        {mode !== 'loading' && (
           <div className="flex flex-col items-center gap-4">
             <MessageComposer
               value={message}
