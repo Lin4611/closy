@@ -54,9 +54,12 @@ const OutfitOccasionDetail = () => {
     return (
       <AppShell activeTab="outfit">
         <div className="flex min-h-0 flex-1 flex-col">
-          <header className="sticky top-0 z-10 bg-white px-4 py-3">
-            <div className="flex items-center gap-20">
-              <Link href="/outfit" className="flex h-10 w-10 items-center justify-center">
+          <header className="sticky top-0 z-10 bg-white px-4 py-[18px]">
+            <div className="relative flex items-center justify-center">
+              <Link
+                href="/outfit"
+                className="absolute left-0 flex size-10 items-center justify-center"
+              >
                 <ChevronLeft className="text-neutral-700" size={24} strokeWidth={2} />
               </Link>
               <h1 className="font-label-xxl">場合詳情</h1>
