@@ -4,7 +4,7 @@ import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
 import { cn } from '@/lib/utils'
 import { updateOccasion } from '@/modules/common/api/occasion'
-import type { Occasion } from '@/modules/home/types/occasion'
+import type { Occasion } from '@/modules/common/types/occasion'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { updateUserOccasion } from '@/store/slices/userSlice'
 

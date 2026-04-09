@@ -1,7 +1,7 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 
 import type { LoginUser } from '@/modules/guide/types/auth'
-import type { Occasion } from '@/modules/home/types/occasion'
+import type { Occasion } from '@/modules/common/types/occasion'
 type UserState = {
   user: LoginUser | null
   isLoggedIn: boolean

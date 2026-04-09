@@ -5,9 +5,8 @@ import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
 import { updateOccasion } from '@/modules/common/api/occasion'
 import { PrimaryButton } from '@/modules/common/components/PrimaryButton'
+import { occasionMetaMap, type Occasion } from '@/modules/common/types/occasion'
 import { OccasionOptionCard } from '@/modules/guide/components/OccasionOptionCard'
-import type { Occasion } from '@/modules/home/types/occasion'
-import { occasionMetaMap } from '@/modules/outfit/types/outfitTypes'
 
 const OccasionPreference = () => {
   const router = useRouter()

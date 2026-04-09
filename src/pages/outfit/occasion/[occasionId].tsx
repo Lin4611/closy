@@ -5,10 +5,10 @@ import { useRef, useState } from 'react'
 
 import { AppShell } from '@/modules/common/components/AppShell'
 import { ConfirmAlertDialog } from '@/modules/common/components/ConfirmAlertDialog'
+import { occasionMetaMap } from '@/modules/common/types/occasion'
 import { OutfitEmptyOverView } from '@/modules/outfit/components/OutfitEmptyOverView'
 import { OutfitsOverview } from '@/modules/outfit/components/OutfitsOverview'
 import { mockOutfits } from '@/modules/outfit/data/mockOutfits'
-import { occasionMetaMap } from '@/modules/outfit/types/outfitTypes'
 
 const isValidOccasionId = (value: string) => {
   return occasionMetaMap.some((item) => item.id === value)
