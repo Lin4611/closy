@@ -2,52 +2,41 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useEffect, useMemo, useState } from 'react'
 
-import { RecognitionSuccessToast } from '@/modules/wardrobe/components/RecognitionSuccessToast'
+import { Toast } from '@/modules/common/components/feedback/Toast'
 import { WardrobeReviewForm } from '@/modules/wardrobe/components/WardrobeReviewForm'
 import { useWardrobeMock } from '@/modules/wardrobe/hooks/useWardrobeMock'
-import type { WardrobeDraftItem } from '@/modules/wardrobe/types'
+import type { WardrobeItem, WardrobeReviewDraft } from '@/modules/wardrobe/types'
 
-const WardrobeEditPage = () => {
-  const router = useRouter()
-  const { id } = router.query
-  const { getItemById, updateItem } = useWardrobeMock()
-  const [draft, setDraft] = useState<WardrobeDraftItem | null>(null)
-  const [isSuccessOpen, setIsSuccessOpen] = useState(false)
+const createDraftFromItem = (item: WardrobeItem): WardrobeReviewDraft => ({
+  name: item.name,
+  brand: item.brand,
+  category: item.category,
+  occasionKeys: item.occasionKeys,
+  seasonKeys: item.seasonKeys,
+  colorKey: item.colorKeys[0] ?? null,
+  imageUrl: item.imageUrl,
+  note: item.note,
+})
 
-  const item = useMemo(() => {
-    if (typeof id !== 'string') return null
-    return getItemById(id)
-  }, [getItemById, id])
+type WardrobeEditContentProps = {
+  item: WardrobeItem
+}
+
+const WardrobeEditContent = ({ item }: WardrobeEditContentProps) => {
+  const [draft, setDraft] = useState<WardrobeReviewDraft>(() => createDraftFromItem(item))
+  const [isUnsupportedEditToastOpen, setIsUnsupportedEditToastOpen] = useState(false)
 
   useEffect(() => {
-    if (!item) return
+    if (!isUnsupportedEditToastOpen) return
 
-    setDraft({
-      name: item.name,
-      brand: item.brand,
-      category: item.category,
-      occasionKeys: item.occasionKeys,
-      seasonKeys: item.seasonKeys,
-      colorKeys: item.colorKeys,
-      imageUrl: item.imageUrl,
-      note: item.note,
-    })
-  }, [item])
+    const timeoutId = window.setTimeout(() => {
+      setIsUnsupportedEditToastOpen(false)
+    }, 1800)
 
-  if (!item || !draft) {
-    return (
-      <div className="px-4 py-10">
-        <Link href="/wardrobe" className="font-label-sm text-neutral-500">
-          ← 返回我的衣櫃
-        </Link>
-        <div className="mt-10 rounded-[24px] bg-white p-6 text-center">
-          <p className="font-label-md text-neutral-900">找不到可編輯的衣物</p>
-        </div>
-      </div>
-    )
-  }
+    return () => window.clearTimeout(timeoutId)
+  }, [isUnsupportedEditToastOpen])
 
-  const isDisabled = !draft.name.trim() || !draft.brand.trim() || draft.colorKeys.length === 0
+  const isDisabled = !draft.name.trim() || !draft.colorKey
 
   return (
     <div className="bg-neutral-100 pb-24">
@@ -66,13 +55,7 @@ const WardrobeEditPage = () => {
           type="button"
           disabled={isDisabled}
           onClick={() => {
-            if (typeof id !== 'string') return
-            updateItem(id, draft)
-            setIsSuccessOpen(true)
-            window.setTimeout(() => {
-              setIsSuccessOpen(false)
-              void router.push(`/wardrobe/${id}`)
-            }, 900)
+            setIsUnsupportedEditToastOpen(true)
           }}
           className={`font-label-md h-11 w-full rounded-full ${
             isDisabled ? 'bg-neutral-300 text-neutral-500' : 'bg-primary-900 text-white'
@@ -82,9 +65,39 @@ const WardrobeEditPage = () => {
         </button>
       </div>
 
-      <RecognitionSuccessToast open={isSuccessOpen} message="儲存成功" />
+      <Toast
+        open={isUnsupportedEditToastOpen}
+        message="目前尚未支援編輯衣物同步"
+        tone="error"
+      />
     </div>
   )
+}
+
+const WardrobeEditPage = () => {
+  const router = useRouter()
+  const { id } = router.query
+  const { getItemById } = useWardrobeMock()
+
+  const item = useMemo(() => {
+    if (typeof id !== 'string') return null
+    return getItemById(id)
+  }, [getItemById, id])
+
+  if (!item) {
+    return (
+      <div className="px-4 py-10">
+        <Link href="/wardrobe" className="font-label-sm text-neutral-500">
+          ← 返回我的衣櫃
+        </Link>
+        <div className="mt-10 rounded-[24px] bg-white p-6 text-center">
+          <p className="font-label-md text-neutral-900">找不到可編輯的衣物</p>
+        </div>
+      </div>
+    )
+  }
+
+  return <WardrobeEditContent key={item.id} item={item} />
 }
 
 export default WardrobeEditPage

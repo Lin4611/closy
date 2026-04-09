@@ -1,8 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { AppShell } from '@/modules/common/components/AppShell'
+import { Toast } from '@/modules/common/components/feedback/Toast'
 import { DeleteClothingDialog } from '@/modules/wardrobe/components/DeleteClothingDialog'
-import { DeleteSuccessDialog } from '@/modules/wardrobe/components/DeleteSuccessDialog'
 import { WardrobeFilterChips } from '@/modules/wardrobe/components/WardrobeFilterChips'
 import { WardrobeGrid } from '@/modules/wardrobe/components/WardrobeGrid'
 import { WardrobeHeader } from '@/modules/wardrobe/components/WardrobeHeader'
@@ -10,10 +10,20 @@ import { useWardrobeMock } from '@/modules/wardrobe/hooks/useWardrobeMock'
 import type { WardrobeCategoryKey } from '@/modules/wardrobe/types'
 
 const WardrobePage = () => {
-  const { items, deleteItem } = useWardrobeMock()
+  const { items } = useWardrobeMock()
   const [activeCategory, setActiveCategory] = useState<WardrobeCategoryKey>('all')
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
-  const [isDeleteSuccessOpen, setIsDeleteSuccessOpen] = useState(false)
+  const [isUnsupportedDeleteToastOpen, setIsUnsupportedDeleteToastOpen] = useState(false)
+
+  useEffect(() => {
+    if (!isUnsupportedDeleteToastOpen) return
+
+    const timeoutId = window.setTimeout(() => {
+      setIsUnsupportedDeleteToastOpen(false)
+    }, 1800)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [isUnsupportedDeleteToastOpen])
 
   const counts = useMemo(() => {
     return items.reduce(
@@ -36,7 +46,7 @@ const WardrobePage = () => {
       <div className="relative">
         <WardrobeHeader />
 
-        <main className="mt-16 pt-5 space-y-6">
+        <main className="mt-16 space-y-6 pt-5">
           <WardrobeFilterChips
             activeCategory={activeCategory}
             counts={counts}
@@ -50,16 +60,15 @@ const WardrobePage = () => {
           open={Boolean(deleteTargetId)}
           onClose={() => setDeleteTargetId(null)}
           onConfirm={() => {
-            if (!deleteTargetId) return
-            deleteItem(deleteTargetId)
             setDeleteTargetId(null)
-            setIsDeleteSuccessOpen(true)
+            setIsUnsupportedDeleteToastOpen(true)
           }}
         />
 
-        <DeleteSuccessDialog
-          open={isDeleteSuccessOpen}
-          onClose={() => setIsDeleteSuccessOpen(false)}
+        <Toast
+          open={isUnsupportedDeleteToastOpen}
+          message="目前尚未支援刪除衣物"
+          tone="error"
         />
       </div>
     </AppShell>
