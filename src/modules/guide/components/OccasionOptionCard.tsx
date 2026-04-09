@@ -1,17 +1,18 @@
 import Image from 'next/image'
 
 import { cn } from '@/lib/utils'
+
 type OccasionOptionCardProps = {
   imageUrl: string
-  title: string
-  desc: string
+  name: string
+  description: string
   onClick: () => void
   isSelected: boolean
 }
 export const OccasionOptionCard = ({
   imageUrl,
-  title,
-  desc,
+  name,
+  description,
   onClick,
   isSelected,
 }: OccasionOptionCardProps) => {
@@ -23,10 +24,10 @@ export const OccasionOptionCard = ({
       )}
       onClick={onClick}
     >
-      <Image src={imageUrl} alt={title} width={40} height={40} />
+      <Image src={imageUrl} alt={name} width={40} height={40} />
       <div className="flex flex-col items-start gap-1">
-        <p className="font-label-md text-neutral-800">{title}</p>
-        <p className="font-paragraph-xs text-neutral-400">{desc}</p>
+        <p className="font-label-md text-neutral-800">{name}</p>
+        <p className="font-paragraph-xs text-neutral-400">{description}</p>
       </div>
     </button>
   )

@@ -1,11 +1,32 @@
+import { useRouter } from 'next/router'
 import { useState } from 'react'
 
+import { showToast } from '@/components/ui/sonner'
+import { ApiError } from '@/lib/api/client'
+import { updateOccasion } from '@/modules/common/api/occasion'
 import { PrimaryButton } from '@/modules/common/components/PrimaryButton'
 import { OccasionOptionCard } from '@/modules/guide/components/OccasionOptionCard'
-import { occasionOptions } from '@/modules/guide/data/occasionOptions'
+import type { Occasion } from '@/modules/home/types/occasion'
+import { occasionMetaMap } from '@/modules/outfit/types/outfitTypes'
 
 const OccasionPreference = () => {
-  const [occasionPreference, setOccasionPreference] = useState<number>(0)
+  const router = useRouter()
+  const [occasionPreference, setOccasionPreference] = useState<Occasion>('socialGathering')
+
+  const handleOccasionChange = async (value: string) => {
+    try {
+      await updateOccasion(value as Occasion)
+    } catch (error) {
+      if (error instanceof ApiError) {
+        showToast.error(error.message)
+      } else {
+        showToast.error('更新場合失敗，請稍後再試')
+      }
+    } finally {
+      router.push('/guide/location-service')
+    }
+  }
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-between px-4 pt-16 pb-12">
       <section className="flex w-full flex-col gap-4">
@@ -16,17 +37,21 @@ const OccasionPreference = () => {
           </p>
         </div>
         <div className="flex flex-col gap-4 px-2 py-3">
-          {occasionOptions.map((option) => (
+          {occasionMetaMap.map((option) => (
             <OccasionOptionCard
-              key={option.id}
               {...option}
-              onClick={() => setOccasionPreference(option.id)}
-              isSelected={option.id === occasionPreference}
+              key={option.name}
+              onClick={() => setOccasionPreference(option.key)}
+              isSelected={option.key === occasionPreference}
             />
           ))}
         </div>
       </section>
-      <PrimaryButton content="完成" href="/guide/location-service" className="mt-auto" />
+      <PrimaryButton
+        content="完成"
+        onClick={() => handleOccasionChange(occasionPreference)}
+        className="mt-auto"
+      />
     </main>
   )
 }

@@ -17,7 +17,7 @@ const ToastPortal = ({ message, tone }: { message: string; tone: keyof typeof to
       <Overlay />
       <div
         className={cn(
-          'font-label-md relative z-10 flex w-full items-center justify-center rounded-[12px] px-[50px] py-4',
+          'font-label-md relative z-10 flex max-w-[200px] items-center justify-center rounded-[12px] px-[50px] py-4',
           toneStyles[tone],
         )}
       >
