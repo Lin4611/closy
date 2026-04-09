@@ -132,6 +132,12 @@ export const useWardrobeMock = () => {
     return normalizedItem
   }, [])
 
+  const replaceItems = useCallback((items: WardrobeItem[]) => {
+    writeStoredItems(items)
+
+    return items.map(normalizeItem)
+  }, [])
+
   const addItem = useCallback(
     (draft: WardrobeDraftItem) => {
       const nextItem = mapDraftToWardrobeItem(draft)
@@ -197,6 +203,7 @@ export const useWardrobeMock = () => {
       isReady,
       items,
       appendItem,
+      replaceItems,
       addItem,
       updateItem,
       deleteItem,
@@ -209,6 +216,7 @@ export const useWardrobeMock = () => {
     [
       addItem,
       appendItem,
+      replaceItems,
       clearRecognitionDraft,
       deleteItem,
       getItemById,

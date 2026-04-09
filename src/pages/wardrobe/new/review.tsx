@@ -41,7 +41,7 @@ const getSaveErrorMessage = (error: unknown) => {
 
 const WardrobeReviewPage = () => {
   const router = useRouter()
-  const { appendItem, clearRecognitionDraft } = useWardrobeMock()
+  const { replaceItems, clearRecognitionDraft } = useWardrobeMock()
   const { getContext, getReviewDraft, saveReviewDraft, clearFlow } = useWardrobeCreationFlow()
 
   const [draft, setDraft] = useState<WardrobeReviewDraft | null>(null)
@@ -109,13 +109,12 @@ const WardrobeReviewPage = () => {
       })
 
       const result = await createClothes(payload)
-      const createdItem = result.list[0]
 
-      if (!createdItem) {
-        throw new Error('新增衣物成功，但未取得衣物資料')
+      if (!Array.isArray(result.list) || result.list.length === 0) {
+        throw new Error('新增衣物成功，但未取得衣櫃列表資料')
       }
 
-      appendItem(mapCreateClothesResponseItemToWardrobeItem(createdItem))
+      replaceItems(result.list.map(mapCreateClothesResponseItemToWardrobeItem))
       clearRecognitionDraft()
       clearFlow()
 
