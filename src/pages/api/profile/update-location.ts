@@ -2,32 +2,36 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 
 import { ApiError, apiClient } from '@/lib/api/client'
 import type { ApiResponse } from '@/lib/api/types'
-import type { Occasion } from '@/modules/common/types/occasion'
 
-type UpdateOccasionBody = {
-  occasionId?: Occasion
+type UpdateLocationBody = {
+  latitude: number | null
+  longitude: number | null
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'PATCH') return res.status(405).end()
+  if (req.method !== 'POST') return res.status(405).end()
 
   const accessToken = req.cookies.accessToken
-  const { occasionId } = (req.body || {}) as UpdateOccasionBody
+  const { latitude, longitude } = (req.body || {}) as UpdateLocationBody
 
   if (!accessToken) {
     return res.status(401).json({ message: '尚未登入' })
   }
 
-  if (!occasionId) {
-    return res.status(400).json({ message: '缺少 occasion' })
+  if (latitude === undefined) {
+    return res.status(400).json({ message: '缺少 latitude' })
+  }
+
+  if (longitude === undefined) {
+    return res.status(400).json({ message: '缺少 longitude' })
   }
 
   try {
-    const response = await apiClient<ApiResponse<null>, UpdateOccasionBody>({
+    const response = await apiClient<ApiResponse<null>, UpdateLocationBody>({
       baseUrl: process.env.API_BASE_URL,
-      endpoint: '/user/preferences/occasions',
-      method: 'PATCH',
-      body: { occasionId },
+      endpoint: '/user/location',
+      method: 'POST',
+      body: { latitude, longitude },
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -39,6 +43,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(error.statusCode).json({ message: error.message })
     }
 
-    return res.status(500).json({ message: '更新場合失敗' })
+    return res.status(500).json({ message: '更新位置失敗' })
   }
 }

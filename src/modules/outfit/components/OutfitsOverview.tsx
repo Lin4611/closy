@@ -1,6 +1,7 @@
 import { OutfitCard } from './OutfitCard'
+import { occasionLabelMap } from '@/modules/common/types/occasion'
 import type { OutfitSummary } from '../types/outfitTypes'
-import { occasionLabelMap, type OutfitTab } from '../types/outfitTypes'
+import type { OutfitTab } from '../types/outfitTypes'
 
 type OutfitsOverviewProps = {
   outfits: OutfitSummary[]

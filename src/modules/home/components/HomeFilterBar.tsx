@@ -3,13 +3,13 @@ import { useState } from 'react'
 import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
 import { cn } from '@/lib/utils'
-import type { Occasion } from '@/modules/home/types/occasion'
+import { updateOccasion } from '@/modules/common/api/occasion'
+import type { Occasion } from '@/modules/common/types/occasion'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { updateUserOccasion } from '@/store/slices/userSlice'
 
 import { DaySwitch } from './DaySwitch'
 import { OccasionSelect } from './OccasionSelect'
-import { updateOccasion } from '../api/occasion'
 type HomeFilterBarProps = {
   className?: string
 }

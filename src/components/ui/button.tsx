@@ -20,7 +20,7 @@ const buttonVariants = cva(
           'bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40 text-sm font-medium',
         link: 'text-primary underline-offset-4 hover:underline text-sm font-medium',
         brand:
-          'bg-neutral-900 text-white disabled:bg-neutral-200 disabled:text-neutral-400 disabled:opacity-100',
+          'bg-primary-800 text-white disabled:bg-neutral-200 disabled:text-neutral-400 disabled:opacity-100',
         choice:
           'border-[0.5px] border-neutral-300 bg-white text-neutral-800 data-[state=checked]:border-neutral-900 data-[state=checked]:border-2',
         oauth:
