@@ -1,23 +1,63 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useState } from 'react'
+import { useEffect, useRef, useState, type ChangeEvent } from 'react'
 
 import { RECOGNITION_ENTRY_KEY } from '@/modules/wardrobe/constants/recognition'
+import { useWardrobeCreationFlow } from '@/modules/wardrobe/hooks/useWardrobeCreationFlow'
 
 const WardrobeCameraPage = () => {
   const router = useRouter()
+  const { clearFlow, initializeFlow } = useWardrobeCreationFlow()
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const previewUrlRef = useRef<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleCapture = () => {
+
+  useEffect(() => {
+    return () => {
+      if (previewUrlRef.current) {
+        URL.revokeObjectURL(previewUrlRef.current)
+      }
+    }
+  }, [])
+
+  const handleOpenCamera = () => {
     if (isSubmitting) return
+    fileInputRef.current?.click()
+  }
+
+  const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+
+    if (!file) return
 
     if (typeof window !== 'undefined') {
       window.sessionStorage.setItem(RECOGNITION_ENTRY_KEY, 'camera')
     }
 
+    if (previewUrlRef.current) {
+      URL.revokeObjectURL(previewUrlRef.current)
+    }
+
+    const previewUrl = URL.createObjectURL(file)
+    previewUrlRef.current = previewUrl
+
+    clearFlow()
+    initializeFlow({
+      entryType: 'camera',
+      file,
+      previewUrl,
+    })
+
     setIsSubmitting(true)
-    void router.push('/wardrobe/new/processing')
+
+    try {
+      await router.push('/wardrobe/new/processing')
+    } finally {
+      event.target.value = ''
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -29,12 +69,21 @@ const WardrobeCameraPage = () => {
         <span className="w-4" />
       </header>
 
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={handleFileChange}
+      />
+
       <div className="px-4 pt-1 pb-6">
         <div className="rounded-none bg-[#D9D9D9] px-3 pt-12 pb-12">
           <button
             type="button"
             disabled={isSubmitting}
-            onClick={handleCapture}
+            onClick={handleOpenCamera}
             className="mx-auto mb-3 flex h-10 items-center rounded-[10px] bg-primary-800 px-4 font-label-xs text-white disabled:opacity-60"
           >
             請先拍攝一件上衣
@@ -60,7 +109,7 @@ const WardrobeCameraPage = () => {
         <button
           type="button"
           disabled={isSubmitting}
-          onClick={handleCapture}
+          onClick={handleOpenCamera}
           className="flex h-10.5 w-10.5 items-center justify-center rounded-full border-2 border-white bg-[#D9D9D9] shadow-[0_6px_16px_rgba(0,0,0,0.28)] disabled:opacity-60"
         >
           <span className="h-7 w-7 rounded-full border border-neutral-500 bg-white" />

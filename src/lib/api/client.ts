@@ -67,9 +67,9 @@ export const apiClient = async <TResponse, TBody = unknown>({
   if (!response.ok) {
     const message =
       typeof data === 'object' &&
-      data !== null &&
-      'message' in data &&
-      typeof (data as { message?: unknown }).message === 'string'
+        data !== null &&
+        'message' in data &&
+        typeof (data as { message?: unknown }).message === 'string'
         ? (data as { message: string }).message
         : '請求失敗'
 

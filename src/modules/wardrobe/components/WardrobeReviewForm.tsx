@@ -7,11 +7,11 @@ import { WardrobeTagGroup } from './WardrobeTagGroup'
 import { wardrobeCategoryOptions } from '../constants/categoryOptions'
 import { wardrobeOccasionOptions } from '../constants/occasionOptions'
 import { wardrobeSeasonOptions } from '../constants/seasonOptions'
-import type { WardrobeDraftItem } from '../types'
+import type { WardrobeReviewDraft } from '../types'
 
 type WardrobeReviewFormProps = {
-  value: WardrobeDraftItem
-  onChange: (next: WardrobeDraftItem) => void
+  value: WardrobeReviewDraft
+  onChange: (next: WardrobeReviewDraft) => void
 }
 
 const categoryPreviewEmoji = {
@@ -25,11 +25,14 @@ const categoryPreviewEmoji = {
 
 const formCategoryOptions = wardrobeCategoryOptions.filter(
   (option): option is (typeof wardrobeCategoryOptions)[number] & {
-    key: WardrobeDraftItem['category']
+    key: WardrobeReviewDraft['category']
   } => option.key !== 'all'
 )
 
 export const WardrobeReviewForm = ({ value, onChange }: WardrobeReviewFormProps) => {
+  const name = value.name ?? ''
+  const brand = value.brand ?? ''
+
   const handleNameChange = (event: ChangeEvent<HTMLInputElement>) => {
     onChange({ ...value, name: event.target.value })
   }
@@ -46,7 +49,7 @@ export const WardrobeReviewForm = ({ value, onChange }: WardrobeReviewFormProps)
             <div className="relative h-full w-full">
               <Image
                 src={value.imageUrl}
-                alt={value.name}
+                alt={name || '衣物圖片'}
                 fill
                 sizes="(max-width: 375px) 80vw, 220px"
                 className="object-contain p-4"
@@ -62,7 +65,7 @@ export const WardrobeReviewForm = ({ value, onChange }: WardrobeReviewFormProps)
         <label className="block space-y-1.5">
           <span className="font-label-md text-neutral-900">名稱</span>
           <input
-            value={value.name}
+            value={name}
             onChange={handleNameChange}
             placeholder="請輸入衣物名稱"
             className="h-9 w-full rounded-full border border-neutral-300 bg-neutral-100 px-4 font-paragraph-sm text-neutral-900 outline-none focus:border-primary-900"
@@ -101,33 +104,24 @@ export const WardrobeReviewForm = ({ value, onChange }: WardrobeReviewFormProps)
 
         <WardrobeDetailSection title="色系">
           <WardrobeColorPalette
-            selectedKeys={value.colorKeys}
-            onChange={(next) => onChange({ ...value, colorKeys: next })}
+            selectedKeys={value.colorKey ? [value.colorKey] : []}
+            selectionMode="single"
+            onChange={(next) =>
+              onChange({
+                ...value,
+                colorKey: next[0] ?? null,
+              })
+            }
           />
         </WardrobeDetailSection>
 
         <label className="block space-y-1.5">
           <span className="font-label-md text-neutral-900">品牌</span>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              className="inline-flex h-8 items-center rounded-full bg-primary-900 px-3 font-label-xs text-white"
-            >
-              {value.brand}
-            </button>
-            <button
-              type="button"
-              className="inline-flex h-8 items-center font-label-xs text-neutral-500"
-              onClick={(event) => event.preventDefault()}
-            >
-              新增品牌 +
-            </button>
-          </div>
           <input
-            value={value.brand}
+            value={brand}
             onChange={handleBrandChange}
-            placeholder="請輸入品牌名稱"
-            className="sr-only"
+            placeholder="可選填品牌名稱"
+            className="h-9 w-full rounded-full border border-neutral-300 bg-neutral-100 px-4 font-paragraph-sm text-neutral-900 outline-none focus:border-primary-900"
             aria-label="品牌"
           />
         </label>

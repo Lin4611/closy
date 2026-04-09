@@ -8,6 +8,7 @@ type WardrobeColorPaletteProps = {
   onChange: (next: WardrobeColorKey[]) => void
   displayKeys?: WardrobeColorKey[]
   readOnly?: boolean
+  selectionMode?: 'single' | 'multiple'
 }
 
 export const WardrobeColorPalette = ({
@@ -15,6 +16,7 @@ export const WardrobeColorPalette = ({
   onChange,
   displayKeys,
   readOnly = false,
+  selectionMode = 'multiple',
 }: WardrobeColorPaletteProps) => {
   const visibleColors = wardrobeColorOptions.filter((color) =>
     (displayKeys ?? wardrobeColorOptions.map((option) => option.key)).includes(color.key)
@@ -24,6 +26,12 @@ export const WardrobeColorPalette = ({
     if (readOnly) return
 
     const hasKey = selectedKeys.includes(key)
+
+    if (selectionMode === 'single') {
+      onChange(hasKey ? selectedKeys : [key])
+      return
+    }
+
     onChange(hasKey ? selectedKeys.filter((item) => item !== key) : [...selectedKeys, key])
   }
 

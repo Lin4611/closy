@@ -73,3 +73,47 @@ export type WardrobeDraftItem = {
   imageUrl?: string
   note?: string
 }
+
+export type WardrobeReviewDraft = {
+  name: string
+  brand: string
+  category: Exclude<WardrobeCategoryKey, 'all'>
+  occasionKeys: WardrobeOccasionKey[]
+  seasonKeys: WardrobeSeasonKey[]
+  colorKey: WardrobeColorKey | null
+  imageUrl?: string
+  note?: string
+}
+
+export type WardrobeRecognitionSource = 'camera' | 'album'
+
+export type WardrobeProcessingStage =
+  | 'idle'
+  | 'removingBackground'
+  | 'removeBackgroundCompleted'
+  | 'analyzing'
+  | 'completed'
+  | 'failed'
+
+export type WardrobeCreationFlowContext = {
+  entryType: WardrobeRecognitionSource
+  previewUrl?: string
+  sourceFile?: {
+    name: string
+    size: number
+    type: string
+  }
+  removeBackgroundResult?: {
+    cloudinaryImageUrl: string
+    imageHash: string
+  }
+  analyzeResult?: {
+    cloudImgUrl: string
+    category: Exclude<WardrobeCategoryKey, 'all'>
+    name: string
+    seasons: WardrobeSeasonKey[]
+    occasions: WardrobeOccasionKey[]
+    color: WardrobeColorKey
+    brand: string
+  }
+}
