@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useRef, useState, type ChangeEvent } from 'react'
+import { useEffect, useRef, useState, type ChangeEvent } from 'react'
 
 import { RECOGNITION_ENTRY_KEY } from '@/modules/wardrobe/constants/recognition'
 import { useWardrobeCreationFlow } from '@/modules/wardrobe/hooks/useWardrobeCreationFlow'
@@ -12,6 +12,15 @@ const WardrobeAlbumPage = () => {
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const previewUrlRef = useRef<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+
+  useEffect(() => {
+    return () => {
+      if (previewUrlRef.current) {
+        URL.revokeObjectURL(previewUrlRef.current)
+      }
+    }
+  }, [])
 
   const handleOpenAlbum = () => {
     if (isSubmitting) return

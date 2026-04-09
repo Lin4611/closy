@@ -105,6 +105,7 @@ export const WardrobeReviewForm = ({ value, onChange }: WardrobeReviewFormProps)
         <WardrobeDetailSection title="色系">
           <WardrobeColorPalette
             selectedKeys={value.colorKey ? [value.colorKey] : []}
+            selectionMode="single"
             onChange={(next) =>
               onChange({
                 ...value,
@@ -116,28 +117,11 @@ export const WardrobeReviewForm = ({ value, onChange }: WardrobeReviewFormProps)
 
         <label className="block space-y-1.5">
           <span className="font-label-md text-neutral-900">品牌</span>
-          <div className="flex flex-wrap gap-2">
-            {brand.trim() ? (
-              <button
-                type="button"
-                className="inline-flex h-8 items-center rounded-full bg-primary-900 px-3 font-label-xs text-white"
-              >
-                {brand}
-              </button>
-            ) : null}
-            <button
-              type="button"
-              className="inline-flex h-8 items-center font-label-xs text-neutral-500"
-              onClick={(event) => event.preventDefault()}
-            >
-              新增品牌 +
-            </button>
-          </div>
           <input
             value={brand}
             onChange={handleBrandChange}
-            placeholder="請輸入品牌名稱"
-            className="sr-only"
+            placeholder="可選填品牌名稱"
+            className="h-9 w-full rounded-full border border-neutral-300 bg-neutral-100 px-4 font-paragraph-sm text-neutral-900 outline-none focus:border-primary-900"
             aria-label="品牌"
           />
         </label>
