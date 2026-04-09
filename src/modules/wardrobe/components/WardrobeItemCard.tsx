@@ -45,19 +45,19 @@ export const WardrobeItemCard = ({ item, onDelete }: WardrobeItemCardProps) => {
   }, [item.imageUrl, item.name])
 
   return (
-    <article className="rounded-[12px] border border-neutral-200 bg-white px-3 pt-3 pb-2">
+    <article className="rounded-[16px] border border-neutral-300 bg-white p-3 space-y-3 shadow-[0_2px_12px_rgba(0,0,0,0.03)]">
       <Link href={`/wardrobe/${item.id}`} className="block">
         <div className="relative flex h-24 items-center justify-center overflow-hidden rounded-[8px]">
           <div className="relative h-full w-full px-3 py-1">{preview}</div>
         </div>
       </Link>
 
-      <div className="mt-2 flex items-end justify-between gap-2">
+      <div className="flex items-end justify-between gap-2">
         <Link href={`/wardrobe/${item.id}`} className="min-w-0 flex-1">
-          <div className="space-y-0.5">
-            <p className="truncate font-label-xs text-neutral-900">{item.name}</p>
-            <p className="font-label-xxs-r text-neutral-500">{item.createdAt}</p>
-            <p className="truncate font-label-xxs-r text-neutral-400">{item.brand}</p>
+          <div className="space-y-1">
+            <p className="truncate font-label-sm text-neutral-900">{item.name}</p>
+            <p className="font-label-xs text-neutral-500">{item.createdAt}</p>
+            <p className="truncate font-label-xs text-neutral-400">{item.brand}</p>
           </div>
         </Link>
 
@@ -65,7 +65,7 @@ export const WardrobeItemCard = ({ item, onDelete }: WardrobeItemCardProps) => {
           <button
             type="button"
             onClick={() => setIsMenuOpen((prev) => !prev)}
-            className="flex h-6 w-6 items-center justify-center text-neutral-400"
+            className="flex h-6 w-6 items-center justify-center text-neutral-600"
             aria-label={`${item.name} 更多操作`}
           >
             <EllipsisVertical className="h-3.5 w-3.5" strokeWidth={2.1} />

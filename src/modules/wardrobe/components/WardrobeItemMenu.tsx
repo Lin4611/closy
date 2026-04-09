@@ -18,21 +18,21 @@ export const WardrobeItemMenu = ({
   return (
     <div
       className={cn(
-        'absolute z-30 min-w-22 overflow-hidden rounded-[14px] bg-white py-1 shadow-[0_8px_20px_rgba(15,23,42,0.14)]',
-        align === 'card' ? 'right-0 bottom-7' : 'top-8 right-0'
+        'absolute z-30 min-w-39 overflow-hidden rounded-[14px] bg-white p-2 space-y-1 shadow-[0_4px_4px_rgba(0,0,0,0.25)]',
+        align === 'card' ? 'top-9.5 -right-3' : 'top-8 right-0'
       )}
     >
       <button
         type="button"
         onClick={onEdit}
-        className="block w-full px-4 py-2 text-left font-paragraph-sm text-neutral-700"
+        className="block w-full p-2 text-left font-paragraph-sm text-neutral-800"
       >
         編輯
       </button>
       <button
         type="button"
         onClick={onDelete}
-        className="block w-full px-4 py-2 text-left font-paragraph-sm text-neutral-700"
+        className="block w-full p-2 text-left font-paragraph-sm text-neutral-800"
       >
         刪除
       </button>

@@ -1,19 +1,25 @@
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
+import { ApiError } from '@/lib/api/client'
 import { cn } from '@/lib/utils'
+import { Toast } from '@/modules/common/components/feedback/Toast'
+import { createClothes } from '@/modules/wardrobe/api/createClothes'
 import { WardrobeReviewForm } from '@/modules/wardrobe/components/WardrobeReviewForm'
+import { wardrobeOccasionOptions } from '@/modules/wardrobe/constants/occasionOptions'
 import {
   RECOGNITION_ENTRY_KEY,
   type RecognitionEntry,
 } from '@/modules/wardrobe/constants/recognition'
-import {
-  mockAlbumRecognitionDraft,
-  mockRecognitionDraft,
-} from '@/modules/wardrobe/data/mockWardrobeItems'
+import { wardrobeSeasonOptions } from '@/modules/wardrobe/constants/seasonOptions'
+import { useWardrobeCreationFlow } from '@/modules/wardrobe/hooks/useWardrobeCreationFlow'
 import { useWardrobeMock } from '@/modules/wardrobe/hooks/useWardrobeMock'
-import type { WardrobeDraftItem } from '@/modules/wardrobe/types'
+import type { WardrobeReviewDraft } from '@/modules/wardrobe/types'
+import {
+  mapCreateClothesResponseItemToWardrobeItem,
+  mapWardrobeReviewDraftToCreateClothesRequest,
+} from '@/modules/wardrobe/utils/apiMappers'
 
 const getRecognitionEntry = (): RecognitionEntry => {
   if (typeof window === 'undefined') {
@@ -23,25 +29,63 @@ const getRecognitionEntry = (): RecognitionEntry => {
   return window.sessionStorage.getItem(RECOGNITION_ENTRY_KEY) === 'album' ? 'album' : 'camera'
 }
 
-const getInitialDraft = (
-  getRecognitionDraft: () => WardrobeDraftItem | null
-): WardrobeDraftItem => {
-  const savedDraft = getRecognitionDraft()
 
-  if (savedDraft) {
-    return savedDraft
+const normalizeReviewDraft = (draft: WardrobeReviewDraft): WardrobeReviewDraft => ({
+  ...draft,
+  occasionKeys:
+    draft.occasionKeys.length > 0 ? draft.occasionKeys : [wardrobeOccasionOptions[0].key],
+  seasonKeys: draft.seasonKeys.length > 0 ? draft.seasonKeys : [wardrobeSeasonOptions[0].key],
+})
+
+const getSaveErrorMessage = (error: unknown) => {
+  if (error instanceof ApiError) {
+    return error.message
   }
 
-  return getRecognitionEntry() === 'album' ? mockAlbumRecognitionDraft : mockRecognitionDraft
+  if (error instanceof Error && error.message.trim()) {
+    return error.message
+  }
+
+  return '衣物新增失敗，請稍後再試'
 }
 
 const WardrobeReviewPage = () => {
   const router = useRouter()
-  const { addItem, clearRecognitionDraft, getRecognitionDraft } = useWardrobeMock()
-  const [draft, setDraft] = useState<WardrobeDraftItem>(() => getInitialDraft(getRecognitionDraft))
-  const [isSuccessOpen, setIsSuccessOpen] = useState(false)
+  const { replaceItems, clearRecognitionDraft } = useWardrobeMock()
+  const { getContext, getReviewDraft, saveReviewDraft, clearFlow } = useWardrobeCreationFlow()
 
-  const isDisabled = !draft.name.trim() || !draft.brand.trim() || draft.colorKeys.length === 0
+  const [draft, setDraft] = useState<WardrobeReviewDraft | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [toastState, setToastState] = useState<{
+    open: boolean
+    message: string
+    tone: 'success' | 'error'
+  }>({
+    open: false,
+    message: '',
+    tone: 'success',
+  })
+
+  useEffect(() => {
+    const savedDraft = getReviewDraft()
+
+    if (!savedDraft) {
+      void router.replace('/wardrobe/new')
+      return
+    }
+
+    const normalizedDraft = normalizeReviewDraft(savedDraft)
+    setDraft(normalizedDraft)
+    saveReviewDraft(normalizedDraft)
+  }, [getReviewDraft, router, saveReviewDraft])
+
+  const isDisabled =
+    !draft ||
+    !draft.name.trim() ||
+    !draft.colorKey ||
+    draft.occasionKeys.length === 0 ||
+    draft.seasonKeys.length === 0 ||
+    isSubmitting
 
   const backHref = useMemo(() => {
     if (!router.isReady) {
@@ -51,62 +95,107 @@ const WardrobeReviewPage = () => {
     return getRecognitionEntry() === 'album' ? '/wardrobe/new/album' : '/wardrobe/new/camera'
   }, [router.isReady])
 
-  const handleSave = () => {
-    addItem(draft)
-    clearRecognitionDraft()
-    setIsSuccessOpen(true)
+  const handleDraftChange = (next: WardrobeReviewDraft) => {
+    setDraft(next)
+    saveReviewDraft(next)
   }
 
-  const handleConfirm = () => {
-    if (typeof window !== 'undefined') {
-      window.sessionStorage.removeItem(RECOGNITION_ENTRY_KEY)
+  const handleSave = async () => {
+    if (!draft || isSubmitting) {
+      return
     }
 
-    setIsSuccessOpen(false)
-    void router.push('/wardrobe')
+    const context = getContext()
+    const removeBackgroundResult = context?.removeBackgroundResult
+
+    if (!removeBackgroundResult) {
+      setToastState({
+        open: true,
+        message: '找不到圖片處理結果，請重新新增衣物',
+        tone: 'error',
+      })
+      return
+    }
+
+    try {
+      setIsSubmitting(true)
+
+      const payload = mapWardrobeReviewDraftToCreateClothesRequest(draft, {
+        cloudImgUrl: removeBackgroundResult.cloudinaryImageUrl,
+        imageHash: removeBackgroundResult.imageHash,
+      })
+
+      const result = await createClothes(payload)
+
+      if (!Array.isArray(result.list) || result.list.length === 0) {
+        throw new Error('新增衣物成功，但未取得衣櫃列表資料')
+      }
+
+      replaceItems(result.list.map(mapCreateClothesResponseItemToWardrobeItem))
+      clearRecognitionDraft()
+      clearFlow()
+
+      if (typeof window !== 'undefined') {
+        window.sessionStorage.removeItem(RECOGNITION_ENTRY_KEY)
+        window.history.replaceState(null, '', '/wardrobe')
+      }
+
+      await router.replace('/wardrobe')
+    } catch (error) {
+      setToastState({
+        open: true,
+        message: getSaveErrorMessage(error),
+        tone: 'error',
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  useEffect(() => {
+    if (!toastState.open) return
+
+    const timer = window.setTimeout(() => {
+      setToastState((prev) => ({ ...prev, open: false }))
+    }, 1800)
+
+    return () => window.clearTimeout(timer)
+  }, [toastState.open])
+
+  if (!draft) {
+    return null
   }
 
   return (
-    <div className="relative bg-neutral-100 pb-24">
-      <header className="flex items-center justify-between px-4 pt-5 pb-4">
-        <Link href={backHref} className="font-label-sm text-neutral-500">
-          ←
-        </Link>
-        <h1 className="font-label-md text-neutral-900">編輯衣物資訊</h1>
-        <span className="w-4" />
-      </header>
+    <>
+      <div className="relative bg-neutral-100 pb-24">
+        <header className="flex items-center justify-between px-4 pt-5 pb-4">
+          <Link href={backHref} className="font-label-sm text-neutral-500">
+            ←
+          </Link>
+          <h1 className="font-label-md text-neutral-900">編輯衣物資訊</h1>
+          <span className="w-4" />
+        </header>
 
-      <WardrobeReviewForm value={draft} onChange={setDraft} />
+        <WardrobeReviewForm value={draft} onChange={handleDraftChange} />
 
-      <div className="fixed right-0 bottom-0 left-0 z-40 mx-auto w-full max-w-93.75 bg-neutral-100 px-4 py-4">
-        <button
-          type="button"
-          disabled={isDisabled}
-          onClick={handleSave}
-          className={cn(
-            'h-11 w-full rounded-full font-label-md',
-            isDisabled ? 'bg-neutral-300 text-neutral-500' : 'bg-primary-900 text-white'
-          )}
-        >
-          儲存
-        </button>
+        <div className="fixed right-0 bottom-0 left-0 z-40 mx-auto w-full max-w-93.75 bg-neutral-100 px-4 py-4">
+          <button
+            type="button"
+            disabled={isDisabled}
+            onClick={() => void handleSave()}
+            className={cn(
+              'h-11 w-full rounded-full font-label-md',
+              isDisabled ? 'bg-neutral-300 text-neutral-500' : 'bg-primary-900 text-white'
+            )}
+          >
+            {isSubmitting ? '儲存中...' : '儲存'}
+          </button>
+        </div>
       </div>
 
-      {isSuccessOpen ? (
-        <div className="fixed inset-0 z-50 mx-auto flex w-full max-w-93.75 items-center justify-center bg-black/20 px-10">
-          <div className="w-full rounded-[16px] bg-white px-5 pt-6 pb-5 shadow-[0_12px_32px_rgba(15,23,42,0.18)]">
-            <p className="mb-5 text-center font-label-md text-neutral-900">新增成功</p>
-            <button
-              type="button"
-              onClick={handleConfirm}
-              className="h-10 w-full rounded-full bg-primary-900 font-label-md text-white"
-            >
-              確認
-            </button>
-          </div>
-        </div>
-      ) : null}
-    </div>
+      <Toast open={toastState.open} message={toastState.message} tone={toastState.tone} />
+    </>
   )
 }
 
