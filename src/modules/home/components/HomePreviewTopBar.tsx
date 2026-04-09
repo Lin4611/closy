@@ -1,4 +1,5 @@
 import { AdjustOutfitButton } from './AdjustOutfitButton'
+import { CalendarButton } from './CalendarButton'
 import { WeatherSummaryCard } from './WeatherSummaryCard'
 type HomePreviewTopBarProps = {
   expanded?: boolean
@@ -19,7 +20,10 @@ export const HomePreviewTopBar = ({
         CityLabel="高雄市"
         iconSrc="https://openweathermap.org/img/wn/02d@2x.png"
       />
-      <AdjustOutfitButton onClick={onClick} expanded={expanded} disabled={disabled} />
+      <div className="flex flex-col gap-4">
+        <CalendarButton />
+        <AdjustOutfitButton onClick={onClick} expanded={expanded} disabled={disabled} />
+      </div>
     </div>
   )
 }
