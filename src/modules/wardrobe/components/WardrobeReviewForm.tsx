@@ -7,7 +7,7 @@ import { WardrobeTagGroup } from './WardrobeTagGroup'
 import { wardrobeCategoryOptions } from '../constants/categoryOptions'
 import { wardrobeOccasionOptions } from '../constants/occasionOptions'
 import { wardrobeSeasonOptions } from '../constants/seasonOptions'
-import type { WardrobeReviewDraft } from '../types'
+import type { WardrobeOccasionKey, WardrobeReviewDraft, WardrobeSeasonKey } from '../types'
 
 type WardrobeReviewFormProps = {
   value: WardrobeReviewDraft
@@ -28,6 +28,14 @@ const formCategoryOptions = wardrobeCategoryOptions.filter(
     key: WardrobeReviewDraft['category']
   } => option.key !== 'all'
 )
+
+const getDefaultOccasionKey = (): WardrobeOccasionKey => wardrobeOccasionOptions[0].key
+
+const getDefaultSeasonKey = (): WardrobeSeasonKey => wardrobeSeasonOptions[0].key
+
+const ensureAtLeastOneSelected = <T extends string>(keys: T[], fallbackKey: T): T[] => {
+  return keys.length > 0 ? keys : [fallbackKey]
+}
 
 export const WardrobeReviewForm = ({ value, onChange }: WardrobeReviewFormProps) => {
   const name = value.name ?? ''
@@ -90,7 +98,13 @@ export const WardrobeReviewForm = ({ value, onChange }: WardrobeReviewFormProps)
           <WardrobeTagGroup
             options={wardrobeOccasionOptions}
             selectedKeys={value.occasionKeys}
-            onChange={(next) => onChange({ ...value, occasionKeys: next })}
+            minSelected={1}
+            onChange={(next) =>
+              onChange({
+                ...value,
+                occasionKeys: ensureAtLeastOneSelected(next, getDefaultOccasionKey()),
+              })
+            }
           />
         </WardrobeDetailSection>
 
@@ -98,7 +112,13 @@ export const WardrobeReviewForm = ({ value, onChange }: WardrobeReviewFormProps)
           <WardrobeTagGroup
             options={wardrobeSeasonOptions}
             selectedKeys={value.seasonKeys}
-            onChange={(next) => onChange({ ...value, seasonKeys: next })}
+            minSelected={1}
+            onChange={(next) =>
+              onChange({
+                ...value,
+                seasonKeys: ensureAtLeastOneSelected(next, getDefaultSeasonKey()),
+              })
+            }
           />
         </WardrobeDetailSection>
 

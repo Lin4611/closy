@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { Toast } from '@/modules/common/components/feedback/Toast'
 import { WardrobeReviewForm } from '@/modules/wardrobe/components/WardrobeReviewForm'
+import { wardrobeOccasionOptions } from '@/modules/wardrobe/constants/occasionOptions'
+import { wardrobeSeasonOptions } from '@/modules/wardrobe/constants/seasonOptions'
 import { useWardrobeMock } from '@/modules/wardrobe/hooks/useWardrobeMock'
 import type { WardrobeItem, WardrobeReviewDraft } from '@/modules/wardrobe/types'
 
@@ -11,8 +13,9 @@ const createDraftFromItem = (item: WardrobeItem): WardrobeReviewDraft => ({
   name: item.name,
   brand: item.brand,
   category: item.category,
-  occasionKeys: item.occasionKeys,
-  seasonKeys: item.seasonKeys,
+  occasionKeys:
+    item.occasionKeys.length > 0 ? item.occasionKeys : [wardrobeOccasionOptions[0].key],
+  seasonKeys: item.seasonKeys.length > 0 ? item.seasonKeys : [wardrobeSeasonOptions[0].key],
   colorKey: item.colorKeys[0] ?? null,
   imageUrl: item.imageUrl,
   note: item.note,
@@ -36,7 +39,8 @@ const WardrobeEditContent = ({ item }: WardrobeEditContentProps) => {
     return () => window.clearTimeout(timeoutId)
   }, [isUnsupportedEditToastOpen])
 
-  const isDisabled = !draft.name.trim() || !draft.colorKey
+  const isDisabled =
+    !draft.name.trim() || !draft.colorKey || draft.occasionKeys.length === 0 || draft.seasonKeys.length === 0
 
   return (
     <div className="bg-neutral-100 pb-24">
@@ -57,9 +61,8 @@ const WardrobeEditContent = ({ item }: WardrobeEditContentProps) => {
           onClick={() => {
             setIsUnsupportedEditToastOpen(true)
           }}
-          className={`font-label-md h-11 w-full rounded-full ${
-            isDisabled ? 'bg-neutral-300 text-neutral-500' : 'bg-primary-900 text-white'
-          }`}
+          className={`font-label-md h-11 w-full rounded-full ${isDisabled ? 'bg-neutral-300 text-neutral-500' : 'bg-primary-900 text-white'
+            }`}
         >
           儲存
         </button>

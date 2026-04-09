@@ -87,12 +87,15 @@ const sanitizeWardrobeReviewDraft = (value: unknown): WardrobeReviewDraft | null
     ? (candidate.colorKey as WardrobeColorKey)
     : null
 
+  const occasionKeys = sanitizeArray(candidate.occasionKeys, wardrobeOccasions)
+  const seasonKeys = sanitizeArray(candidate.seasonKeys, wardrobeSeasons)
+
   return {
     name: sanitizeString(candidate.name),
     brand: sanitizeString(candidate.brand),
     category,
-    occasionKeys: sanitizeArray(candidate.occasionKeys, wardrobeOccasions),
-    seasonKeys: sanitizeArray(candidate.seasonKeys, wardrobeSeasons),
+    occasionKeys: occasionKeys.length > 0 ? occasionKeys : [wardrobeOccasions[0]],
+    seasonKeys: seasonKeys.length > 0 ? seasonKeys : [wardrobeSeasons[0]],
     colorKey,
     imageUrl: typeof candidate.imageUrl === 'string' ? candidate.imageUrl : undefined,
     note: typeof candidate.note === 'string' ? candidate.note : undefined,
