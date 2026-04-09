@@ -17,7 +17,7 @@ export const AdjustOutfitButton = ({
   ariaLabel = '調整穿搭',
 }: AdjustOutfitButtonProps) => {
   const baseClassName =
-    'rounded-full transition-all duration-300 ease-in-out shadow-[0px_2px_8px_0px_#18181B1F] bg-neutral-500 text-neutral-600 bg-white'
+    'rounded-full transition-all duration-300 ease-in-out shadow-[0px_2px_8px_0px_#18181B1F] text-neutral-600 bg-white'
   const expandedClassName = expanded
     ? 'max-w-[162px] min-w-0 justify-center gap-1 px-1 py-2'
     : 'size-10 justify-center p-0'
