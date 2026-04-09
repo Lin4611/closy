@@ -24,7 +24,7 @@ export const PrimaryButton = ({
   href,
 }: PrimaryButtonProps) => {
   const mergedClassName = cn('w-full flex', className)
-  if (href && !disabled) {
+  if (href && !disabled && !loading) {
     return (
       <Button asChild variant="brand" size="xl" className={mergedClassName}>
         <Link href={href}>{content}</Link>
