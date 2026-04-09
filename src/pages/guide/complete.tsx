@@ -12,7 +12,7 @@ const GuideComplete = () => {
           <p className="font-paragraph-md text-neutral-600">讓我們進到首頁查看穿搭推薦</p>
         </div>
       </section>
-      <PrimaryButton content="完成" href="/guide/location-service" className="mt-auto" />
+      <PrimaryButton content="完成" href="/guide/occasion-preference" className="mt-auto" />
     </main>
   )
 }
