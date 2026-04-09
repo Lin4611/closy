@@ -19,7 +19,7 @@ export const OccasionOptionCard = ({
   return (
     <button
       className={cn(
-        'ease-in-out-out flex w-full items-center justify-start gap-2 rounded-[16px] bg-white p-3 shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition-all duration-300',
+        'flex w-full items-center justify-start gap-2 rounded-[16px] bg-white p-3 shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition-all duration-300 ease-in-out',
         isSelected ? 'ring-primary-800 ring-2' : 'ring-[0.5px] ring-neutral-300',
       )}
       onClick={onClick}

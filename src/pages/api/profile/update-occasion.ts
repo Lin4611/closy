@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 
 import { ApiError, apiClient } from '@/lib/api/client'
 import type { ApiResponse } from '@/lib/api/types'
-import type { Occasion } from '@/modules/home/types/occasion'
+import type { Occasion } from '@/modules/common/types/occasion'
 
 type UpdateOccasionBody = {
   occasionId?: Occasion
