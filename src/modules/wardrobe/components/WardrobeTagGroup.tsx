@@ -12,6 +12,7 @@ type WardrobeTagGroupProps<T extends string> = {
   selectedKeys: T[]
   onChange: (next: T[]) => void
   multiple?: boolean
+  minSelected?: number
   renderSuffix?: (option: TagOption<T>) => ReactNode
 }
 
@@ -20,12 +21,24 @@ export const WardrobeTagGroup = <T extends string>({
   selectedKeys,
   onChange,
   multiple = true,
+  minSelected = 0,
   renderSuffix,
 }: WardrobeTagGroupProps<T>) => {
   const handleClick = (key: T) => {
     if (multiple) {
       const hasKey = selectedKeys.includes(key)
-      onChange(hasKey ? selectedKeys.filter((item) => item !== key) : [...selectedKeys, key])
+
+      if (hasKey) {
+        if (selectedKeys.length <= minSelected) {
+          onChange(selectedKeys)
+          return
+        }
+
+        onChange(selectedKeys.filter((item) => item !== key))
+        return
+      }
+
+      onChange([...selectedKeys, key])
       return
     }
 
