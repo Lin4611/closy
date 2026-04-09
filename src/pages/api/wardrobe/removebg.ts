@@ -107,7 +107,7 @@ export default async function handler(
       duplex: 'half',
     }
 
-    const response = await fetch(`${getApiBaseUrl()}/process/removebg`, requestInit)
+    const response = await fetch(`${getApiBaseUrl()}/process/remove-bg`, requestInit)
     const payload = await parseResponsePayload(response)
 
     if (!response.ok) {
