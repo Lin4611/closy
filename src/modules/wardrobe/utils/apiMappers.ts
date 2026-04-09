@@ -134,11 +134,15 @@ export const mapWardrobeColorToApiColor = (color: WardrobeColorKey): ClothesApiC
 export const mapAnalyzeResponseToWardrobeReviewDraft = (
   response: AnalyzeClothesResponseData
 ): WardrobeReviewDraft => ({
-  name: response.name,
-  brand: response.brand,
+  name: typeof response.name === 'string' ? response.name : '',
+  brand: typeof response.brand === 'string' ? response.brand : '',
   category: mapApiCategoryToWardrobeCategory(response.category),
-  occasionKeys: response.occasions.map(mapApiOccasionToWardrobeOccasion),
-  seasonKeys: response.seasons.map(mapApiSeasonToWardrobeSeason),
+  occasionKeys: Array.isArray(response.occasions)
+    ? response.occasions.map(mapApiOccasionToWardrobeOccasion)
+    : [],
+  seasonKeys: Array.isArray(response.seasons)
+    ? response.seasons.map(mapApiSeasonToWardrobeSeason)
+    : [],
   colorKey: mapApiColorToWardrobeColor(response.color),
   imageUrl: response.cloudImgUrl,
 })
