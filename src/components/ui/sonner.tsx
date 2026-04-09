@@ -17,11 +17,11 @@ const ToastPortal = ({ message, tone }: { message: string; tone: keyof typeof to
       <Overlay />
       <div
         className={cn(
-          'font-label-md relative z-10 flex h-14 w-45 items-center justify-center rounded-[12px]',
+          'font-label-md relative z-10 flex max-w-[280px] min-w-[180px] items-center justify-center rounded-[12px] px-6 py-4',
           toneStyles[tone],
         )}
       >
-        <p>{message}</p>
+        <p className="text-center wrap-break-word">{message}</p>
       </div>
     </div>,
     document.body,

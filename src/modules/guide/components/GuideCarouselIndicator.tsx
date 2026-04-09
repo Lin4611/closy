@@ -1,6 +1,9 @@
+import { cn } from '@/lib/utils'
+
 type GuideCarouselIndicatorProps = {
   currentIndex: number
 }
+
 export const GuideCarouselIndicator = ({ currentIndex }: GuideCarouselIndicatorProps) => {
   const totalSlides = 3
   return (
@@ -8,7 +11,10 @@ export const GuideCarouselIndicator = ({ currentIndex }: GuideCarouselIndicatorP
       {Array.from({ length: totalSlides }).map((_, index) => (
         <span
           key={index}
-          className={`h-2 w-2 rounded-full ${currentIndex === index ? 'bg-primary-900' : 'bg-neutral-300'}`}
+          className={cn(
+            'h-2 w-2 rounded-full transition-all duration-500',
+            currentIndex === index ? 'bg-primary-900' : 'bg-neutral-300',
+          )}
         />
       ))}
     </div>

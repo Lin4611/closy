@@ -15,7 +15,7 @@ const GuideGoogleCalendar = () => {
           subtext="未授權將無法同步行事曆內容"
         />
       </div>
-      <PrimaryButton content="連結Google行事曆" href="/" className="mt-auto" />
+      <PrimaryButton content="連結Google行事曆" href="/home" className="mt-auto" />
     </main>
   )
 }

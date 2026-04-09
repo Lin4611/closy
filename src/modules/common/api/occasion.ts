@@ -1,6 +1,6 @@
 import { apiClient } from '@/lib/api/client'
 import type { ApiResponse } from '@/lib/api/types'
-import type { Occasion } from '@/modules/home/types/occasion'
+import type { Occasion } from '@/modules/common/types/occasion'
 
 export const updateOccasion = async (occasionId: Occasion): Promise<void> => {
   await apiClient<ApiResponse<null>, { occasionId: Occasion }>({
