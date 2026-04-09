@@ -21,8 +21,8 @@ export const HomePreviewTopBar = ({
         iconSrc="https://openweathermap.org/img/wn/02d@2x.png"
       />
       <div className="flex flex-col gap-4">
-        <CalendarButton />
         <AdjustOutfitButton onClick={onClick} expanded={expanded} disabled={disabled} />
+        <CalendarButton />
       </div>
     </div>
   )
