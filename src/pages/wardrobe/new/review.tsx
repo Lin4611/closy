@@ -36,7 +36,7 @@ const getNextOnboardingRoute = (savedCategory: WardrobeReviewDraft['category']) 
   if (onboardingStep === 'top-required') {
     if (savedCategory !== 'top') {
       showToast.error('第一次請先新增上衣')
-      return null
+      return '/guide/add-top'
     }
 
     setOnboardingAddFlow('bottom-required')
@@ -46,7 +46,7 @@ const getNextOnboardingRoute = (savedCategory: WardrobeReviewDraft['category']) 
   if (onboardingStep === 'bottom-required') {
     if (savedCategory !== 'pants' && savedCategory !== 'skirt') {
       showToast.error('請再新增一件下身單品')
-      return null
+      return '/guide/add-bottom'
     }
 
     setOnboardingAddFlow('completed')
@@ -124,15 +124,11 @@ const WardrobeReviewPage = () => {
         throw new Error('新增衣物成功，但無法確認本次建立的衣物資料')
       }
 
-      const nextRoute = getNextOnboardingRoute(mapApiCategoryToWardrobeCategory(createdItem.category))
-
-      if (!nextRoute) {
-        return
-      }
-
       replaceItems(result.list.map(mapCreateClothesResponseItemToWardrobeItem))
       clearRecognitionDraft()
       clearFlow()
+
+      const nextRoute = getNextOnboardingRoute(mapApiCategoryToWardrobeCategory(createdItem.category))
 
       if (typeof window !== 'undefined') {
         window.sessionStorage.removeItem(RECOGNITION_ENTRY_KEY)
