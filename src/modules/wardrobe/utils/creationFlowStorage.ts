@@ -8,7 +8,6 @@ import type {
   PendingRecognitionSource,
   WardrobeCategoryKey,
   WardrobeColorKey,
-  WardrobeCreationEntryScope,
   WardrobeCreationFlowContext,
   WardrobeOccasionKey,
   WardrobeProcessingStage,
@@ -16,6 +15,7 @@ import type {
   WardrobeReviewDraft,
   WardrobeSeasonKey,
 } from '@/modules/wardrobe/types'
+import { isWardrobeCreationEntryScope } from '@/modules/wardrobe/utils/creationFlowNavigation'
 
 const isClient = () => typeof window !== 'undefined'
 
@@ -61,7 +61,6 @@ const wardrobeColors: WardrobeColorKey[] = [
 ]
 
 const wardrobeRecognitionSources: WardrobeRecognitionSource[] = ['camera', 'album']
-const wardrobeCreationEntryScopes: WardrobeCreationEntryScope[] = ['wardrobe', 'guide-add-top', 'guide-add-bottom']
 
 const sanitizeString = (value: unknown) => (typeof value === 'string' ? value : '')
 
@@ -88,15 +87,15 @@ const sanitizePendingRecognitionSource = (value: unknown): PendingRecognitionSou
   const origin = wardrobeRecognitionSources.includes(candidate.origin as WardrobeRecognitionSource)
     ? (candidate.origin as WardrobeRecognitionSource)
     : null
-  const entryScope = wardrobeCreationEntryScopes.includes(candidate.entryScope as WardrobeCreationEntryScope)
-    ? (candidate.entryScope as WardrobeCreationEntryScope)
-    : null
+  const entryScope = isWardrobeCreationEntryScope(candidate.entryScope)
+    ? candidate.entryScope
+    : 'wardrobe'
   const previewUrl = sanitizePreviewUrl(candidate.previewUrl)
   const fileName = sanitizeString(candidate.fileName)
   const mimeType = sanitizeString(candidate.mimeType)
   const createdAt = sanitizeNumber(candidate.createdAt)
 
-  if (!origin || !entryScope || !previewUrl || !fileName || !mimeType || createdAt <= 0) {
+  if (!origin || !previewUrl || !fileName || !mimeType || createdAt <= 0) {
     return null
   }
 
@@ -122,11 +121,11 @@ const sanitizeWardrobeCreationFlowContext = (
     ? (candidate.entryType as WardrobeRecognitionSource)
     : null
 
-  const entryScope = wardrobeCreationEntryScopes.includes(candidate.entryScope as WardrobeCreationEntryScope)
-    ? (candidate.entryScope as WardrobeCreationEntryScope)
-    : null
+  const entryScope = isWardrobeCreationEntryScope(candidate.entryScope)
+    ? candidate.entryScope
+    : 'wardrobe'
 
-  if (!entryType || !entryScope) {
+  if (!entryType) {
     return null
   }
 
