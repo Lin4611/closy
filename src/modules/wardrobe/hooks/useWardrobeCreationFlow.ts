@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
+import { RECOGNITION_ENTRY_KEY } from '@/modules/wardrobe/constants/recognition'
 import type {
   PendingRecognitionSource,
   WardrobeCreationFlowContext,
@@ -75,6 +76,14 @@ const clearAllPreviewUrls = () => {
   clearPendingPreviewUrl()
 }
 
+const clearRecognitionEntry = () => {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  window.sessionStorage.removeItem(RECOGNITION_ENTRY_KEY)
+}
+
 export const useWardrobeCreationFlow = () => {
   const getContext = useCallback(() => getWardrobeCreationFlowContext(), [])
 
@@ -147,6 +156,7 @@ export const useWardrobeCreationFlow = () => {
   const clearSourceFile = useCallback(() => {
     currentSourceFile = null
     clearConfirmedPreviewUrl()
+    clearRecognitionEntry()
   }, [])
 
   const setPendingSource = useCallback(
@@ -188,6 +198,7 @@ export const useWardrobeCreationFlow = () => {
     currentPendingSourceFile = null
     clearPendingPreviewUrl()
     clearPendingRecognitionState()
+    clearRecognitionEntry()
   }, [])
 
   const confirmPendingSource = useCallback(
@@ -245,6 +256,7 @@ export const useWardrobeCreationFlow = () => {
     currentSourceFile = null
     clearConfirmedPreviewUrl()
     clearWardrobeCreationFlowContext()
+    clearRecognitionEntry()
   }, [])
 
   const clearFlow = useCallback(() => {
@@ -252,6 +264,7 @@ export const useWardrobeCreationFlow = () => {
     currentPendingSourceFile = null
     clearAllPreviewUrls()
     clearWardrobeCreationFlowState()
+    clearRecognitionEntry()
   }, [])
 
   return useMemo(
