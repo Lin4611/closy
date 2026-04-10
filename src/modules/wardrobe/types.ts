@@ -87,8 +87,11 @@ export type WardrobeReviewDraft = {
 
 export type WardrobeRecognitionSource = 'camera' | 'album'
 
+export type WardrobeCreationEntryScope = 'wardrobe' | 'guide-add-top' | 'guide-add-bottom'
+
 export type PendingRecognitionSource = {
   origin: WardrobeRecognitionSource
+  entryScope: WardrobeCreationEntryScope
   previewUrl: string
   fileName: string
   mimeType: string
@@ -105,6 +108,7 @@ export type WardrobeProcessingStage =
 
 export type WardrobeCreationFlowContext = {
   entryType: WardrobeRecognitionSource
+  entryScope: WardrobeCreationEntryScope
   confirmedAt?: number
   previewUrl?: string
   sourceFile?: {

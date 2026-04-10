@@ -9,6 +9,7 @@ import { removeBackground } from '@/modules/wardrobe/api/removeBackground'
 import { RecognitionLoading } from '@/modules/wardrobe/components/RecognitionLoading'
 import { useWardrobeCreationFlow } from '@/modules/wardrobe/hooks/useWardrobeCreationFlow'
 import { mapAnalyzeResponseToWardrobeReviewDraft } from '@/modules/wardrobe/utils/apiMappers'
+import { getCreationFlowSourceRoute, resolveCreationFlowEntryScope } from '@/modules/wardrobe/utils/creationFlowNavigation'
 
 const FAILURE_TIP_MESSAGE = '建議更換較清楚衣物圖片'
 
@@ -43,21 +44,23 @@ const WardrobeProcessingPage = () => {
   const [isSheetOpen, setIsSheetOpen] = useState(false)
 
   const footerText = '請稍後...'
+  const currentContext = getContext()
+  const entryScope = resolveCreationFlowEntryScope({ router, context: currentContext })
 
   const handleNavigateCamera = () => {
     setIsSheetOpen(false)
-    void router.push('/wardrobe/new/camera')
+    void router.push(getCreationFlowSourceRoute('camera', entryScope))
   }
 
   const handleNavigateAlbum = () => {
     setIsSheetOpen(false)
-    void router.push('/wardrobe/new/album')
+    void router.push(getCreationFlowSourceRoute('album', entryScope))
   }
 
   const shouldUseFailureSheet = useMemo(() => {
     const context = getContext()
-    return !context?.entryType
-  }, [getContext])
+    return entryScope === 'wardrobe' && !context?.entryType
+  }, [entryScope, getContext])
 
   useEffect(() => {
     let isCancelled = false
@@ -163,7 +166,7 @@ const WardrobeProcessingPage = () => {
 
   if (isFailure) {
     const context = getContext()
-    const retryHref = context?.entryType ? '/wardrobe/new/preview' : '/wardrobe/new'
+    const retryHref = context?.entryType ? '/wardrobe/new/preview' : getCreationFlowSourceRoute(null, entryScope)
     const retryLabel = context?.entryType ? '回到圖片確認' : '重新選擇新增方式'
 
     return (

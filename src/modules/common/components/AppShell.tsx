@@ -16,12 +16,12 @@ export const AppShell = ({ children, activeTab }: AppShellProps) => {
 
   const handleNavigateCamera = () => {
     setIsAddClothingDrawerOpen(false)
-    void router.push('/wardrobe/new/camera')
+    void router.push({ pathname: '/wardrobe/new/camera', query: { entryScope: 'wardrobe' } })
   }
 
   const handleNavigateAlbum = () => {
     setIsAddClothingDrawerOpen(false)
-    void router.push('/wardrobe/new/album')
+    void router.push({ pathname: '/wardrobe/new/album', query: { entryScope: 'wardrobe' } })
   }
 
   return (

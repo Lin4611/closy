@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { showToast } from '@/components/ui/sonner'
 import { useCameraPreview } from '@/modules/wardrobe/hooks/useCameraPreview'
 import { useWardrobeCreationFlow } from '@/modules/wardrobe/hooks/useWardrobeCreationFlow'
+import { getCreationFlowReturnRoute, resolveCreationFlowEntryScope } from '@/modules/wardrobe/utils/creationFlowNavigation'
 import { preparePendingRecognitionSource } from '@/modules/wardrobe/utils/preparePendingRecognitionSource'
 
 const WardrobeCameraPage = () => {
@@ -15,6 +16,8 @@ const WardrobeCameraPage = () => {
   const { clearFlow, setPendingSource } = useWardrobeCreationFlow()
   const { videoRef, status, errorMessage, startCamera, capture } = useCameraPreview()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const entryScope = resolveCreationFlowEntryScope({ router })
+  const backHref = getCreationFlowReturnRoute(entryScope)
 
   const handleCapture = async () => {
     if (isSubmitting || status !== 'ready') {
@@ -28,6 +31,7 @@ const WardrobeCameraPage = () => {
       await preparePendingRecognitionSource({
         router,
         origin: 'camera',
+        entryScope,
         file,
         clearFlow,
         setPendingSource,
@@ -45,7 +49,7 @@ const WardrobeCameraPage = () => {
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#18181F] text-white">
       <header className="flex items-center justify-between px-4 pt-5 pb-3">
-        <Link href="/wardrobe" className="font-label-sm text-white/80">
+        <Link href={backHref} className="font-label-sm text-white/80">
           ×
         </Link>
         <span className="font-label-sm text-white/80">拍攝衣物</span>

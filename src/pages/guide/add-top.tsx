@@ -26,12 +26,12 @@ const AddTopPage = () => {
 
   const handleCameraClick = () => {
     setIsAddClothingDrawerOpen(false)
-    void router.push('/wardrobe/new/camera')
+    void router.push({ pathname: '/wardrobe/new/camera', query: { entryScope: 'guide-add-top' } })
   }
 
   const handleAlbumClick = () => {
     setIsAddClothingDrawerOpen(false)
-    void router.push('/wardrobe/new/album')
+    void router.push({ pathname: '/wardrobe/new/album', query: { entryScope: 'guide-add-top' } })
   }
   return (
     <>

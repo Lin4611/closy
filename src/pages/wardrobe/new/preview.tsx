@@ -8,14 +8,7 @@ import { PrimaryButton } from '@/modules/common/components/PrimaryButton'
 import { RecognitionImagePreview } from '@/modules/wardrobe/components/RecognitionImagePreview'
 import { useWardrobeCreationFlow } from '@/modules/wardrobe/hooks/useWardrobeCreationFlow'
 import { confirmPendingRecognitionSource } from '@/modules/wardrobe/utils/confirmPendingRecognitionSource'
-
-const getFallbackHref = (origin: 'camera' | 'album' | null) => {
-  if (origin === 'album') {
-    return '/wardrobe/new/album'
-  }
-
-  return '/wardrobe/new/camera'
-}
+import { getCreationFlowSourceRoute, resolveCreationFlowEntryScope } from '@/modules/wardrobe/utils/creationFlowNavigation'
 
 const WardrobePreviewPage = () => {
   const router = useRouter()
@@ -36,8 +29,9 @@ const WardrobePreviewPage = () => {
   const confirmedContext = getContext()
   const confirmedFile = getSourceFile()
 
+  const entryScope = resolveCreationFlowEntryScope({ router, context: confirmedContext, pendingSource })
   const activeOrigin = pendingSource?.origin ?? confirmedContext?.entryType ?? null
-  const fallbackHref = getFallbackHref(activeOrigin)
+  const fallbackHref = getCreationFlowSourceRoute(activeOrigin, entryScope)
   const secondaryActionLabel = activeOrigin === 'album' ? '重新選擇' : '重新拍攝'
   const pageTitle = activeOrigin === 'album' ? '從相簿上傳' : '圖片確認'
 
