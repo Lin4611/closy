@@ -1,11 +1,11 @@
-import Link from 'next/link'
+import { ArrowLeft } from 'lucide-react'
 import { useRouter } from 'next/router'
 import { useEffect, useMemo, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
 import { Toast } from '@/modules/common/components/feedback/Toast'
 import { PrimaryButton } from '@/modules/common/components/PrimaryButton'
+import { RecognitionImagePreview } from '@/modules/wardrobe/components/RecognitionImagePreview'
 import { useWardrobeCreationFlow } from '@/modules/wardrobe/hooks/useWardrobeCreationFlow'
 import { confirmPendingRecognitionSource } from '@/modules/wardrobe/utils/confirmPendingRecognitionSource'
 
@@ -19,39 +19,68 @@ const getFallbackHref = (origin: 'camera' | 'album' | null) => {
 
 const WardrobePreviewPage = () => {
   const router = useRouter()
-  const { getPendingSource, getPendingSourceFile, clearPendingSource, confirmPendingSource } = useWardrobeCreationFlow()
+  const {
+    getContext,
+    getPendingSource,
+    getPendingSourceFile,
+    getSourceFile,
+    hasConfirmedSource,
+    clearFlow,
+    confirmPendingSource,
+  } = useWardrobeCreationFlow()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
   const [isMissingSource, setIsMissingSource] = useState(false)
 
   const pendingSource = getPendingSource()
   const pendingFile = getPendingSourceFile()
+  const confirmedContext = getContext()
+  const confirmedFile = getSourceFile()
 
-  const fallbackHref = getFallbackHref(pendingSource?.origin ?? null)
-  const secondaryActionLabel = pendingSource?.origin === 'album' ? '重新選擇' : '重新拍攝'
-  const pageTitle = pendingSource?.origin === 'album' ? '從相簿上傳' : '拍照預覽'
+  const activeOrigin = pendingSource?.origin ?? confirmedContext?.entryType ?? null
+  const fallbackHref = getFallbackHref(activeOrigin)
+  const secondaryActionLabel = activeOrigin === 'album' ? '重新選擇' : '重新拍攝'
+  const pageTitle = activeOrigin === 'album' ? '從相簿上傳' : '圖片確認'
+
+  const sourceMode = useMemo<'pending' | 'confirmed' | 'missing'>(() => {
+    if (pendingSource && pendingFile) {
+      return 'pending'
+    }
+
+    if (confirmedContext?.entryType && confirmedContext.confirmedAt && confirmedFile && hasConfirmedSource()) {
+      return 'confirmed'
+    }
+
+    return 'missing'
+  }, [confirmedContext?.confirmedAt, confirmedContext?.entryType, confirmedFile, hasConfirmedSource, pendingFile, pendingSource])
 
   const previewSrc = useMemo(() => {
     if (pendingSource?.previewUrl) {
       return pendingSource.previewUrl
     }
 
-    if (pendingFile) {
-      return URL.createObjectURL(pendingFile)
+    if (confirmedContext?.previewUrl) {
+      return confirmedContext.previewUrl
+    }
+
+    const fallbackFile = pendingFile ?? confirmedFile
+
+    if (fallbackFile) {
+      return URL.createObjectURL(fallbackFile)
     }
 
     return ''
-  }, [pendingFile, pendingSource?.previewUrl])
+  }, [confirmedContext?.previewUrl, confirmedFile, pendingFile, pendingSource?.previewUrl])
 
   useEffect(() => {
-    if (pendingSource && pendingFile) {
+    if (sourceMode !== 'missing') {
       setIsMissingSource(false)
       return
     }
 
     setIsMissingSource(true)
     setToastMessage('找不到待確認圖片，請重新選擇來源')
-  }, [pendingFile, pendingSource])
+  }, [sourceMode])
 
   useEffect(() => {
     if (!toastMessage) return
@@ -64,15 +93,29 @@ const WardrobePreviewPage = () => {
   }, [toastMessage])
 
   useEffect(() => {
-    if (!pendingSource?.previewUrl && pendingFile && previewSrc) {
-      return () => {
-        URL.revokeObjectURL(previewSrc)
-      }
+    const shouldRevokeObjectUrl =
+      !pendingSource?.previewUrl && !confirmedContext?.previewUrl && Boolean(previewSrc) && Boolean(pendingFile ?? confirmedFile)
+
+    if (!shouldRevokeObjectUrl) {
+      return
     }
-  }, [pendingFile, pendingSource?.previewUrl, previewSrc])
+
+    return () => {
+      URL.revokeObjectURL(previewSrc)
+    }
+  }, [confirmedContext?.previewUrl, confirmedFile, pendingFile, pendingSource?.previewUrl, previewSrc])
 
   const handleConfirm = async () => {
-    if (isSubmitting || !pendingSource || !pendingFile) {
+    if (isSubmitting) {
+      return
+    }
+
+    if (sourceMode === 'confirmed') {
+      await router.push('/wardrobe/new/processing')
+      return
+    }
+
+    if (!pendingSource || !pendingFile) {
       setToastMessage('找不到待確認圖片，請重新選擇來源')
       setIsMissingSource(true)
       return
@@ -100,36 +143,30 @@ const WardrobePreviewPage = () => {
   const handleReset = async () => {
     if (isSubmitting) return
 
-    clearPendingSource()
+    clearFlow()
     await router.push(fallbackHref)
   }
 
   return (
     <div className="relative flex min-h-screen flex-col bg-neutral-100">
       <header className="flex items-center justify-between px-4 pt-5 pb-4">
-        <Link href={fallbackHref} className="font-label-sm text-neutral-500">
-          ←
-        </Link>
+        <button
+          type="button"
+          onClick={() => {
+            void handleReset()
+          }}
+          className="flex size-8 items-center justify-center text-neutral-500"
+          aria-label="返回上一頁"
+        >
+          <ArrowLeft className="size-4" />
+        </button>
         <h1 className="font-label-md text-neutral-900">{pageTitle}</h1>
-        <span className="w-4" />
+        <span className="w-8" />
       </header>
 
       <main className="flex flex-1 flex-col px-4 pb-24">
         <section className="flex flex-1 items-center justify-center pb-6">
-          <div className="flex w-full items-center justify-center overflow-hidden rounded-[12px] border border-neutral-200 bg-white p-4">
-            <div className="relative flex h-80 w-full items-center justify-center overflow-hidden rounded-[12px] bg-neutral-50">
-              {previewSrc ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={previewSrc}
-                  alt="待確認衣物圖片"
-                  className="h-full w-full object-contain"
-                />
-              ) : (
-                <Skeleton className="h-full w-full rounded-[12px]" />
-              )}
-            </div>
-          </div>
+          <RecognitionImagePreview src={previewSrc || undefined} alt="待確認衣物圖片" />
         </section>
 
         <div className="space-y-3 pt-4">
