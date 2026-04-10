@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { ApiError } from '@/lib/api/client'
 import { Toast } from '@/modules/common/components/feedback/Toast'
-import { AddClothingSheet } from '@/modules/common/components/overlay/AddClothingSheet'
+import { AddClothingDrawer } from '@/modules/common/components/overlay/AddClothingDrawer'
 import { analyzeClothes } from '@/modules/wardrobe/api/analyzeClothes'
 import { removeBackground } from '@/modules/wardrobe/api/removeBackground'
 import { RecognitionLoading } from '@/modules/wardrobe/components/RecognitionLoading'
@@ -52,6 +52,16 @@ const WardrobeProcessingPage = () => {
   })
 
   const footerText = '請稍後...'
+
+  const handleNavigateCamera = () => {
+    setIsSheetOpen(false)
+    void router.push('/wardrobe/new/camera')
+  }
+
+  const handleNavigateAlbum = () => {
+    setIsSheetOpen(false)
+    void router.push('/wardrobe/new/album')
+  }
 
   const shouldUseFailureSheet = useMemo(() => {
     const context = getContext()
@@ -211,7 +221,12 @@ const WardrobeProcessingPage = () => {
           </main>
         </div>
 
-        <AddClothingSheet open={isSheetOpen} onClose={() => setIsSheetOpen(false)} />
+        <AddClothingDrawer
+          open={isSheetOpen}
+          onOpenChange={setIsSheetOpen}
+          onCameraClick={handleNavigateCamera}
+          onAlbumClick={handleNavigateAlbum}
+        />
         <Toast open={toastState.open} message={toastState.message} tone={toastState.tone} />
       </>
     )
