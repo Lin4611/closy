@@ -27,12 +27,53 @@ import {
 
 let currentSourceFile: File | null = null
 let currentPendingSourceFile: File | null = null
+let currentConfirmedPreviewUrl: string | null = null
+let currentPendingPreviewUrl: string | null = null
 
 const mapFileToSourceFileMeta = (file: File) => ({
   name: file.name,
   size: file.size,
   type: file.type,
 })
+
+const isManagedObjectUrl = (value?: string | null) => Boolean(value?.startsWith('blob:'))
+
+const revokeManagedObjectUrl = (value?: string | null) => {
+  if (!isManagedObjectUrl(value)) {
+    return
+  }
+
+  URL.revokeObjectURL(value as string)
+}
+
+const replaceConfirmedPreviewUrl = (nextPreviewUrl?: string) => {
+  if (currentConfirmedPreviewUrl && currentConfirmedPreviewUrl !== nextPreviewUrl) {
+    revokeManagedObjectUrl(currentConfirmedPreviewUrl)
+  }
+
+  currentConfirmedPreviewUrl = nextPreviewUrl ?? null
+}
+
+const replacePendingPreviewUrl = (nextPreviewUrl?: string) => {
+  if (currentPendingPreviewUrl && currentPendingPreviewUrl !== nextPreviewUrl) {
+    revokeManagedObjectUrl(currentPendingPreviewUrl)
+  }
+
+  currentPendingPreviewUrl = nextPreviewUrl ?? null
+}
+
+const clearConfirmedPreviewUrl = () => {
+  replaceConfirmedPreviewUrl(undefined)
+}
+
+const clearPendingPreviewUrl = () => {
+  replacePendingPreviewUrl(undefined)
+}
+
+const clearAllPreviewUrls = () => {
+  clearConfirmedPreviewUrl()
+  clearPendingPreviewUrl()
+}
 
 export const useWardrobeCreationFlow = () => {
   const getContext = useCallback(() => getWardrobeCreationFlowContext(), [])
@@ -45,6 +86,7 @@ export const useWardrobeCreationFlow = () => {
       confirmedAt?: number
     }) => {
       currentSourceFile = params.file ?? null
+      replaceConfirmedPreviewUrl(params.previewUrl)
 
       const nextContext: WardrobeCreationFlowContext = {
         entryType: params.entryType,
@@ -60,6 +102,10 @@ export const useWardrobeCreationFlow = () => {
   )
 
   const updateContext = useCallback((patch: Partial<WardrobeCreationFlowContext>) => {
+    if (patch.previewUrl !== undefined) {
+      replaceConfirmedPreviewUrl(patch.previewUrl)
+    }
+
     if (
       patch.sourceFile === undefined &&
       patch.previewUrl === undefined &&
@@ -79,6 +125,10 @@ export const useWardrobeCreationFlow = () => {
   const setSourceFile = useCallback((file: File | null, previewUrl?: string) => {
     currentSourceFile = file
 
+    if (previewUrl !== undefined) {
+      replaceConfirmedPreviewUrl(previewUrl)
+    }
+
     if (!file) {
       return patchWardrobeCreationFlowContext({
         sourceFile: undefined,
@@ -96,6 +146,7 @@ export const useWardrobeCreationFlow = () => {
 
   const clearSourceFile = useCallback(() => {
     currentSourceFile = null
+    clearConfirmedPreviewUrl()
   }, [])
 
   const setPendingSource = useCallback(
@@ -108,9 +159,12 @@ export const useWardrobeCreationFlow = () => {
       currentPendingSourceFile = params.file
 
       if (!params.file) {
+        clearPendingPreviewUrl()
         clearPendingRecognitionSource()
         return null
       }
+
+      replacePendingPreviewUrl(params.previewUrl)
 
       const pendingSource: PendingRecognitionSource = {
         origin: params.origin,
@@ -132,6 +186,7 @@ export const useWardrobeCreationFlow = () => {
 
   const clearPendingSource = useCallback(() => {
     currentPendingSourceFile = null
+    clearPendingPreviewUrl()
     clearPendingRecognitionState()
   }, [])
 
@@ -151,6 +206,7 @@ export const useWardrobeCreationFlow = () => {
       })
 
       currentPendingSourceFile = null
+      currentPendingPreviewUrl = null
       clearPendingRecognitionState()
 
       return confirmedContext
@@ -186,12 +242,15 @@ export const useWardrobeCreationFlow = () => {
   }, [])
 
   const clearContext = useCallback(() => {
+    currentSourceFile = null
+    clearConfirmedPreviewUrl()
     clearWardrobeCreationFlowContext()
   }, [])
 
   const clearFlow = useCallback(() => {
     currentSourceFile = null
     currentPendingSourceFile = null
+    clearAllPreviewUrls()
     clearWardrobeCreationFlowState()
   }, [])
 
