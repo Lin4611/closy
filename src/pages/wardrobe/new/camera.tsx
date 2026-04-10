@@ -5,7 +5,7 @@ import { useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Toast } from '@/modules/common/components/feedback/Toast'
+import { showToast } from '@/components/ui/sonner'
 import { useCameraPreview } from '@/modules/wardrobe/hooks/useCameraPreview'
 import { useWardrobeCreationFlow } from '@/modules/wardrobe/hooks/useWardrobeCreationFlow'
 import { preparePendingRecognitionSource } from '@/modules/wardrobe/utils/preparePendingRecognitionSource'
@@ -15,7 +15,6 @@ const WardrobeCameraPage = () => {
   const { clearFlow, setPendingSource } = useWardrobeCreationFlow()
   const { videoRef, status, errorMessage, startCamera, capture } = useCameraPreview()
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [toastMessage, setToastMessage] = useState('')
 
   const handleCapture = async () => {
     if (isSubmitting || status !== 'ready') {
@@ -34,10 +33,7 @@ const WardrobeCameraPage = () => {
         setPendingSource,
       })
     } catch (error) {
-      setToastMessage(error instanceof Error ? error.message : '拍照失敗，請重新嘗試')
-      window.setTimeout(() => {
-        setToastMessage('')
-      }, 1800)
+      showToast.error(error instanceof Error ? error.message : '拍照失敗，請重新嘗試')
     } finally {
       setIsSubmitting(false)
     }
@@ -115,8 +111,6 @@ const WardrobeCameraPage = () => {
           <span className="h-8.5 w-8.5 rounded-full border border-neutral-500 bg-white" />
         </button>
       </div>
-
-      <Toast open={Boolean(toastMessage)} message={toastMessage} tone="error" />
     </div>
   )
 }

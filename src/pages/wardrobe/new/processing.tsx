@@ -1,8 +1,8 @@
 import { useRouter } from 'next/router'
 import { useEffect, useMemo, useState } from 'react'
 
+import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
-import { Toast } from '@/modules/common/components/feedback/Toast'
 import { AddClothingDrawer } from '@/modules/common/components/overlay/AddClothingDrawer'
 import { analyzeClothes } from '@/modules/wardrobe/api/analyzeClothes'
 import { removeBackground } from '@/modules/wardrobe/api/removeBackground'
@@ -41,15 +41,6 @@ const WardrobeProcessingPage = () => {
   const [statusText, setStatusText] = useState('圖片去背中...')
   const [isFailure, setIsFailure] = useState(false)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
-  const [toastState, setToastState] = useState<{
-    open: boolean
-    message: string
-    tone: 'success' | 'error'
-  }>({
-    open: false,
-    message: '',
-    tone: 'success',
-  })
 
   const footerText = '請稍後...'
 
@@ -71,25 +62,13 @@ const WardrobeProcessingPage = () => {
   useEffect(() => {
     let isCancelled = false
 
-    const hideToastLater = (delay = 1800) => {
-      window.setTimeout(() => {
-        if (isCancelled) return
-        setToastState((prev) => ({ ...prev, open: false }))
-      }, delay)
-    }
-
     const openFailureState = (message: string) => {
       if (isCancelled) return
 
       setProcessingStage('failed')
       setIsFailure(true)
       setIsSheetOpen(shouldUseFailureSheet)
-      setToastState({
-        open: true,
-        message,
-        tone: 'error',
-      })
-      hideToastLater()
+      showToast.error(message)
     }
 
     const startProcessing = async () => {
@@ -152,13 +131,8 @@ const WardrobeProcessingPage = () => {
         })
 
         setProcessingStage('completed')
-        setToastState({
-          open: true,
-          message: '辨識成功！',
-          tone: 'success',
-        })
+        showToast.success('辨識成功！')
 
-        hideToastLater(1200)
         await wait(700)
 
         if (isCancelled) return
@@ -227,21 +201,17 @@ const WardrobeProcessingPage = () => {
           onCameraClick={handleNavigateCamera}
           onAlbumClick={handleNavigateAlbum}
         />
-        <Toast open={toastState.open} message={toastState.message} tone={toastState.tone} />
       </>
     )
   }
 
   return (
-    <>
-      <div className="relative min-h-screen bg-neutral-100">
-        <RecognitionLoading title={statusText} description="" />
-        <div className="absolute right-0 bottom-10 left-0 px-6 text-center font-paragraph-xs text-neutral-500">
-          {footerText}
-        </div>
+    <div className="relative min-h-screen bg-neutral-100">
+      <RecognitionLoading title={statusText} description="" />
+      <div className="absolute right-0 bottom-10 left-0 px-6 text-center font-paragraph-xs text-neutral-500">
+        {footerText}
       </div>
-      <Toast open={toastState.open} message={toastState.message} tone={toastState.tone} />
-    </>
+    </div>
   )
 }
 

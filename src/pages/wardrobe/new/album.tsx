@@ -4,7 +4,7 @@ import { useRouter } from 'next/router'
 import { useRef, useState, type ChangeEvent } from 'react'
 
 import { Button } from '@/components/ui/button'
-import { Toast } from '@/modules/common/components/feedback/Toast'
+import { showToast } from '@/components/ui/sonner'
 import { PrimaryButton } from '@/modules/common/components/PrimaryButton'
 import { useWardrobeCreationFlow } from '@/modules/wardrobe/hooks/useWardrobeCreationFlow'
 import { preparePendingRecognitionSource } from '@/modules/wardrobe/utils/preparePendingRecognitionSource'
@@ -16,7 +16,6 @@ const WardrobeAlbumPage = () => {
   const { clearFlow, setPendingSource } = useWardrobeCreationFlow()
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [toastMessage, setToastMessage] = useState('')
 
   const handleOpenAlbum = () => {
     if (isSubmitting) return
@@ -38,10 +37,7 @@ const WardrobeAlbumPage = () => {
     }
 
     if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
-      setToastMessage('請選擇 jpg、png 或 webp 圖片')
-      window.setTimeout(() => {
-        setToastMessage('')
-      }, 1800)
+      showToast.error('請選擇 jpg、png 或 webp 圖片')
       resetInput()
       return
     }
@@ -111,8 +107,6 @@ const WardrobeAlbumPage = () => {
           </p>
         </div>
       </main>
-
-      <Toast open={Boolean(toastMessage)} message={toastMessage} tone="error" />
     </div>
   )
 }

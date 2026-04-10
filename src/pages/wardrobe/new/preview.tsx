@@ -3,7 +3,7 @@ import { useRouter } from 'next/router'
 import { useEffect, useMemo, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
-import { Toast } from '@/modules/common/components/feedback/Toast'
+import { showToast } from '@/components/ui/sonner'
 import { PrimaryButton } from '@/modules/common/components/PrimaryButton'
 import { RecognitionImagePreview } from '@/modules/wardrobe/components/RecognitionImagePreview'
 import { useWardrobeCreationFlow } from '@/modules/wardrobe/hooks/useWardrobeCreationFlow'
@@ -29,7 +29,6 @@ const WardrobePreviewPage = () => {
     confirmPendingSource,
   } = useWardrobeCreationFlow()
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [toastMessage, setToastMessage] = useState('')
   const [isMissingSource, setIsMissingSource] = useState(false)
 
   const pendingSource = getPendingSource()
@@ -73,19 +72,8 @@ const WardrobePreviewPage = () => {
     }
 
     setIsMissingSource(true)
-    setToastMessage('找不到待確認圖片，請重新選擇來源')
+    showToast.error('找不到待確認圖片，請重新選擇來源')
   }, [sourceMode])
-
-  useEffect(() => {
-    if (!toastMessage) return
-
-    const timeoutId = window.setTimeout(() => {
-      setToastMessage('')
-    }, 1800)
-
-    return () => window.clearTimeout(timeoutId)
-  }, [toastMessage])
-
 
   const handleConfirm = async () => {
     if (isSubmitting) {
@@ -98,7 +86,7 @@ const WardrobePreviewPage = () => {
     }
 
     if (!pendingSource || !pendingFile) {
-      setToastMessage('找不到待確認圖片，請重新選擇來源')
+      showToast.error('找不到待確認圖片，請重新選擇來源')
       setIsMissingSource(true)
       return
     }
@@ -115,7 +103,7 @@ const WardrobePreviewPage = () => {
 
       if (!result) {
         setIsMissingSource(true)
-        setToastMessage('找不到待確認圖片，請重新選擇來源')
+        showToast.error('找不到待確認圖片，請重新選擇來源')
       }
     } finally {
       setIsSubmitting(false)
@@ -179,8 +167,6 @@ const WardrobePreviewPage = () => {
           </p>
         </div>
       </main>
-
-      <Toast open={Boolean(toastMessage)} message={toastMessage} tone="error" />
     </div>
   )
 }
