@@ -63,14 +63,8 @@ const WardrobePreviewPage = () => {
       return confirmedContext.previewUrl
     }
 
-    const fallbackFile = pendingFile ?? confirmedFile
-
-    if (fallbackFile) {
-      return URL.createObjectURL(fallbackFile)
-    }
-
     return ''
-  }, [confirmedContext?.previewUrl, confirmedFile, pendingFile, pendingSource?.previewUrl])
+  }, [confirmedContext?.previewUrl, pendingSource?.previewUrl])
 
   useEffect(() => {
     if (sourceMode !== 'missing') {
@@ -92,18 +86,6 @@ const WardrobePreviewPage = () => {
     return () => window.clearTimeout(timeoutId)
   }, [toastMessage])
 
-  useEffect(() => {
-    const shouldRevokeObjectUrl =
-      !pendingSource?.previewUrl && !confirmedContext?.previewUrl && Boolean(previewSrc) && Boolean(pendingFile ?? confirmedFile)
-
-    if (!shouldRevokeObjectUrl) {
-      return
-    }
-
-    return () => {
-      URL.revokeObjectURL(previewSrc)
-    }
-  }, [confirmedContext?.previewUrl, confirmedFile, pendingFile, pendingSource?.previewUrl, previewSrc])
 
   const handleConfirm = async () => {
     if (isSubmitting) {

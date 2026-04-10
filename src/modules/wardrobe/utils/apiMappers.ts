@@ -180,7 +180,7 @@ export const mapCreateClothesResponseItemToWardrobeItem = (
   occasionKeys: item.occasions.map(mapApiOccasionToWardrobeOccasion),
   seasonKeys: item.seasons.map(mapApiSeasonToWardrobeSeason),
   colorKeys: [mapApiColorToWardrobeColor(item.color)],
-  imageUrl: item.cloudImgUrl ?? item.imgUrl ?? item[' '],
+  imageUrl: item.cloudImgUrl ?? item.imgUrl,
   createdAt: formatDisplayDate(item.createdAt),
   updatedAt: formatDisplayDate(item.updatedAt),
 })
