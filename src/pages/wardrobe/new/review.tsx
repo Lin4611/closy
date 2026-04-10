@@ -7,12 +7,10 @@ import { cn } from '@/lib/utils'
 import { Toast } from '@/modules/common/components/feedback/Toast'
 import { createClothes } from '@/modules/wardrobe/api/createClothes'
 import { WardrobeReviewForm } from '@/modules/wardrobe/components/WardrobeReviewForm'
-import { wardrobeOccasionOptions } from '@/modules/wardrobe/constants/occasionOptions'
 import {
   RECOGNITION_ENTRY_KEY,
   type RecognitionEntry,
 } from '@/modules/wardrobe/constants/recognition'
-import { wardrobeSeasonOptions } from '@/modules/wardrobe/constants/seasonOptions'
 import { useWardrobeCreationFlow } from '@/modules/wardrobe/hooks/useWardrobeCreationFlow'
 import { useWardrobeMock } from '@/modules/wardrobe/hooks/useWardrobeMock'
 import type { WardrobeReviewDraft } from '@/modules/wardrobe/types'
@@ -28,14 +26,6 @@ const getRecognitionEntry = (): RecognitionEntry => {
 
   return window.sessionStorage.getItem(RECOGNITION_ENTRY_KEY) === 'album' ? 'album' : 'camera'
 }
-
-
-const normalizeReviewDraft = (draft: WardrobeReviewDraft): WardrobeReviewDraft => ({
-  ...draft,
-  occasionKeys:
-    draft.occasionKeys.length > 0 ? draft.occasionKeys : [wardrobeOccasionOptions[0].key],
-  seasonKeys: draft.seasonKeys.length > 0 ? draft.seasonKeys : [wardrobeSeasonOptions[0].key],
-})
 
 const getSaveErrorMessage = (error: unknown) => {
   if (error instanceof ApiError) {
@@ -74,18 +64,11 @@ const WardrobeReviewPage = () => {
       return
     }
 
-    const normalizedDraft = normalizeReviewDraft(savedDraft)
-    setDraft(normalizedDraft)
-    saveReviewDraft(normalizedDraft)
-  }, [getReviewDraft, router, saveReviewDraft])
+    setDraft(savedDraft)
+  }, [getReviewDraft, router])
 
   const isDisabled =
-    !draft ||
-    !draft.name.trim() ||
-    !draft.colorKey ||
-    draft.occasionKeys.length === 0 ||
-    draft.seasonKeys.length === 0 ||
-    isSubmitting
+    !draft || !draft.name.trim() || !draft.colorKey || isSubmitting
 
   const backHref = useMemo(() => {
     if (!router.isReady) {

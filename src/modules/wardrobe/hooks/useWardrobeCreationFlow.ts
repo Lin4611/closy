@@ -1,26 +1,32 @@
 import { useCallback, useMemo } from 'react'
 
 import type {
+  PendingRecognitionSource,
   WardrobeCreationFlowContext,
   WardrobeProcessingStage,
   WardrobeRecognitionSource,
   WardrobeReviewDraft,
 } from '@/modules/wardrobe/types'
 import {
+  clearPendingRecognitionSource,
+  clearPendingRecognitionState,
   clearWardrobeCreationFlowContext,
   clearWardrobeCreationFlowState,
   clearWardrobeProcessingStage,
   clearWardrobeReviewDraft,
+  getPendingRecognitionSource,
   getWardrobeCreationFlowContext,
   getWardrobeProcessingStage,
   getWardrobeReviewDraft,
   patchWardrobeCreationFlowContext,
+  savePendingRecognitionSource,
   saveWardrobeCreationFlowContext,
   saveWardrobeProcessingStage,
   saveWardrobeReviewDraft,
 } from '@/modules/wardrobe/utils/creationFlowStorage'
 
 let currentSourceFile: File | null = null
+let currentPendingSourceFile: File | null = null
 
 const mapFileToSourceFileMeta = (file: File) => ({
   name: file.name,
@@ -36,11 +42,13 @@ export const useWardrobeCreationFlow = () => {
       entryType: WardrobeRecognitionSource
       file?: File | null
       previewUrl?: string
+      confirmedAt?: number
     }) => {
       currentSourceFile = params.file ?? null
 
       const nextContext: WardrobeCreationFlowContext = {
         entryType: params.entryType,
+        confirmedAt: params.confirmedAt ?? Date.now(),
         previewUrl: params.previewUrl,
         sourceFile: params.file ? mapFileToSourceFileMeta(params.file) : undefined,
       }
@@ -52,7 +60,11 @@ export const useWardrobeCreationFlow = () => {
   )
 
   const updateContext = useCallback((patch: Partial<WardrobeCreationFlowContext>) => {
-    if (patch.sourceFile === undefined && patch.previewUrl === undefined) {
+    if (
+      patch.sourceFile === undefined &&
+      patch.previewUrl === undefined &&
+      patch.confirmedAt === undefined
+    ) {
       return patchWardrobeCreationFlowContext(patch)
     }
 
@@ -60,6 +72,7 @@ export const useWardrobeCreationFlow = () => {
       ...patch,
       sourceFile: patch.sourceFile,
       previewUrl: patch.previewUrl,
+      confirmedAt: patch.confirmedAt,
     })
   }, [])
 
@@ -83,6 +96,71 @@ export const useWardrobeCreationFlow = () => {
 
   const clearSourceFile = useCallback(() => {
     currentSourceFile = null
+  }, [])
+
+  const setPendingSource = useCallback(
+    (params: {
+      origin: WardrobeRecognitionSource
+      file: File | null
+      previewUrl: string
+      createdAt?: number
+    }) => {
+      currentPendingSourceFile = params.file
+
+      if (!params.file) {
+        clearPendingRecognitionSource()
+        return null
+      }
+
+      const pendingSource: PendingRecognitionSource = {
+        origin: params.origin,
+        previewUrl: params.previewUrl,
+        fileName: params.file.name,
+        mimeType: params.file.type,
+        createdAt: params.createdAt ?? Date.now(),
+      }
+
+      savePendingRecognitionSource(pendingSource)
+      return pendingSource
+    },
+    []
+  )
+
+  const getPendingSource = useCallback(() => getPendingRecognitionSource(), [])
+
+  const getPendingSourceFile = useCallback(() => currentPendingSourceFile, [])
+
+  const clearPendingSource = useCallback(() => {
+    currentPendingSourceFile = null
+    clearPendingRecognitionState()
+  }, [])
+
+  const confirmPendingSource = useCallback(
+    (params?: { confirmedAt?: number }) => {
+      const pendingSource = getPendingRecognitionSource()
+
+      if (!pendingSource || !currentPendingSourceFile) {
+        return null
+      }
+
+      const confirmedContext = initializeFlow({
+        entryType: pendingSource.origin,
+        file: currentPendingSourceFile,
+        previewUrl: pendingSource.previewUrl,
+        confirmedAt: params?.confirmedAt ?? Date.now(),
+      })
+
+      currentPendingSourceFile = null
+      clearPendingRecognitionState()
+
+      return confirmedContext
+    },
+    [initializeFlow]
+  )
+
+  const hasConfirmedSource = useCallback(() => {
+    const context = getWardrobeCreationFlowContext()
+    return Boolean(context?.entryType && context.confirmedAt && currentSourceFile)
   }, [])
 
   const saveReviewDraft = useCallback((draft: WardrobeReviewDraft) => {
@@ -113,6 +191,7 @@ export const useWardrobeCreationFlow = () => {
 
   const clearFlow = useCallback(() => {
     currentSourceFile = null
+    currentPendingSourceFile = null
     clearWardrobeCreationFlowState()
   }, [])
 
@@ -124,6 +203,12 @@ export const useWardrobeCreationFlow = () => {
       setSourceFile,
       getSourceFile,
       clearSourceFile,
+      setPendingSource,
+      getPendingSource,
+      getPendingSourceFile,
+      clearPendingSource,
+      confirmPendingSource,
+      hasConfirmedSource,
       saveReviewDraft,
       getReviewDraft,
       clearReview,
@@ -136,15 +221,21 @@ export const useWardrobeCreationFlow = () => {
     [
       clearContext,
       clearFlow,
+      clearPendingSource,
       clearReview,
       clearSourceFile,
       clearStage,
+      confirmPendingSource,
       getContext,
+      getPendingSource,
+      getPendingSourceFile,
       getProcessingStage,
       getReviewDraft,
       getSourceFile,
+      hasConfirmedSource,
       initializeFlow,
       saveReviewDraft,
+      setPendingSource,
       setProcessingStage,
       setSourceFile,
       updateContext,
