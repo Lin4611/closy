@@ -33,6 +33,7 @@ export const AppShell = ({ children, activeTab }: AppShellProps) => {
         onOpenChange={setIsAddClothingDrawerOpen}
         onCameraClick={handleNavigateCamera}
         onAlbumClick={handleNavigateAlbum}
+        dismissible={true}
       />
     </>
   )

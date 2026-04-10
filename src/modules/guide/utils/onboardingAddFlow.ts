@@ -33,3 +33,16 @@ export const clearOnboardingAddFlow = () => {
 
   window.localStorage.removeItem(ONBOARDING_ADD_FLOW_STORAGE_KEY)
 }
+
+export const getOnboardingStepRoute = (step: OnboardingAddFlowStep | null): string => {
+  switch (step) {
+    case 'top-required':
+      return '/guide/add-top'
+    case 'bottom-required':
+      return '/guide/add-bottom'
+    case 'completed':
+      return '/guide/complete'
+    default:
+      return '/guide/gender'
+  }
+}

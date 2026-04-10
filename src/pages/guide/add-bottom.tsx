@@ -1,11 +1,12 @@
 import { useRouter } from 'next/router'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { AddClothButton } from '@/modules/common/components/AddClothButton'
 import { BottomNav } from '@/modules/common/components/BottomNav'
 import { Overlay } from '@/modules/common/components/Overlay'
 import { AddClothingDrawer } from '@/modules/common/components/overlay/AddClothingDrawer'
 import { GuideToolTip } from '@/modules/guide/components/GuideToolTip'
+import { getOnboardingAddFlow, getOnboardingStepRoute } from '@/modules/guide/utils/onboardingAddFlow'
 import { HomeFilterBar } from '@/modules/home/components/HomeFilterBar'
 import { HomeInsightsSection } from '@/modules/home/components/HomeInsightsSection'
 import { HomeOutfitPreview } from '@/modules/home/components/HomeOutfitPreview'
@@ -15,6 +16,18 @@ const GuideAddBottomPage = () => {
   const router = useRouter()
 
   const [isAddClothingDrawerOpen, setIsAddClothingDrawerOpen] = useState(false)
+
+  useEffect(() => {
+    if (!router.isReady) {
+      return
+    }
+
+    const currentStep = getOnboardingAddFlow()
+
+    if (currentStep !== 'bottom-required') {
+      void router.replace(getOnboardingStepRoute(currentStep))
+    }
+  }, [router])
 
   const handleOpenDrawer = () => {
     setIsAddClothingDrawerOpen(true)

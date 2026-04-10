@@ -3,7 +3,7 @@ import { useRouter } from 'next/router'
 import { useEffect } from 'react'
 
 import { PrimaryButton } from '@/modules/common/components/PrimaryButton'
-import { getOnboardingAddFlow } from '@/modules/guide/utils/onboardingAddFlow'
+import { getOnboardingAddFlow, getOnboardingStepRoute } from '@/modules/guide/utils/onboardingAddFlow'
 
 const GuideComplete = () => {
   const router = useRouter()
@@ -13,8 +13,10 @@ const GuideComplete = () => {
       return
     }
 
-    if (getOnboardingAddFlow() !== 'completed') {
-      void router.replace('/guide/add-top')
+    const currentStep = getOnboardingAddFlow()
+
+    if (currentStep !== 'completed') {
+      void router.replace(getOnboardingStepRoute(currentStep))
     }
   }, [router])
 
