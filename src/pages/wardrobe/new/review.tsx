@@ -7,10 +7,7 @@ import { cn } from '@/lib/utils'
 import { Toast } from '@/modules/common/components/feedback/Toast'
 import { createClothes } from '@/modules/wardrobe/api/createClothes'
 import { WardrobeReviewForm } from '@/modules/wardrobe/components/WardrobeReviewForm'
-import {
-  RECOGNITION_ENTRY_KEY,
-  type RecognitionEntry,
-} from '@/modules/wardrobe/constants/recognition'
+import { RECOGNITION_ENTRY_KEY } from '@/modules/wardrobe/constants/recognition'
 import { useWardrobeCreationFlow } from '@/modules/wardrobe/hooks/useWardrobeCreationFlow'
 import { useWardrobeMock } from '@/modules/wardrobe/hooks/useWardrobeMock'
 import type { WardrobeReviewDraft } from '@/modules/wardrobe/types'
@@ -18,14 +15,6 @@ import {
   mapCreateClothesResponseItemToWardrobeItem,
   mapWardrobeReviewDraftToCreateClothesRequest,
 } from '@/modules/wardrobe/utils/apiMappers'
-
-const getRecognitionEntry = (): RecognitionEntry => {
-  if (typeof window === 'undefined') {
-    return 'camera'
-  }
-
-  return window.sessionStorage.getItem(RECOGNITION_ENTRY_KEY) === 'album' ? 'album' : 'camera'
-}
 
 const getSaveErrorMessage = (error: unknown) => {
   if (error instanceof ApiError) {
@@ -67,16 +56,16 @@ const WardrobeReviewPage = () => {
     setDraft(savedDraft)
   }, [getReviewDraft, router])
 
-  const isDisabled =
-    !draft || !draft.name.trim() || !draft.colorKey || isSubmitting
+  const isDisabled = !draft || !draft.name.trim() || !draft.colorKey || isSubmitting
 
   const backHref = useMemo(() => {
     if (!router.isReady) {
-      return '/wardrobe/new/camera'
+      return '/wardrobe/new/preview'
     }
 
-    return getRecognitionEntry() === 'album' ? '/wardrobe/new/album' : '/wardrobe/new/camera'
-  }, [router.isReady])
+    const context = getContext()
+    return context?.entryType ? '/wardrobe/new/preview' : '/wardrobe/new'
+  }, [getContext, router.isReady])
 
   const handleDraftChange = (next: WardrobeReviewDraft) => {
     setDraft(next)
