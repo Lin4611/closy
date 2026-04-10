@@ -8,7 +8,6 @@ import { cn } from '@/lib/utils'
 import { getOnboardingAddFlow, setOnboardingAddFlow } from '@/modules/guide/utils/onboardingAddFlow'
 import { createClothes } from '@/modules/wardrobe/api/createClothes'
 import { WardrobeReviewForm } from '@/modules/wardrobe/components/WardrobeReviewForm'
-import { RECOGNITION_ENTRY_KEY } from '@/modules/wardrobe/constants/recognition'
 import { useWardrobeCreationFlow } from '@/modules/wardrobe/hooks/useWardrobeCreationFlow'
 import { useWardrobeMock } from '@/modules/wardrobe/hooks/useWardrobeMock'
 import type { WardrobeReviewDraft } from '@/modules/wardrobe/types'
@@ -129,11 +128,6 @@ const WardrobeReviewPage = () => {
       clearFlow()
 
       const nextRoute = getNextOnboardingRoute(mapApiCategoryToWardrobeCategory(createdItem.category))
-
-      if (typeof window !== 'undefined') {
-        window.sessionStorage.removeItem(RECOGNITION_ENTRY_KEY)
-        window.history.replaceState(null, '', nextRoute)
-      }
 
       await router.replace(nextRoute)
     } catch (error) {
