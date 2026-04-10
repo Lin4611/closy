@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { ApiError } from '@/lib/api/client'
 import { Toast } from '@/modules/common/components/feedback/Toast'
@@ -31,6 +31,7 @@ const WardrobeProcessingPage = () => {
   const {
     getContext,
     getSourceFile,
+    hasConfirmedSource,
     saveReviewDraft,
     setProcessingStage,
     updateContext,
@@ -52,13 +53,18 @@ const WardrobeProcessingPage = () => {
 
   const footerText = '請稍後...'
 
+  const shouldUseFailureSheet = useMemo(() => {
+    const context = getContext()
+    return !context?.entryType
+  }, [getContext])
+
   useEffect(() => {
     let isCancelled = false
 
     const hideToastLater = (delay = 1800) => {
       window.setTimeout(() => {
         if (isCancelled) return
-        setToastState((prev: { open: boolean; message: string; tone: 'success' | 'error' }) => ({ ...prev, open: false }))
+        setToastState((prev) => ({ ...prev, open: false }))
       }, delay)
     }
 
@@ -67,7 +73,7 @@ const WardrobeProcessingPage = () => {
 
       setProcessingStage('failed')
       setIsFailure(true)
-      setIsSheetOpen(true)
+      setIsSheetOpen(shouldUseFailureSheet)
       setToastState({
         open: true,
         message,
@@ -80,8 +86,8 @@ const WardrobeProcessingPage = () => {
       const context = getContext()
       const sourceFile = getSourceFile()
 
-      if (!context?.entryType || !sourceFile) {
-        openFailureState('找不到待辨識圖片，請重新上傳')
+      if (!context?.entryType || !context.confirmedAt || !sourceFile || !hasConfirmedSource()) {
+        openFailureState('找不到已確認的圖片，請重新拍攝或重新選擇')
         return
       }
 
@@ -163,13 +169,19 @@ const WardrobeProcessingPage = () => {
     clearStage,
     getContext,
     getSourceFile,
+    hasConfirmedSource,
     router,
     saveReviewDraft,
     setProcessingStage,
+    shouldUseFailureSheet,
     updateContext,
   ])
 
   if (isFailure) {
+    const context = getContext()
+    const retryHref = context?.entryType ? '/wardrobe/new/preview' : '/wardrobe/new'
+    const retryLabel = context?.entryType ? '回到圖片確認' : '重新選擇新增方式'
+
     return (
       <>
         <div className="flex min-h-screen flex-col bg-neutral-100">
@@ -182,8 +194,20 @@ const WardrobeProcessingPage = () => {
           <main className="flex flex-1 flex-col items-center justify-center px-6 text-center">
             <div className="space-y-2">
               <p className="font-label-xxl text-neutral-900">辨識失敗</p>
-              <p className="font-paragraph-sm text-neutral-500">請重新選擇新增方式後再試一次</p>
+              <p className="font-paragraph-sm text-neutral-500">請回到上一個步驟後重新嘗試</p>
             </div>
+
+            {!shouldUseFailureSheet ? (
+              <button
+                type="button"
+                onClick={() => {
+                  void router.replace(retryHref)
+                }}
+                className="mt-6 rounded-full bg-primary-900 px-5 py-3 font-label-md text-white"
+              >
+                {retryLabel}
+              </button>
+            ) : null}
           </main>
         </div>
 
