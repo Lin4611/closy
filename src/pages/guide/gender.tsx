@@ -7,6 +7,7 @@ import { ApiError } from '@/lib/api/client'
 import { PrimaryButton } from '@/modules/common/components/PrimaryButton'
 import { updateGender } from '@/modules/guide/api/gender'
 import { GenderButton } from '@/modules/guide/components/GenderButton'
+import { setOnboardingAddFlow } from '@/modules/guide/utils/onboardingAddFlow'
 
 const Gender = () => {
   const router = useRouter()
@@ -21,7 +22,8 @@ const Gender = () => {
     try {
       setIsSubmitting(true)
       await updateGender(gender)
-      router.push('/guide/add-top')
+      setOnboardingAddFlow('top-required')
+      void router.push('/guide/add-top')
     } catch (error) {
       if (error instanceof ApiError) {
         showToast.error(error.message)
@@ -34,7 +36,7 @@ const Gender = () => {
   }
 
   return (
-    <main className="flex min-h-screen flex-col px-4 pt-3 pb-[143px]">
+    <main className="flex min-h-screen flex-col px-4 pt-3 pb-35.75">
       <section className="flex w-full flex-col gap-3">
         <button
           className="flex h-10 w-10 items-center justify-center"

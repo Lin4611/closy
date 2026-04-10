@@ -5,13 +5,18 @@ import { useEffect, useMemo, useState } from 'react'
 import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
 import { cn } from '@/lib/utils'
+import { getOnboardingAddFlow, setOnboardingAddFlow } from '@/modules/guide/utils/onboardingAddFlow'
 import { createClothes } from '@/modules/wardrobe/api/createClothes'
 import { WardrobeReviewForm } from '@/modules/wardrobe/components/WardrobeReviewForm'
 import { RECOGNITION_ENTRY_KEY } from '@/modules/wardrobe/constants/recognition'
 import { useWardrobeCreationFlow } from '@/modules/wardrobe/hooks/useWardrobeCreationFlow'
 import { useWardrobeMock } from '@/modules/wardrobe/hooks/useWardrobeMock'
 import type { WardrobeReviewDraft } from '@/modules/wardrobe/types'
-import { mapCreateClothesResponseItemToWardrobeItem, mapWardrobeReviewDraftToCreateClothesRequest } from '@/modules/wardrobe/utils/apiMappers'
+import {
+  mapApiCategoryToWardrobeCategory,
+  mapCreateClothesResponseItemToWardrobeItem,
+  mapWardrobeReviewDraftToCreateClothesRequest,
+} from '@/modules/wardrobe/utils/apiMappers'
 
 const getSaveErrorMessage = (error: unknown) => {
   if (error instanceof ApiError) {
@@ -23,6 +28,32 @@ const getSaveErrorMessage = (error: unknown) => {
   }
 
   return '衣物新增失敗，請稍後再試'
+}
+
+const getNextOnboardingRoute = (savedCategory: WardrobeReviewDraft['category']) => {
+  const onboardingStep = getOnboardingAddFlow()
+
+  if (onboardingStep === 'top-required') {
+    if (savedCategory !== 'top') {
+      showToast.error('第一次請先新增上衣')
+      return null
+    }
+
+    setOnboardingAddFlow('bottom-required')
+    return '/guide/add-bottom'
+  }
+
+  if (onboardingStep === 'bottom-required') {
+    if (savedCategory !== 'pants' && savedCategory !== 'skirt') {
+      showToast.error('請再新增一件下身單品')
+      return null
+    }
+
+    setOnboardingAddFlow('completed')
+    return '/guide/complete'
+  }
+
+  return '/wardrobe'
 }
 
 const WardrobeReviewPage = () => {
@@ -87,16 +118,28 @@ const WardrobeReviewPage = () => {
         throw new Error('新增衣物成功，但未取得衣櫃列表資料')
       }
 
+      const createdItem = result.list.find((item) => item.imageHash === removeBackgroundResult.imageHash)
+
+      if (!createdItem) {
+        throw new Error('新增衣物成功，但無法確認本次建立的衣物資料')
+      }
+
+      const nextRoute = getNextOnboardingRoute(mapApiCategoryToWardrobeCategory(createdItem.category))
+
+      if (!nextRoute) {
+        return
+      }
+
       replaceItems(result.list.map(mapCreateClothesResponseItemToWardrobeItem))
       clearRecognitionDraft()
       clearFlow()
 
       if (typeof window !== 'undefined') {
         window.sessionStorage.removeItem(RECOGNITION_ENTRY_KEY)
-        window.history.replaceState(null, '', '/wardrobe')
+        window.history.replaceState(null, '', nextRoute)
       }
 
-      await router.replace('/wardrobe')
+      await router.replace(nextRoute)
     } catch (error) {
       showToast.error(getSaveErrorMessage(error))
     } finally {

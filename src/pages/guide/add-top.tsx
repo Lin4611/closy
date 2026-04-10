@@ -20,16 +20,18 @@ const AddTopPage = () => {
     setIsAddClothingDrawerOpen(true)
   }
 
+  const handleOpenChange = (open: boolean) => {
+    setIsAddClothingDrawerOpen(open)
+  }
+
   const handleCameraClick = () => {
     setIsAddClothingDrawerOpen(false)
-    // TODO: 導向到相機頁面
-    void router.push('/guide/add-bottom')
+    void router.push('/wardrobe/new/camera')
   }
 
   const handleAlbumClick = () => {
     setIsAddClothingDrawerOpen(false)
-    // TODO: 導向到相簿頁面
-    void router.push('/guide/add-bottom')
+    void router.push('/wardrobe/new/album')
   }
   return (
     <>
@@ -59,7 +61,7 @@ const AddTopPage = () => {
               </div>
 
               <div className="pointer-events-auto relative">
-                <span className="pointer-events-none absolute inset-[-8px] rounded-full" />
+                <span className="pointer-events-none absolute -inset-2 rounded-full" />
                 <AddClothButton onClick={handleOpenDrawer} />
               </div>
             </div>
@@ -69,7 +71,7 @@ const AddTopPage = () => {
 
       <AddClothingDrawer
         open={isAddClothingDrawerOpen}
-        onOpenChange={handleOpenDrawer}
+        onOpenChange={handleOpenChange}
         onCameraClick={handleCameraClick}
         onAlbumClick={handleAlbumClick}
         dismissible={false}
