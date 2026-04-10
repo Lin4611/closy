@@ -87,6 +87,14 @@ export type WardrobeReviewDraft = {
 
 export type WardrobeRecognitionSource = 'camera' | 'album'
 
+export type PendingRecognitionSource = {
+  origin: WardrobeRecognitionSource
+  previewUrl: string
+  fileName: string
+  mimeType: string
+  createdAt: number
+}
+
 export type WardrobeProcessingStage =
   | 'idle'
   | 'removingBackground'
@@ -97,6 +105,7 @@ export type WardrobeProcessingStage =
 
 export type WardrobeCreationFlowContext = {
   entryType: WardrobeRecognitionSource
+  confirmedAt?: number
   previewUrl?: string
   sourceFile?: {
     name: string

@@ -74,6 +74,7 @@ export type CreateClothesResponseItem = {
   updatedAt: string
   cloudImgUrl?: string
   imgUrl?: string
+  ' '?: string
 }
 
 export type CreateClothesResponseData = {
