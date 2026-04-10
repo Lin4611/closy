@@ -1,8 +1,25 @@
 import Image from 'next/image'
+import { useRouter } from 'next/router'
+import { useEffect } from 'react'
 
 import { PrimaryButton } from '@/modules/common/components/PrimaryButton'
+import { getOnboardingAddFlow, getOnboardingStepRoute } from '@/modules/guide/utils/onboardingAddFlow'
 
 const GuideComplete = () => {
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!router.isReady) {
+      return
+    }
+
+    const currentStep = getOnboardingAddFlow()
+
+    if (currentStep !== 'completed') {
+      void router.replace(getOnboardingStepRoute(currentStep))
+    }
+  }, [router])
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-between px-4 pt-50 pb-12">
       <section className="flex w-full flex-col items-center gap-10">

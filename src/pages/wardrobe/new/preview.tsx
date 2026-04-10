@@ -3,19 +3,12 @@ import { useRouter } from 'next/router'
 import { useEffect, useMemo, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
-import { Toast } from '@/modules/common/components/feedback/Toast'
+import { showToast } from '@/components/ui/sonner'
 import { PrimaryButton } from '@/modules/common/components/PrimaryButton'
 import { RecognitionImagePreview } from '@/modules/wardrobe/components/RecognitionImagePreview'
 import { useWardrobeCreationFlow } from '@/modules/wardrobe/hooks/useWardrobeCreationFlow'
 import { confirmPendingRecognitionSource } from '@/modules/wardrobe/utils/confirmPendingRecognitionSource'
-
-const getFallbackHref = (origin: 'camera' | 'album' | null) => {
-  if (origin === 'album') {
-    return '/wardrobe/new/album'
-  }
-
-  return '/wardrobe/new/camera'
-}
+import { getCreationFlowSourceRoute, resolveCreationFlowEntryScope } from '@/modules/wardrobe/utils/creationFlowNavigation'
 
 const WardrobePreviewPage = () => {
   const router = useRouter()
@@ -29,7 +22,6 @@ const WardrobePreviewPage = () => {
     confirmPendingSource,
   } = useWardrobeCreationFlow()
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [toastMessage, setToastMessage] = useState('')
   const [isMissingSource, setIsMissingSource] = useState(false)
 
   const pendingSource = getPendingSource()
@@ -37,8 +29,9 @@ const WardrobePreviewPage = () => {
   const confirmedContext = getContext()
   const confirmedFile = getSourceFile()
 
+  const entryScope = resolveCreationFlowEntryScope({ router, context: confirmedContext, pendingSource })
   const activeOrigin = pendingSource?.origin ?? confirmedContext?.entryType ?? null
-  const fallbackHref = getFallbackHref(activeOrigin)
+  const fallbackHref = getCreationFlowSourceRoute(activeOrigin, entryScope)
   const secondaryActionLabel = activeOrigin === 'album' ? '重新選擇' : '重新拍攝'
   const pageTitle = activeOrigin === 'album' ? '從相簿上傳' : '圖片確認'
 
@@ -73,19 +66,8 @@ const WardrobePreviewPage = () => {
     }
 
     setIsMissingSource(true)
-    setToastMessage('找不到待確認圖片，請重新選擇來源')
+    showToast.error('找不到待確認圖片，請重新選擇來源')
   }, [sourceMode])
-
-  useEffect(() => {
-    if (!toastMessage) return
-
-    const timeoutId = window.setTimeout(() => {
-      setToastMessage('')
-    }, 1800)
-
-    return () => window.clearTimeout(timeoutId)
-  }, [toastMessage])
-
 
   const handleConfirm = async () => {
     if (isSubmitting) {
@@ -98,7 +80,7 @@ const WardrobePreviewPage = () => {
     }
 
     if (!pendingSource || !pendingFile) {
-      setToastMessage('找不到待確認圖片，請重新選擇來源')
+      showToast.error('找不到待確認圖片，請重新選擇來源')
       setIsMissingSource(true)
       return
     }
@@ -115,7 +97,7 @@ const WardrobePreviewPage = () => {
 
       if (!result) {
         setIsMissingSource(true)
-        setToastMessage('找不到待確認圖片，請重新選擇來源')
+        showToast.error('找不到待確認圖片，請重新選擇來源')
       }
     } finally {
       setIsSubmitting(false)
@@ -179,8 +161,6 @@ const WardrobePreviewPage = () => {
           </p>
         </div>
       </main>
-
-      <Toast open={Boolean(toastMessage)} message={toastMessage} tone="error" />
     </div>
   )
 }

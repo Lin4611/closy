@@ -8,6 +8,7 @@ import type {
   PendingRecognitionSource,
   WardrobeCategoryKey,
   WardrobeColorKey,
+  WardrobeCreationEntryScope,
   WardrobeCreationFlowContext,
   WardrobeOccasionKey,
   WardrobeProcessingStage,
@@ -60,6 +61,7 @@ const wardrobeColors: WardrobeColorKey[] = [
 ]
 
 const wardrobeRecognitionSources: WardrobeRecognitionSource[] = ['camera', 'album']
+const wardrobeCreationEntryScopes: WardrobeCreationEntryScope[] = ['wardrobe', 'guide-add-top', 'guide-add-bottom']
 
 const sanitizeString = (value: unknown) => (typeof value === 'string' ? value : '')
 
@@ -86,17 +88,21 @@ const sanitizePendingRecognitionSource = (value: unknown): PendingRecognitionSou
   const origin = wardrobeRecognitionSources.includes(candidate.origin as WardrobeRecognitionSource)
     ? (candidate.origin as WardrobeRecognitionSource)
     : null
+  const entryScope = wardrobeCreationEntryScopes.includes(candidate.entryScope as WardrobeCreationEntryScope)
+    ? (candidate.entryScope as WardrobeCreationEntryScope)
+    : null
   const previewUrl = sanitizePreviewUrl(candidate.previewUrl)
   const fileName = sanitizeString(candidate.fileName)
   const mimeType = sanitizeString(candidate.mimeType)
   const createdAt = sanitizeNumber(candidate.createdAt)
 
-  if (!origin || !previewUrl || !fileName || !mimeType || createdAt <= 0) {
+  if (!origin || !entryScope || !previewUrl || !fileName || !mimeType || createdAt <= 0) {
     return null
   }
 
   return {
     origin,
+    entryScope,
     previewUrl,
     fileName,
     mimeType,
@@ -116,7 +122,11 @@ const sanitizeWardrobeCreationFlowContext = (
     ? (candidate.entryType as WardrobeRecognitionSource)
     : null
 
-  if (!entryType) {
+  const entryScope = wardrobeCreationEntryScopes.includes(candidate.entryScope as WardrobeCreationEntryScope)
+    ? (candidate.entryScope as WardrobeCreationEntryScope)
+    : null
+
+  if (!entryType || !entryScope) {
     return null
   }
 
@@ -155,6 +165,7 @@ const sanitizeWardrobeCreationFlowContext = (
 
   return {
     entryType,
+    entryScope,
     confirmedAt:
       typeof candidate.confirmedAt === 'number' && Number.isFinite(candidate.confirmedAt)
         ? candidate.confirmedAt
