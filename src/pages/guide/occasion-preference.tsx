@@ -7,6 +7,7 @@ import { updateOccasion } from '@/modules/common/api/occasion'
 import { PrimaryButton } from '@/modules/common/components/PrimaryButton'
 import { occasionMetaMap, type Occasion } from '@/modules/common/types/occasion'
 import { OccasionOptionCard } from '@/modules/guide/components/OccasionOptionCard'
+import { clearOnboardingAddFlow } from '@/modules/guide/utils/onboardingAddFlow'
 
 const OccasionPreference = () => {
   const router = useRouter()
@@ -15,14 +16,14 @@ const OccasionPreference = () => {
   const handleOccasionChange = async (value: string) => {
     try {
       await updateOccasion(value as Occasion)
+      clearOnboardingAddFlow()
+      await router.push('/guide/location-service')
     } catch (error) {
       if (error instanceof ApiError) {
         showToast.error(error.message)
       } else {
         showToast.error('更新場合失敗，請稍後再試')
       }
-    } finally {
-      router.push('/guide/location-service')
     }
   }
 

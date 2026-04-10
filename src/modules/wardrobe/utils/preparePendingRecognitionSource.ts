@@ -1,15 +1,17 @@
 import type { NextRouter } from 'next/router'
 
 import { RECOGNITION_ENTRY_KEY } from '@/modules/wardrobe/constants/recognition'
-import type { WardrobeRecognitionSource } from '@/modules/wardrobe/types'
+import type { WardrobeCreationEntryScope, WardrobeRecognitionSource } from '@/modules/wardrobe/types'
 
 type PreparePendingRecognitionSourceParams = {
   router: NextRouter
   origin: WardrobeRecognitionSource
   file: File
+  entryScope: WardrobeCreationEntryScope
   clearFlow: () => void
   setPendingSource: (params: {
     origin: WardrobeRecognitionSource
+    entryScope: WardrobeCreationEntryScope
     file: File | null
     previewUrl: string
     createdAt?: number
@@ -22,6 +24,7 @@ export const preparePendingRecognitionSource = async ({
   router,
   origin,
   file,
+  entryScope,
   clearFlow,
   setPendingSource,
   previewUrl,
@@ -32,6 +35,7 @@ export const preparePendingRecognitionSource = async ({
   clearFlow()
   setPendingSource({
     origin,
+    entryScope,
     file,
     previewUrl: nextPreviewUrl,
   })

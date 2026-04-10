@@ -3,6 +3,7 @@ import { useCallback, useMemo } from 'react'
 import { RECOGNITION_ENTRY_KEY } from '@/modules/wardrobe/constants/recognition'
 import type {
   PendingRecognitionSource,
+  WardrobeCreationEntryScope,
   WardrobeCreationFlowContext,
   WardrobeProcessingStage,
   WardrobeRecognitionSource,
@@ -90,6 +91,7 @@ export const useWardrobeCreationFlow = () => {
   const initializeFlow = useCallback(
     (params: {
       entryType: WardrobeRecognitionSource
+      entryScope: WardrobeCreationEntryScope
       file?: File | null
       previewUrl?: string
       confirmedAt?: number
@@ -99,6 +101,7 @@ export const useWardrobeCreationFlow = () => {
 
       const nextContext: WardrobeCreationFlowContext = {
         entryType: params.entryType,
+        entryScope: params.entryScope,
         confirmedAt: params.confirmedAt ?? Date.now(),
         previewUrl: params.previewUrl,
         sourceFile: params.file ? mapFileToSourceFileMeta(params.file) : undefined,
@@ -162,6 +165,7 @@ export const useWardrobeCreationFlow = () => {
   const setPendingSource = useCallback(
     (params: {
       origin: WardrobeRecognitionSource
+      entryScope: WardrobeCreationEntryScope
       file: File | null
       previewUrl: string
       createdAt?: number
@@ -178,6 +182,7 @@ export const useWardrobeCreationFlow = () => {
 
       const pendingSource: PendingRecognitionSource = {
         origin: params.origin,
+        entryScope: params.entryScope,
         previewUrl: params.previewUrl,
         fileName: params.file.name,
         mimeType: params.file.type,
@@ -211,6 +216,7 @@ export const useWardrobeCreationFlow = () => {
 
       const confirmedContext = initializeFlow({
         entryType: pendingSource.origin,
+        entryScope: pendingSource.entryScope,
         file: currentPendingSourceFile,
         previewUrl: pendingSource.previewUrl,
         confirmedAt: params?.confirmedAt ?? Date.now(),

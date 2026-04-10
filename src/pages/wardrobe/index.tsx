@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
+import { showToast } from '@/components/ui/sonner'
 import { AppShell } from '@/modules/common/components/AppShell'
-import { Toast } from '@/modules/common/components/feedback/Toast'
 import { DeleteClothingDialog } from '@/modules/wardrobe/components/DeleteClothingDialog'
 import { WardrobeFilterChips } from '@/modules/wardrobe/components/WardrobeFilterChips'
 import { WardrobeGrid } from '@/modules/wardrobe/components/WardrobeGrid'
@@ -13,17 +13,6 @@ const WardrobePage = () => {
   const { items } = useWardrobeMock()
   const [activeCategory, setActiveCategory] = useState<WardrobeCategoryKey>('all')
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
-  const [isUnsupportedDeleteToastOpen, setIsUnsupportedDeleteToastOpen] = useState(false)
-
-  useEffect(() => {
-    if (!isUnsupportedDeleteToastOpen) return
-
-    const timeoutId = window.setTimeout(() => {
-      setIsUnsupportedDeleteToastOpen(false)
-    }, 1800)
-
-    return () => window.clearTimeout(timeoutId)
-  }, [isUnsupportedDeleteToastOpen])
 
   const counts = useMemo(() => {
     return items.reduce(
@@ -61,14 +50,8 @@ const WardrobePage = () => {
           onClose={() => setDeleteTargetId(null)}
           onConfirm={() => {
             setDeleteTargetId(null)
-            setIsUnsupportedDeleteToastOpen(true)
+            showToast.error('目前尚未支援刪除衣物')
           }}
-        />
-
-        <Toast
-          open={isUnsupportedDeleteToastOpen}
-          message="目前尚未支援刪除衣物"
-          tone="error"
         />
       </div>
     </AppShell>

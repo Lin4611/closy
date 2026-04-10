@@ -15,6 +15,7 @@ import type {
   WardrobeReviewDraft,
   WardrobeSeasonKey,
 } from '@/modules/wardrobe/types'
+import { isWardrobeCreationEntryScope } from '@/modules/wardrobe/utils/creationFlowNavigation'
 
 const isClient = () => typeof window !== 'undefined'
 
@@ -86,6 +87,9 @@ const sanitizePendingRecognitionSource = (value: unknown): PendingRecognitionSou
   const origin = wardrobeRecognitionSources.includes(candidate.origin as WardrobeRecognitionSource)
     ? (candidate.origin as WardrobeRecognitionSource)
     : null
+  const entryScope = isWardrobeCreationEntryScope(candidate.entryScope)
+    ? candidate.entryScope
+    : 'wardrobe'
   const previewUrl = sanitizePreviewUrl(candidate.previewUrl)
   const fileName = sanitizeString(candidate.fileName)
   const mimeType = sanitizeString(candidate.mimeType)
@@ -97,6 +101,7 @@ const sanitizePendingRecognitionSource = (value: unknown): PendingRecognitionSou
 
   return {
     origin,
+    entryScope,
     previewUrl,
     fileName,
     mimeType,
@@ -115,6 +120,10 @@ const sanitizeWardrobeCreationFlowContext = (
   const entryType = wardrobeRecognitionSources.includes(candidate.entryType as WardrobeRecognitionSource)
     ? (candidate.entryType as WardrobeRecognitionSource)
     : null
+
+  const entryScope = isWardrobeCreationEntryScope(candidate.entryScope)
+    ? candidate.entryScope
+    : 'wardrobe'
 
   if (!entryType) {
     return null
@@ -155,6 +164,7 @@ const sanitizeWardrobeCreationFlowContext = (
 
   return {
     entryType,
+    entryScope,
     confirmedAt:
       typeof candidate.confirmedAt === 'number' && Number.isFinite(candidate.confirmedAt)
         ? candidate.confirmedAt

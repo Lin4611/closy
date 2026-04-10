@@ -1,8 +1,8 @@
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
-import { Toast } from '@/modules/common/components/feedback/Toast'
+import { showToast } from '@/components/ui/sonner'
 import { WardrobeReviewForm } from '@/modules/wardrobe/components/WardrobeReviewForm'
 import { useWardrobeMock } from '@/modules/wardrobe/hooks/useWardrobeMock'
 import type { WardrobeItem, WardrobeReviewDraft } from '@/modules/wardrobe/types'
@@ -24,17 +24,6 @@ type WardrobeEditContentProps = {
 
 const WardrobeEditContent = ({ item }: WardrobeEditContentProps) => {
   const [draft, setDraft] = useState<WardrobeReviewDraft>(() => createDraftFromItem(item))
-  const [isUnsupportedEditToastOpen, setIsUnsupportedEditToastOpen] = useState(false)
-
-  useEffect(() => {
-    if (!isUnsupportedEditToastOpen) return
-
-    const timeoutId = window.setTimeout(() => {
-      setIsUnsupportedEditToastOpen(false)
-    }, 1800)
-
-    return () => window.clearTimeout(timeoutId)
-  }, [isUnsupportedEditToastOpen])
 
   const isDisabled = !draft.name.trim() || !draft.colorKey
 
@@ -55,7 +44,7 @@ const WardrobeEditContent = ({ item }: WardrobeEditContentProps) => {
           type="button"
           disabled={isDisabled}
           onClick={() => {
-            setIsUnsupportedEditToastOpen(true)
+            showToast.error('目前尚未支援編輯衣物同步')
           }}
           className={`font-label-md h-11 w-full rounded-full ${
             isDisabled ? 'bg-neutral-300 text-neutral-500' : 'bg-primary-900 text-white'
@@ -64,12 +53,6 @@ const WardrobeEditContent = ({ item }: WardrobeEditContentProps) => {
           儲存
         </button>
       </div>
-
-      <Toast
-        open={isUnsupportedEditToastOpen}
-        message="目前尚未支援編輯衣物同步"
-        tone="error"
-      />
     </div>
   )
 }

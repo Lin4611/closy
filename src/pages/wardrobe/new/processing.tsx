@@ -1,14 +1,15 @@
 import { useRouter } from 'next/router'
 import { useEffect, useMemo, useState } from 'react'
 
+import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
-import { Toast } from '@/modules/common/components/feedback/Toast'
-import { AddClothingSheet } from '@/modules/common/components/overlay/AddClothingSheet'
+import { AddClothingDrawer } from '@/modules/common/components/overlay/AddClothingDrawer'
 import { analyzeClothes } from '@/modules/wardrobe/api/analyzeClothes'
 import { removeBackground } from '@/modules/wardrobe/api/removeBackground'
 import { RecognitionLoading } from '@/modules/wardrobe/components/RecognitionLoading'
 import { useWardrobeCreationFlow } from '@/modules/wardrobe/hooks/useWardrobeCreationFlow'
 import { mapAnalyzeResponseToWardrobeReviewDraft } from '@/modules/wardrobe/utils/apiMappers'
+import { getCreationFlowSourceRoute, resolveCreationFlowEntryScope } from '@/modules/wardrobe/utils/creationFlowNavigation'
 
 const FAILURE_TIP_MESSAGE = '建議更換較清楚衣物圖片'
 
@@ -41,32 +42,28 @@ const WardrobeProcessingPage = () => {
   const [statusText, setStatusText] = useState('圖片去背中...')
   const [isFailure, setIsFailure] = useState(false)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
-  const [toastState, setToastState] = useState<{
-    open: boolean
-    message: string
-    tone: 'success' | 'error'
-  }>({
-    open: false,
-    message: '',
-    tone: 'success',
-  })
 
   const footerText = '請稍後...'
+  const currentContext = getContext()
+  const entryScope = resolveCreationFlowEntryScope({ router, context: currentContext })
+
+  const handleNavigateCamera = () => {
+    setIsSheetOpen(false)
+    void router.push(getCreationFlowSourceRoute('camera', entryScope))
+  }
+
+  const handleNavigateAlbum = () => {
+    setIsSheetOpen(false)
+    void router.push(getCreationFlowSourceRoute('album', entryScope))
+  }
 
   const shouldUseFailureSheet = useMemo(() => {
     const context = getContext()
-    return !context?.entryType
-  }, [getContext])
+    return entryScope === 'wardrobe' && !context?.entryType
+  }, [entryScope, getContext])
 
   useEffect(() => {
     let isCancelled = false
-
-    const hideToastLater = (delay = 1800) => {
-      window.setTimeout(() => {
-        if (isCancelled) return
-        setToastState((prev) => ({ ...prev, open: false }))
-      }, delay)
-    }
 
     const openFailureState = (message: string) => {
       if (isCancelled) return
@@ -74,12 +71,7 @@ const WardrobeProcessingPage = () => {
       setProcessingStage('failed')
       setIsFailure(true)
       setIsSheetOpen(shouldUseFailureSheet)
-      setToastState({
-        open: true,
-        message,
-        tone: 'error',
-      })
-      hideToastLater()
+      showToast.error(message)
     }
 
     const startProcessing = async () => {
@@ -142,13 +134,8 @@ const WardrobeProcessingPage = () => {
         })
 
         setProcessingStage('completed')
-        setToastState({
-          open: true,
-          message: '辨識成功！',
-          tone: 'success',
-        })
+        showToast.success('辨識成功！')
 
-        hideToastLater(1200)
         await wait(700)
 
         if (isCancelled) return
@@ -179,7 +166,7 @@ const WardrobeProcessingPage = () => {
 
   if (isFailure) {
     const context = getContext()
-    const retryHref = context?.entryType ? '/wardrobe/new/preview' : '/wardrobe/new'
+    const retryHref = context?.entryType ? '/wardrobe/new/preview' : getCreationFlowSourceRoute(null, entryScope)
     const retryLabel = context?.entryType ? '回到圖片確認' : '重新選擇新增方式'
 
     return (
@@ -211,22 +198,23 @@ const WardrobeProcessingPage = () => {
           </main>
         </div>
 
-        <AddClothingSheet open={isSheetOpen} onClose={() => setIsSheetOpen(false)} />
-        <Toast open={toastState.open} message={toastState.message} tone={toastState.tone} />
+        <AddClothingDrawer
+          open={isSheetOpen}
+          onOpenChange={setIsSheetOpen}
+          onCameraClick={handleNavigateCamera}
+          onAlbumClick={handleNavigateAlbum}
+        />
       </>
     )
   }
 
   return (
-    <>
-      <div className="relative min-h-screen bg-neutral-100">
-        <RecognitionLoading title={statusText} description="" />
-        <div className="absolute right-0 bottom-10 left-0 px-6 text-center font-paragraph-xs text-neutral-500">
-          {footerText}
-        </div>
+    <div className="relative min-h-screen bg-neutral-100">
+      <RecognitionLoading title={statusText} description="" />
+      <div className="absolute right-0 bottom-10 left-0 px-6 text-center font-paragraph-xs text-neutral-500">
+        {footerText}
       </div>
-      <Toast open={toastState.open} message={toastState.message} tone={toastState.tone} />
-    </>
+    </div>
   )
 }
 

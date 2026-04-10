@@ -4,9 +4,10 @@ import { useRouter } from 'next/router'
 import { useRef, useState, type ChangeEvent } from 'react'
 
 import { Button } from '@/components/ui/button'
-import { Toast } from '@/modules/common/components/feedback/Toast'
+import { showToast } from '@/components/ui/sonner'
 import { PrimaryButton } from '@/modules/common/components/PrimaryButton'
 import { useWardrobeCreationFlow } from '@/modules/wardrobe/hooks/useWardrobeCreationFlow'
+import { getCreationFlowReturnRoute, resolveCreationFlowEntryScope } from '@/modules/wardrobe/utils/creationFlowNavigation'
 import { preparePendingRecognitionSource } from '@/modules/wardrobe/utils/preparePendingRecognitionSource'
 
 const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
@@ -16,7 +17,8 @@ const WardrobeAlbumPage = () => {
   const { clearFlow, setPendingSource } = useWardrobeCreationFlow()
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [toastMessage, setToastMessage] = useState('')
+  const entryScope = resolveCreationFlowEntryScope({ router })
+  const backHref = getCreationFlowReturnRoute(entryScope)
 
   const handleOpenAlbum = () => {
     if (isSubmitting) return
@@ -38,10 +40,7 @@ const WardrobeAlbumPage = () => {
     }
 
     if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
-      setToastMessage('請選擇 jpg、png 或 webp 圖片')
-      window.setTimeout(() => {
-        setToastMessage('')
-      }, 1800)
+      showToast.error('請選擇 jpg、png 或 webp 圖片')
       resetInput()
       return
     }
@@ -52,6 +51,7 @@ const WardrobeAlbumPage = () => {
       await preparePendingRecognitionSource({
         router,
         origin: 'album',
+        entryScope,
         file,
         clearFlow,
         setPendingSource,
@@ -65,7 +65,7 @@ const WardrobeAlbumPage = () => {
   return (
     <div className="relative flex min-h-screen flex-col bg-neutral-100">
       <header className="flex items-center justify-between px-4 pt-5 pb-4">
-        <Link href="/wardrobe" className="font-label-sm text-neutral-500">
+        <Link href={backHref} className="font-label-sm text-neutral-500">
           ←
         </Link>
         <h1 className="font-label-md text-neutral-900">從相簿上傳</h1>
@@ -111,8 +111,6 @@ const WardrobeAlbumPage = () => {
           </p>
         </div>
       </main>
-
-      <Toast open={Boolean(toastMessage)} message={toastMessage} tone="error" />
     </div>
   )
 }
