@@ -2,9 +2,9 @@ import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 
 import { AddClothButton } from '@/modules/common/components/AddClothButton'
-import { BottomNav } from '@/modules/common/components/BottomNav'
 import { Overlay } from '@/modules/common/components/Overlay'
 import { AddClothingDrawer } from '@/modules/common/components/overlay/AddClothingDrawer'
+import { GuideBottomNav } from '@/modules/guide/components/GuideBottomNav'
 import { GuideToolTip } from '@/modules/guide/components/GuideToolTip'
 import { getOnboardingAddFlow, getOnboardingStepRoute } from '@/modules/guide/utils/onboardingAddFlow'
 import { HomeFilterBar } from '@/modules/home/components/HomeFilterBar'
@@ -61,7 +61,7 @@ const AddTopPage = () => {
         </div>
 
         <HomeInsightsSection />
-        <BottomNav />
+        <GuideBottomNav onAddClick={handleOpenDrawer} disable />
       </div>
       {!isAddClothingDrawerOpen && (
         <>
