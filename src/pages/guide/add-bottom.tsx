@@ -75,7 +75,6 @@ const GuideAddBottomPage = () => {
         onCameraClick={handleCameraClick}
         onAlbumClick={handleAlbumClick}
         dismissible={false}
-        context="再新增一件褲子或裙子吧！"
       />
     </>
   )
