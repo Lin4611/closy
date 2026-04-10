@@ -40,7 +40,7 @@ const getNextOnboardingRoute = (savedCategory: WardrobeReviewDraft['category']) 
     }
 
     setOnboardingAddFlow('bottom-required')
-    return '/guide/add-bottom'
+    return '/guide/add-bottom?openAddDrawer=1'
   }
 
   if (onboardingStep === 'bottom-required') {
