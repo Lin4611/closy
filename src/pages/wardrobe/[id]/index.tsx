@@ -4,8 +4,8 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
+import { showToast } from '@/components/ui/sonner'
 import { AppShell } from '@/modules/common/components/AppShell'
-import { Toast } from '@/modules/common/components/feedback/Toast'
 import { DeleteClothingDialog } from '@/modules/wardrobe/components/DeleteClothingDialog'
 import { WardrobeColorPalette } from '@/modules/wardrobe/components/WardrobeColorPalette'
 import { WardrobeDetailSection } from '@/modules/wardrobe/components/WardrobeDetailSection'
@@ -21,7 +21,6 @@ const WardrobeDetailPage = () => {
   const { getItemById } = useWardrobeMock()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
-  const [isUnsupportedDeleteToastOpen, setIsUnsupportedDeleteToastOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
@@ -34,16 +33,6 @@ const WardrobeDetailPage = () => {
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
-
-  useEffect(() => {
-    if (!isUnsupportedDeleteToastOpen) return
-
-    const timeoutId = window.setTimeout(() => {
-      setIsUnsupportedDeleteToastOpen(false)
-    }, 1800)
-
-    return () => window.clearTimeout(timeoutId)
-  }, [isUnsupportedDeleteToastOpen])
 
   const item = useMemo(() => {
     if (typeof id !== 'string') return null
@@ -183,14 +172,8 @@ const WardrobeDetailPage = () => {
           onClose={() => setIsDeleteOpen(false)}
           onConfirm={() => {
             setIsDeleteOpen(false)
-            setIsUnsupportedDeleteToastOpen(true)
+            showToast.error('目前尚未支援刪除衣物')
           }}
-        />
-
-        <Toast
-          open={isUnsupportedDeleteToastOpen}
-          message="目前尚未支援刪除衣物"
-          tone="error"
         />
       </div>
     </AppShell>

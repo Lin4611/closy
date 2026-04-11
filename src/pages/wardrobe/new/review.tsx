@@ -2,40 +2,20 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useEffect, useMemo, useState } from 'react'
 
+import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
 import { cn } from '@/lib/utils'
-import { Toast } from '@/modules/common/components/feedback/Toast'
+import { getOnboardingAddFlow, setOnboardingAddFlow } from '@/modules/guide/utils/onboardingAddFlow'
 import { createClothes } from '@/modules/wardrobe/api/createClothes'
 import { WardrobeReviewForm } from '@/modules/wardrobe/components/WardrobeReviewForm'
-import { wardrobeOccasionOptions } from '@/modules/wardrobe/constants/occasionOptions'
-import {
-  RECOGNITION_ENTRY_KEY,
-  type RecognitionEntry,
-} from '@/modules/wardrobe/constants/recognition'
-import { wardrobeSeasonOptions } from '@/modules/wardrobe/constants/seasonOptions'
 import { useWardrobeCreationFlow } from '@/modules/wardrobe/hooks/useWardrobeCreationFlow'
 import { useWardrobeMock } from '@/modules/wardrobe/hooks/useWardrobeMock'
 import type { WardrobeReviewDraft } from '@/modules/wardrobe/types'
 import {
+  mapApiCategoryToWardrobeCategory,
   mapCreateClothesResponseItemToWardrobeItem,
   mapWardrobeReviewDraftToCreateClothesRequest,
 } from '@/modules/wardrobe/utils/apiMappers'
-
-const getRecognitionEntry = (): RecognitionEntry => {
-  if (typeof window === 'undefined') {
-    return 'camera'
-  }
-
-  return window.sessionStorage.getItem(RECOGNITION_ENTRY_KEY) === 'album' ? 'album' : 'camera'
-}
-
-
-const normalizeReviewDraft = (draft: WardrobeReviewDraft): WardrobeReviewDraft => ({
-  ...draft,
-  occasionKeys:
-    draft.occasionKeys.length > 0 ? draft.occasionKeys : [wardrobeOccasionOptions[0].key],
-  seasonKeys: draft.seasonKeys.length > 0 ? draft.seasonKeys : [wardrobeSeasonOptions[0].key],
-})
 
 const getSaveErrorMessage = (error: unknown) => {
   if (error instanceof ApiError) {
@@ -49,6 +29,32 @@ const getSaveErrorMessage = (error: unknown) => {
   return '衣物新增失敗，請稍後再試'
 }
 
+const getNextOnboardingRoute = (savedCategory: WardrobeReviewDraft['category']) => {
+  const onboardingStep = getOnboardingAddFlow()
+
+  if (onboardingStep === 'top-required') {
+    if (savedCategory !== 'top') {
+      showToast.error('第一次請先新增上衣')
+      return '/guide/add-top'
+    }
+
+    setOnboardingAddFlow('bottom-required')
+    return '/guide/add-bottom?openAddDrawer=1'
+  }
+
+  if (onboardingStep === 'bottom-required') {
+    if (savedCategory !== 'pants' && savedCategory !== 'skirt') {
+      showToast.error('請再新增一件下身單品')
+      return '/guide/add-bottom'
+    }
+
+    setOnboardingAddFlow('completed')
+    return '/guide/complete'
+  }
+
+  return '/wardrobe'
+}
+
 const WardrobeReviewPage = () => {
   const router = useRouter()
   const { replaceItems, clearRecognitionDraft } = useWardrobeMock()
@@ -56,15 +62,6 @@ const WardrobeReviewPage = () => {
 
   const [draft, setDraft] = useState<WardrobeReviewDraft | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [toastState, setToastState] = useState<{
-    open: boolean
-    message: string
-    tone: 'success' | 'error'
-  }>({
-    open: false,
-    message: '',
-    tone: 'success',
-  })
 
   useEffect(() => {
     const savedDraft = getReviewDraft()
@@ -74,26 +71,19 @@ const WardrobeReviewPage = () => {
       return
     }
 
-    const normalizedDraft = normalizeReviewDraft(savedDraft)
-    setDraft(normalizedDraft)
-    saveReviewDraft(normalizedDraft)
-  }, [getReviewDraft, router, saveReviewDraft])
+    setDraft(savedDraft)
+  }, [getReviewDraft, router])
 
-  const isDisabled =
-    !draft ||
-    !draft.name.trim() ||
-    !draft.colorKey ||
-    draft.occasionKeys.length === 0 ||
-    draft.seasonKeys.length === 0 ||
-    isSubmitting
+  const isDisabled = !draft || !draft.name.trim() || !draft.colorKey || isSubmitting
 
   const backHref = useMemo(() => {
     if (!router.isReady) {
-      return '/wardrobe/new/camera'
+      return '/wardrobe/new/preview'
     }
 
-    return getRecognitionEntry() === 'album' ? '/wardrobe/new/album' : '/wardrobe/new/camera'
-  }, [router.isReady])
+    const context = getContext()
+    return context?.entryType ? '/wardrobe/new/preview' : '/wardrobe/new'
+  }, [getContext, router.isReady])
 
   const handleDraftChange = (next: WardrobeReviewDraft) => {
     setDraft(next)
@@ -109,11 +99,7 @@ const WardrobeReviewPage = () => {
     const removeBackgroundResult = context?.removeBackgroundResult
 
     if (!removeBackgroundResult) {
-      setToastState({
-        open: true,
-        message: '找不到圖片處理結果，請重新新增衣物',
-        tone: 'error',
-      })
+      showToast.error('找不到圖片處理結果，請重新新增衣物')
       return
     }
 
@@ -131,71 +117,56 @@ const WardrobeReviewPage = () => {
         throw new Error('新增衣物成功，但未取得衣櫃列表資料')
       }
 
+      const createdItem = result.list.find((item) => item.imageHash === removeBackgroundResult.imageHash)
+
+      if (!createdItem) {
+        throw new Error('新增衣物成功，但無法確認本次建立的衣物資料')
+      }
+
       replaceItems(result.list.map(mapCreateClothesResponseItemToWardrobeItem))
       clearRecognitionDraft()
       clearFlow()
 
-      if (typeof window !== 'undefined') {
-        window.sessionStorage.removeItem(RECOGNITION_ENTRY_KEY)
-        window.history.replaceState(null, '', '/wardrobe')
-      }
+      const nextRoute = getNextOnboardingRoute(mapApiCategoryToWardrobeCategory(createdItem.category))
 
-      await router.replace('/wardrobe')
+      await router.replace(nextRoute)
     } catch (error) {
-      setToastState({
-        open: true,
-        message: getSaveErrorMessage(error),
-        tone: 'error',
-      })
+      showToast.error(getSaveErrorMessage(error))
     } finally {
       setIsSubmitting(false)
     }
   }
-
-  useEffect(() => {
-    if (!toastState.open) return
-
-    const timer = window.setTimeout(() => {
-      setToastState((prev) => ({ ...prev, open: false }))
-    }, 1800)
-
-    return () => window.clearTimeout(timer)
-  }, [toastState.open])
 
   if (!draft) {
     return null
   }
 
   return (
-    <>
-      <div className="relative bg-neutral-100 pb-24">
-        <header className="flex items-center justify-between px-4 pt-5 pb-4">
-          <Link href={backHref} className="font-label-sm text-neutral-500">
-            ←
-          </Link>
-          <h1 className="font-label-md text-neutral-900">編輯衣物資訊</h1>
-          <span className="w-4" />
-        </header>
+    <div className="relative bg-neutral-100 pb-24">
+      <header className="flex items-center justify-between px-4 pt-5 pb-4">
+        <Link href={backHref} className="font-label-sm text-neutral-500">
+          ←
+        </Link>
+        <h1 className="font-label-md text-neutral-900">編輯衣物資訊</h1>
+        <span className="w-4" />
+      </header>
 
-        <WardrobeReviewForm value={draft} onChange={handleDraftChange} />
+      <WardrobeReviewForm value={draft} onChange={handleDraftChange} />
 
-        <div className="fixed right-0 bottom-0 left-0 z-40 mx-auto w-full max-w-93.75 bg-neutral-100 px-4 py-4">
-          <button
-            type="button"
-            disabled={isDisabled}
-            onClick={() => void handleSave()}
-            className={cn(
-              'h-11 w-full rounded-full font-label-md',
-              isDisabled ? 'bg-neutral-300 text-neutral-500' : 'bg-primary-900 text-white'
-            )}
-          >
-            {isSubmitting ? '儲存中...' : '儲存'}
-          </button>
-        </div>
+      <div className="fixed right-0 bottom-0 left-0 z-40 mx-auto w-full max-w-93.75 bg-neutral-100 px-4 py-4">
+        <button
+          type="button"
+          disabled={isDisabled}
+          onClick={() => void handleSave()}
+          className={cn(
+            'h-11 w-full rounded-full font-label-md',
+            isDisabled ? 'bg-neutral-300 text-neutral-500' : 'bg-primary-900 text-white'
+          )}
+        >
+          {isSubmitting ? '儲存中...' : '儲存'}
+        </button>
       </div>
-
-      <Toast open={toastState.open} message={toastState.message} tone={toastState.tone} />
-    </>
+    </div>
   )
 }
 

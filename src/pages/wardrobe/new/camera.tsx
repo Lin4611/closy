@@ -1,106 +1,103 @@
-import Image from 'next/image'
+import { Camera, CameraOff, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useEffect, useRef, useState, type ChangeEvent } from 'react'
+import { useState } from 'react'
 
-import { RECOGNITION_ENTRY_KEY } from '@/modules/wardrobe/constants/recognition'
+import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
+import { showToast } from '@/components/ui/sonner'
+import { useCameraPreview } from '@/modules/wardrobe/hooks/useCameraPreview'
 import { useWardrobeCreationFlow } from '@/modules/wardrobe/hooks/useWardrobeCreationFlow'
+import { getCreationFlowReturnRoute, resolveCreationFlowEntryScope } from '@/modules/wardrobe/utils/creationFlowNavigation'
+import { preparePendingRecognitionSource } from '@/modules/wardrobe/utils/preparePendingRecognitionSource'
 
 const WardrobeCameraPage = () => {
   const router = useRouter()
-  const { clearFlow, initializeFlow } = useWardrobeCreationFlow()
-  const fileInputRef = useRef<HTMLInputElement | null>(null)
-  const previewUrlRef = useRef<string | null>(null)
+  const { clearFlow, setPendingSource } = useWardrobeCreationFlow()
+  const { videoRef, status, errorMessage, startCamera, capture } = useCameraPreview()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const entryScope = resolveCreationFlowEntryScope({ router })
+  const backHref = getCreationFlowReturnRoute(entryScope)
 
-
-  useEffect(() => {
-    return () => {
-      if (previewUrlRef.current) {
-        URL.revokeObjectURL(previewUrlRef.current)
-      }
+  const handleCapture = async () => {
+    if (isSubmitting || status !== 'ready') {
+      return
     }
-  }, [])
-
-  const handleOpenCamera = () => {
-    if (isSubmitting) return
-    fileInputRef.current?.click()
-  }
-
-  const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-
-    if (!file) return
-
-    if (typeof window !== 'undefined') {
-      window.sessionStorage.setItem(RECOGNITION_ENTRY_KEY, 'camera')
-    }
-
-    if (previewUrlRef.current) {
-      URL.revokeObjectURL(previewUrlRef.current)
-    }
-
-    const previewUrl = URL.createObjectURL(file)
-    previewUrlRef.current = previewUrl
-
-    clearFlow()
-    initializeFlow({
-      entryType: 'camera',
-      file,
-      previewUrl,
-    })
 
     setIsSubmitting(true)
 
     try {
-      await router.push('/wardrobe/new/processing')
+      const file = await capture()
+      await preparePendingRecognitionSource({
+        router,
+        origin: 'camera',
+        entryScope,
+        file,
+        clearFlow,
+        setPendingSource,
+      })
+    } catch (error) {
+      showToast.error(error instanceof Error ? error.message : '拍照失敗，請重新嘗試')
     } finally {
-      event.target.value = ''
       setIsSubmitting(false)
     }
   }
 
+  const isCameraReady = status === 'ready'
+  const canRetry = status === 'denied' || status === 'unsupported' || status === 'error'
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#18181F] text-white">
       <header className="flex items-center justify-between px-4 pt-5 pb-3">
-        <Link href="/wardrobe" className="font-label-sm text-white/80">
+        <Link href={backHref} className="font-label-sm text-white/80">
           ×
         </Link>
+        <span className="font-label-sm text-white/80">拍攝衣物</span>
         <span className="w-4" />
       </header>
 
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        className="hidden"
-        onChange={handleFileChange}
-      />
-
       <div className="px-4 pt-1 pb-6">
-        <div className="rounded-none bg-[#D9D9D9] px-3 pt-12 pb-12">
-          <button
-            type="button"
-            disabled={isSubmitting}
-            onClick={handleOpenCamera}
-            className="mx-auto mb-3 flex h-10 items-center rounded-[10px] bg-primary-800 px-4 font-label-xs text-white disabled:opacity-60"
-          >
-            請先拍攝一件上衣
-          </button>
+        <div className="overflow-hidden rounded-[16px] bg-[#D9D9D9] p-3">
+          <div className="relative flex min-h-124 items-center justify-center overflow-hidden rounded-[12px] bg-[#22232C]">
+            {status === 'loading' && <Skeleton className="h-full min-h-124 w-full rounded-[12px] bg-white/10" />}
 
-          <div className="relative mx-auto h-49.5 w-38.5">
-            <Image
-              src="/wardrobe/tshirt.png"
-              alt="拍攝示意衣物"
-              fill
-              sizes="154px"
-              className="object-contain"
+            <video
+              ref={videoRef}
+              autoPlay
+              muted
+              playsInline
+              className={status === 'ready' ? 'h-full min-h-124 w-full object-cover' : 'hidden'}
             />
+
+            {status !== 'ready' && status !== 'loading' ? (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 px-6 text-center text-white">
+                <div className="flex size-15 items-center justify-center rounded-full bg-white/10">
+                  {status === 'unsupported' ? <CameraOff className="size-7" /> : <Camera className="size-7" />}
+                </div>
+                <div className="space-y-2">
+                  <p className="font-label-md text-white">無法啟動相機預覽</p>
+                  <p className="font-paragraph-sm text-white/70">{errorMessage}</p>
+                </div>
+                {canRetry ? (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="lg"
+                    className="rounded-full bg-white text-neutral-900 hover:bg-white/90"
+                    onClick={() => {
+                      void startCamera()
+                    }}
+                  >
+                    <RefreshCw className="size-4" />
+                    重新嘗試
+                  </Button>
+                ) : null}
+              </div>
+            ) : null}
           </div>
         </div>
 
-        <div className="mt-1 rounded-full bg-white/95 px-3 py-1.5 text-center font-label-xxs-r text-neutral-500">
+        <div className="mt-3 rounded-full bg-white/95 px-3 py-1.5 text-center font-label-xxs-r text-neutral-500">
           小訣竅：在乾淨的背景上拍攝，辨識更快速！
         </div>
       </div>
@@ -108,11 +105,14 @@ const WardrobeCameraPage = () => {
       <div className="absolute right-0 bottom-5 left-0 flex justify-center">
         <button
           type="button"
-          disabled={isSubmitting}
-          onClick={handleOpenCamera}
-          className="flex h-10.5 w-10.5 items-center justify-center rounded-full border-2 border-white bg-[#D9D9D9] shadow-[0_6px_16px_rgba(0,0,0,0.28)] disabled:opacity-60"
+          aria-label="拍攝衣物"
+          disabled={!isCameraReady || isSubmitting}
+          onClick={() => {
+            void handleCapture()
+          }}
+          className="flex h-13 w-13 items-center justify-center rounded-full border-2 border-white bg-[#D9D9D9] shadow-[0_6px_16px_rgba(0,0,0,0.28)] disabled:opacity-50"
         >
-          <span className="h-7 w-7 rounded-full border border-neutral-500 bg-white" />
+          <span className="h-8.5 w-8.5 rounded-full border border-neutral-500 bg-white" />
         </button>
       </div>
     </div>
