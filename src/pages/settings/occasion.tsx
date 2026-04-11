@@ -1,8 +1,10 @@
+import { useRouter } from 'next/router'
 import { useState } from 'react'
 
 import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
 import { updateOccasion } from '@/modules/common/api/occasion'
+import { ConfirmAlertDialog } from '@/modules/common/components/ConfirmAlertDialog'
 import { PrimaryButton } from '@/modules/common/components/PrimaryButton'
 import { occasionMetaMap, type Occasion } from '@/modules/common/types/occasion'
 import { OccasionOptionCard } from '@/modules/guide/components/OccasionOptionCard'
@@ -10,10 +12,12 @@ import { SettingsHeader } from '@/modules/settings/components/SettingsHeader'
 
 const SettingOccasion = () => {
   const [occasionPreference, setOccasionPreference] = useState<Occasion>('socialGathering')
-
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const router = useRouter()
   const handleOccasionChange = async (value: string) => {
     try {
       await updateOccasion(value as Occasion)
+      setIsDialogOpen(true)
     } catch (error) {
       if (error instanceof ApiError) {
         showToast.error(error.message)
@@ -44,6 +48,14 @@ const SettingOccasion = () => {
           />
         </div>
       </div>
+      <ConfirmAlertDialog
+        open={isDialogOpen}
+        mode="settingSuccess"
+        onClose={() => {
+          setIsDialogOpen(false)
+          router.push('/settings')
+        }}
+      />
     </main>
   )
 }
