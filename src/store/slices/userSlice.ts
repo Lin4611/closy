@@ -2,6 +2,7 @@ import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 
 import type { Occasion } from '@/modules/common/types/occasion'
 import type { LoginUser } from '@/modules/guide/types/auth'
+import type { Colors } from '@/modules/settings/types/colorsTypes'
 import type { Styles } from '@/modules/settings/types/stylesTypes'
 
 type UserState = {
@@ -32,8 +33,13 @@ const userSlice = createSlice({
       if (!state.user) return
       state.user.preferences.styles = action.payload
     },
+    updateUserColors: (state, action: PayloadAction<Colors[]>) => {
+      if (!state.user) return
+      state.user.preferences.colors = action.payload
+    },
   },
 })
 
-export const { setUser, clearUser, updateUserOccasion, updateUserStyles } = userSlice.actions
+export const { setUser, clearUser, updateUserOccasion, updateUserStyles, updateUserColors } =
+  userSlice.actions
 export default userSlice.reducer

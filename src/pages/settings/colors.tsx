@@ -1,19 +1,46 @@
 import { useRouter } from 'next/router'
 import { useState } from 'react'
 
+import { showToast } from '@/components/ui/sonner'
+import { ApiError } from '@/lib/api/client'
 import { ConfirmAlertDialog } from '@/modules/common/components/ConfirmAlertDialog'
 import { PrimaryButton } from '@/modules/common/components/PrimaryButton'
+import { updateColors } from '@/modules/settings/api/colors'
 import { ColorCard } from '@/modules/settings/components/ColorCard'
 import { SettingsHeader } from '@/modules/settings/components/SettingsHeader'
 import { colorsMetaMap } from '@/modules/settings/types/colorsTypes'
 import type { Colors } from '@/modules/settings/types/colorsTypes'
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
+import { updateUserColors } from '@/store/slices/userSlice'
 
 const SettingColors = () => {
   const [colorPreference, setColorPreference] = useState<Colors[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const selectedStyles = useAppSelector((state) => state.user.user?.preferences.styles ?? [])
+
+  const dispatch = useAppDispatch()
 
   const router = useRouter()
+
+  const handleStyleChange = async (value: string[]) => {
+    if (isSubmitting || value === selectedStyles) return
+
+    try {
+      setIsSubmitting(true)
+      await updateColors(value as Colors[])
+      setIsDialogOpen(true)
+      dispatch(updateUserColors(value as Colors[]))
+    } catch (error) {
+      if (error instanceof ApiError) {
+        showToast.error(error.message)
+      } else {
+        showToast.error('更新場合失敗，請稍後再試')
+      }
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   return (
     <main className="flex min-h-screen flex-col">
@@ -39,7 +66,11 @@ const SettingColors = () => {
           ))}
         </div>
         <div className="mt-auto flex justify-center pt-6">
-          <PrimaryButton content="確定" onClick={() => {}} className="w-40" />
+          <PrimaryButton
+            content="確定"
+            onClick={() => handleStyleChange(colorPreference)}
+            className="w-40"
+          />
         </div>
       </div>
       <ConfirmAlertDialog
