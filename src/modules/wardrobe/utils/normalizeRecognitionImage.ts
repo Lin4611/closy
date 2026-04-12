@@ -6,9 +6,10 @@ export type NormalizeRecognitionImageOptions = {
   quality?: number
 }
 
-const DEFAULT_MAX_DIMENSION = 1600
-const DEFAULT_MIME_TYPE = 'image/jpeg'
-const DEFAULT_QUALITY = 0.9
+export const SUPPORTED_RECOGNITION_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const
+export const DEFAULT_RECOGNITION_IMAGE_MAX_DIMENSION = 1600
+export const DEFAULT_RECOGNITION_IMAGE_MIME_TYPE = 'image/jpeg'
+export const DEFAULT_RECOGNITION_IMAGE_QUALITY = 0.9
 
 const loadImageElement = async (file: File) => {
   const objectUrl = URL.createObjectURL(file)
@@ -59,10 +60,26 @@ const resolveTargetSize = (width: number, height: number, maxDimension: number) 
   }
 }
 
+const validateRecognitionImageFile = (file: File) => {
+  if (!(file instanceof File)) {
+    throw new Error('找不到可處理的圖片檔案')
+  }
+
+  if (file.size <= 0) {
+    throw new Error('圖片內容為空，請重新選擇照片')
+  }
+
+  if (!SUPPORTED_RECOGNITION_IMAGE_TYPES.includes(file.type as (typeof SUPPORTED_RECOGNITION_IMAGE_TYPES)[number])) {
+    throw new Error('請選擇 jpg、png 或 webp 圖片')
+  }
+}
+
 export const normalizeRecognitionImage = async (
   file: File,
   options: NormalizeRecognitionImageOptions = {}
 ) => {
+  validateRecognitionImageFile(file)
+
   const image = await loadImageElement(file)
   const width = image.naturalWidth || image.width
   const height = image.naturalHeight || image.height
@@ -71,9 +88,9 @@ export const normalizeRecognitionImage = async (
     throw new Error('無法取得圖片尺寸')
   }
 
-  const maxDimension = options.maxDimension ?? DEFAULT_MAX_DIMENSION
-  const mimeType = options.mimeType ?? DEFAULT_MIME_TYPE
-  const quality = options.quality ?? DEFAULT_QUALITY
+  const maxDimension = options.maxDimension ?? DEFAULT_RECOGNITION_IMAGE_MAX_DIMENSION
+  const mimeType = options.mimeType ?? DEFAULT_RECOGNITION_IMAGE_MIME_TYPE
+  const quality = options.quality ?? DEFAULT_RECOGNITION_IMAGE_QUALITY
   const targetSize = resolveTargetSize(width, height, maxDimension)
 
   const canvas = document.createElement('canvas')
@@ -86,6 +103,8 @@ export const normalizeRecognitionImage = async (
     throw new Error('無法建立圖片處理畫布')
   }
 
+  context.imageSmoothingEnabled = true
+  context.imageSmoothingQuality = 'high'
   context.drawImage(image, 0, 0, targetSize.width, targetSize.height)
 
   const blob = await new Promise<Blob | null>((resolve) => {

@@ -8,10 +8,11 @@ import { showToast } from '@/components/ui/sonner'
 import { PrimaryButton } from '@/modules/common/components/PrimaryButton'
 import { useWardrobeCreationFlow } from '@/modules/wardrobe/hooks/useWardrobeCreationFlow'
 import { getCreationFlowReturnRoute, resolveCreationFlowEntryScope } from '@/modules/wardrobe/utils/creationFlowNavigation'
-import { normalizeRecognitionImage } from '@/modules/wardrobe/utils/normalizeRecognitionImage'
+import {
+  SUPPORTED_RECOGNITION_IMAGE_TYPES,
+  normalizeRecognitionImage,
+} from '@/modules/wardrobe/utils/normalizeRecognitionImage'
 import { preparePendingRecognitionSource } from '@/modules/wardrobe/utils/preparePendingRecognitionSource'
-
-const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 
 const WardrobeAlbumPage = () => {
   const router = useRouter()
@@ -40,7 +41,7 @@ const WardrobeAlbumPage = () => {
       return
     }
 
-    if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+    if (!SUPPORTED_RECOGNITION_IMAGE_TYPES.includes(file.type as (typeof SUPPORTED_RECOGNITION_IMAGE_TYPES)[number])) {
       showToast.error('請選擇 jpg、png 或 webp 圖片')
       resetInput()
       return
@@ -82,7 +83,7 @@ const WardrobeAlbumPage = () => {
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/png,image/jpeg,image/webp"
+        accept={SUPPORTED_RECOGNITION_IMAGE_TYPES.join(',')}
         className="hidden"
         onChange={handleFileChange}
       />
@@ -114,7 +115,7 @@ const WardrobeAlbumPage = () => {
           <PrimaryButton content="選擇相片" disabled={isSubmitting} loading={isSubmitting} onClick={handleOpenAlbum} />
 
           <p className="text-center font-paragraph-xs text-neutral-500">
-            支援 jpg、png、webp 格式，建議上傳單一衣物且背景乾淨的照片
+            支援 jpg、png、webp 格式，系統會先整理圖片後再進入預覽
           </p>
         </div>
       </main>
