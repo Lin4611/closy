@@ -9,13 +9,20 @@ import { PrimaryButton } from '@/modules/common/components/PrimaryButton'
 import { occasionMetaMap, type Occasion } from '@/modules/common/types/occasion'
 import { OccasionOptionCard } from '@/modules/guide/components/OccasionOptionCard'
 import { SettingsHeader } from '@/modules/settings/components/SettingsHeader'
+import { useAppSelector } from '@/store/hooks'
 
 const SettingOccasion = () => {
-  const [occasionPreference, setOccasionPreference] = useState<Occasion>('socialGathering')
+  const savedOccasion = useAppSelector(
+    (state) => state.user.user?.preferences.occasions ?? 'socialGathering',
+  )
+  const [occasionPreference, setOccasionPreference] = useState<Occasion>(savedOccasion)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const router = useRouter()
   const handleOccasionChange = async (value: string) => {
+    if (isSubmitting || value === savedOccasion) return
     try {
+      setIsSubmitting(true)
       await updateOccasion(value as Occasion)
       setIsDialogOpen(true)
     } catch (error) {
@@ -24,6 +31,8 @@ const SettingOccasion = () => {
       } else {
         showToast.error('更新場合失敗，請稍後再試')
       }
+    } finally {
+      setIsSubmitting(false)
     }
   }
   return (

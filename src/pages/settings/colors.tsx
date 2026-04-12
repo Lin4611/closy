@@ -14,17 +14,17 @@ import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { updateUserColors } from '@/store/slices/userSlice'
 
 const SettingColors = () => {
-  const [colorPreference, setColorPreference] = useState<Colors[]>([])
+  const savedColors = useAppSelector((state) => state.user.user?.preferences.colors ?? [])
+  const [colorPreference, setColorPreference] = useState<Colors[]>(savedColors)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const selectedStyles = useAppSelector((state) => state.user.user?.preferences.styles ?? [])
 
   const dispatch = useAppDispatch()
 
   const router = useRouter()
 
   const handleStyleChange = async (value: string[]) => {
-    if (isSubmitting || value === selectedStyles) return
+    if (isSubmitting || value === savedColors) return
 
     try {
       setIsSubmitting(true)
