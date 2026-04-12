@@ -8,6 +8,7 @@ import { showToast } from '@/components/ui/sonner'
 import { PrimaryButton } from '@/modules/common/components/PrimaryButton'
 import { useWardrobeCreationFlow } from '@/modules/wardrobe/hooks/useWardrobeCreationFlow'
 import { getCreationFlowReturnRoute, resolveCreationFlowEntryScope } from '@/modules/wardrobe/utils/creationFlowNavigation'
+import { normalizeRecognitionImage } from '@/modules/wardrobe/utils/normalizeRecognitionImage'
 import { preparePendingRecognitionSource } from '@/modules/wardrobe/utils/preparePendingRecognitionSource'
 
 const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
@@ -48,14 +49,20 @@ const WardrobeAlbumPage = () => {
     setIsSubmitting(true)
 
     try {
+      const normalizedFile = await normalizeRecognitionImage(file, {
+        fileNamePrefix: 'closy-album',
+      })
+
       await preparePendingRecognitionSource({
         router,
         origin: 'album',
         entryScope,
-        file,
+        file: normalizedFile,
         clearFlow,
         setPendingSource,
       })
+    } catch (error) {
+      showToast.error(error instanceof Error ? error.message : '圖片處理失敗，請重新選擇照片')
     } finally {
       resetInput()
       setIsSubmitting(false)
