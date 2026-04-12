@@ -11,10 +11,6 @@ export const SUPPORTED_RECOGNITION_IMAGE_TYPES = [
   'image/png',
   'image/webp',
   'image/avif',
-  'image/heic',
-  'image/heif',
-  'image/heic-sequence',
-  'image/heif-sequence',
 ] as const
 
 export const SUPPORTED_RECOGNITION_IMAGE_EXTENSIONS = [
@@ -23,9 +19,9 @@ export const SUPPORTED_RECOGNITION_IMAGE_EXTENSIONS = [
   '.png',
   '.webp',
   '.avif',
-  '.heic',
-  '.heif',
 ] as const
+
+export const SUPPORTED_RECOGNITION_IMAGE_FORMAT_TEXT = 'jpg、png、webp、avif'
 
 export const SUPPORTED_RECOGNITION_IMAGE_ACCEPT = [
   ...SUPPORTED_RECOGNITION_IMAGE_TYPES,
@@ -106,7 +102,7 @@ const validateRecognitionImageFile = (file: File) => {
   }
 
   if (!isSupportedRecognitionImageFile(file)) {
-    throw new Error('請選擇 jpg、png、webp、avif、heic 或 heif 圖片')
+    throw new Error(`請選擇 ${SUPPORTED_RECOGNITION_IMAGE_FORMAT_TEXT} 圖片`)
   }
 }
 
