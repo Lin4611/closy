@@ -1,19 +1,40 @@
+import { useRouter } from 'next/router'
 import { useState } from 'react'
+import { useEffect } from 'react'
 
 import { Button } from '@/components/ui/button'
+import { ApiError } from '@/lib/api/client'
+import { getUserInfo } from '@/modules/common/api/userInfo'
 import { AppShell } from '@/modules/common/components/AppShell'
 import { occasionLabelMap } from '@/modules/common/types/occasion'
 import { GoogleCalendarSettingCard } from '@/modules/settings/components/GoogleCalendarSettingCard'
 import { SettingSection } from '@/modules/settings/components/SettingSection'
 import { colorsLabelMap } from '@/modules/settings/types/colorsTypes'
 import { stylesLabelMap } from '@/modules/settings/types/stylesTypes'
-import { useAppSelector } from '@/store/hooks'
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
+import { mergeUserProfile } from '@/store/slices/userSlice'
 
 const Setting = () => {
+  const router = useRouter()
+
   const [isSynced, setIsSynced] = useState(false)
   const [isSyncing, setIsSyncing] = useState(false)
+  const dispatch = useAppDispatch()
 
   const user = useAppSelector((state) => state.user.user)
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const data = await getUserInfo()
+        dispatch(mergeUserProfile(data))
+      } catch (e) {
+        if (e instanceof ApiError && e.statusCode === 401) {
+          router.push('/')
+        }
+      }
+    }
+    fetchProfile()
+  }, [])
 
   const handleSyncChange = async (checked: boolean) => {
     if (!checked) {
