@@ -6,7 +6,32 @@ export type NormalizeRecognitionImageOptions = {
   quality?: number
 }
 
-export const SUPPORTED_RECOGNITION_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const
+export const SUPPORTED_RECOGNITION_IMAGE_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/avif',
+  'image/heic',
+  'image/heif',
+  'image/heic-sequence',
+  'image/heif-sequence',
+] as const
+
+export const SUPPORTED_RECOGNITION_IMAGE_EXTENSIONS = [
+  '.jpg',
+  '.jpeg',
+  '.png',
+  '.webp',
+  '.avif',
+  '.heic',
+  '.heif',
+] as const
+
+export const SUPPORTED_RECOGNITION_IMAGE_ACCEPT = [
+  ...SUPPORTED_RECOGNITION_IMAGE_TYPES,
+  ...SUPPORTED_RECOGNITION_IMAGE_EXTENSIONS,
+].join(',')
+
 export const DEFAULT_RECOGNITION_IMAGE_MAX_DIMENSION = 1600
 export const DEFAULT_RECOGNITION_IMAGE_MIME_TYPE = 'image/jpeg'
 export const DEFAULT_RECOGNITION_IMAGE_QUALITY = 0.9
@@ -19,7 +44,7 @@ const loadImageElement = async (file: File) => {
       const nextImage = new Image()
 
       nextImage.onload = () => resolve(nextImage)
-      nextImage.onerror = () => reject(new Error('無法讀取圖片內容'))
+      nextImage.onerror = () => reject(new Error('目前無法讀取這張圖片，請改用其他照片或格式'))
       nextImage.src = objectUrl
     })
 
@@ -60,6 +85,17 @@ const resolveTargetSize = (width: number, height: number, maxDimension: number) 
   }
 }
 
+const hasSupportedRecognitionImageType = (file: File) =>
+  SUPPORTED_RECOGNITION_IMAGE_TYPES.includes(file.type as (typeof SUPPORTED_RECOGNITION_IMAGE_TYPES)[number])
+
+const hasSupportedRecognitionImageExtension = (file: File) => {
+  const lowerName = file.name.toLowerCase()
+  return SUPPORTED_RECOGNITION_IMAGE_EXTENSIONS.some((extension) => lowerName.endsWith(extension))
+}
+
+export const isSupportedRecognitionImageFile = (file: File) =>
+  hasSupportedRecognitionImageType(file) || hasSupportedRecognitionImageExtension(file)
+
 const validateRecognitionImageFile = (file: File) => {
   if (!(file instanceof File)) {
     throw new Error('找不到可處理的圖片檔案')
@@ -69,8 +105,8 @@ const validateRecognitionImageFile = (file: File) => {
     throw new Error('圖片內容為空，請重新選擇照片')
   }
 
-  if (!SUPPORTED_RECOGNITION_IMAGE_TYPES.includes(file.type as (typeof SUPPORTED_RECOGNITION_IMAGE_TYPES)[number])) {
-    throw new Error('請選擇 jpg、png 或 webp 圖片')
+  if (!isSupportedRecognitionImageFile(file)) {
+    throw new Error('請選擇 jpg、png、webp、avif、heic 或 heif 圖片')
   }
 }
 

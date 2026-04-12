@@ -9,8 +9,9 @@ import { PrimaryButton } from '@/modules/common/components/PrimaryButton'
 import { useWardrobeCreationFlow } from '@/modules/wardrobe/hooks/useWardrobeCreationFlow'
 import { getCreationFlowReturnRoute, resolveCreationFlowEntryScope } from '@/modules/wardrobe/utils/creationFlowNavigation'
 import {
-  SUPPORTED_RECOGNITION_IMAGE_TYPES,
+  SUPPORTED_RECOGNITION_IMAGE_ACCEPT,
   normalizeRecognitionImage,
+  isSupportedRecognitionImageFile,
 } from '@/modules/wardrobe/utils/normalizeRecognitionImage'
 import { preparePendingRecognitionSource } from '@/modules/wardrobe/utils/preparePendingRecognitionSource'
 
@@ -41,8 +42,8 @@ const WardrobeAlbumPage = () => {
       return
     }
 
-    if (!SUPPORTED_RECOGNITION_IMAGE_TYPES.includes(file.type as (typeof SUPPORTED_RECOGNITION_IMAGE_TYPES)[number])) {
-      showToast.error('請選擇 jpg、png 或 webp 圖片')
+    if (!isSupportedRecognitionImageFile(file)) {
+      showToast.error('請選擇 jpg、png、webp、avif、heic 或 heif 圖片')
       resetInput()
       return
     }
@@ -83,7 +84,7 @@ const WardrobeAlbumPage = () => {
       <input
         ref={fileInputRef}
         type="file"
-        accept={SUPPORTED_RECOGNITION_IMAGE_TYPES.join(',')}
+        accept={SUPPORTED_RECOGNITION_IMAGE_ACCEPT}
         className="hidden"
         onChange={handleFileChange}
       />
@@ -115,7 +116,7 @@ const WardrobeAlbumPage = () => {
           <PrimaryButton content="選擇相片" disabled={isSubmitting} loading={isSubmitting} onClick={handleOpenAlbum} />
 
           <p className="text-center font-paragraph-xs text-neutral-500">
-            支援 jpg、png、webp 格式，系統會先整理圖片後再進入預覽
+            支援 jpg、png、webp、avif、heic、heif 格式，系統會先整理圖片後再進入預覽
           </p>
         </div>
       </main>
