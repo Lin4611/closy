@@ -29,7 +29,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
         path: '/',
-        maxAge: 60 * 60,
+        maxAge: 60 * 60 * 24 * 7,
       }),
     )
     return res.status(200).json(response)
