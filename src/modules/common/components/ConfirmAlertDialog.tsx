@@ -10,23 +10,42 @@ import {
   AlertDialogTitle,
   AlertDialogFooter,
 } from '@/components/ui/alert-dialog'
+import { cn } from '@/lib/utils'
 
 type ConfirmAlertDialogProps = {
   open: boolean
-  mode: 'confirm' | 'success'
-  onConfirm: () => void
-  onClose: () => void
+  mode: 'confirm' | 'success' | 'settingSuccess'
+  onConfirm?: () => void
+  onClose?: () => void
+}
+
+const modeConfig = {
+  confirm: {
+    title: '確定要刪除嗎？',
+    description: '刪除後將無法恢復所有資訊',
+    buttonClassName: '',
+  },
+  success: {
+    title: '已刪除此件穿搭',
+    description: '',
+    buttonClassName: 'bg-white/10 text-neutral-800 border border-neutral-400',
+  },
+  settingSuccess: {
+    title: '設定成功',
+    description: '',
+    buttonClassName: 'bg-primary-800 text-white',
+  },
 }
 
 export const ConfirmAlertDialog = ({ open, mode, onConfirm, onClose }: ConfirmAlertDialogProps) => {
   const handleActionClick = (event: MouseEvent<HTMLButtonElement>) => {
     if (mode === 'confirm') {
       event.preventDefault()
-      onConfirm()
+      onConfirm?.()
       return
     }
 
-    onClose()
+    onClose?.()
   }
 
   return (
@@ -60,15 +79,18 @@ export const ConfirmAlertDialog = ({ open, mode, onConfirm, onClose }: ConfirmAl
       ) : (
         <AlertDialogContent className="flex h-[140px] w-[250px] flex-col gap-4 rounded-[20px] bg-white p-8">
           <AlertDialogHeader>
-            <AlertDialogTitle className="font-paragraph-md text-[#000000]">
-              已刪除此件穿搭
+            <AlertDialogTitle className="font-paragraph-md text-neutral-900">
+              {modeConfig[mode].title}
             </AlertDialogTitle>
           </AlertDialogHeader>
 
           <AlertDialogFooter>
             <AlertDialogAction
               onClick={handleActionClick}
-              className="font-label-sm h-11 w-full justify-center rounded-[12px] border border-neutral-400 bg-white/10 text-neutral-800 shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]"
+              className={cn(
+                'font-label-sm h-11 w-full justify-center rounded-[12px] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]',
+                modeConfig[mode].buttonClassName,
+              )}
             >
               確定
             </AlertDialogAction>
