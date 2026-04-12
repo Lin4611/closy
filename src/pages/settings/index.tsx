@@ -2,12 +2,18 @@ import { useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { AppShell } from '@/modules/common/components/AppShell'
+import { occasionLabelMap } from '@/modules/common/types/occasion'
 import { GoogleCalendarSettingCard } from '@/modules/settings/components/GoogleCalendarSettingCard'
 import { SettingSection } from '@/modules/settings/components/SettingSection'
+import { colorsLabelMap } from '@/modules/settings/types/colorsTypes'
+import { stylesLabelMap } from '@/modules/settings/types/stylesTypes'
+import { useAppSelector } from '@/store/hooks'
 
 const Setting = () => {
   const [isSynced, setIsSynced] = useState(false)
   const [isSyncing, setIsSyncing] = useState(false)
+
+  const user = useAppSelector((state) => state.user.user)
 
   const handleSyncChange = async (checked: boolean) => {
     if (!checked) {
@@ -38,9 +44,19 @@ const Setting = () => {
         </div>
         <div className="flex flex-1 flex-col gap-5 px-4 py-6">
           <SettingSection
-            defaultOccasion="社交聚會"
-            defaultStyle={['戶外機能', '甜美可愛', '甜美可愛']}
-            defaultColor={['淺米白', '深灰黑', '暖橘紅']}
+            defaultOccasion={
+              user?.preferences?.occasions ? occasionLabelMap[user.preferences.occasions] : ''
+            }
+            defaultStyle={
+              user?.preferences?.styles
+                ? user.preferences.styles.map((style) => stylesLabelMap[style])
+                : []
+            }
+            defaultColor={
+              user?.preferences?.colors
+                ? user.preferences.colors.map((color) => colorsLabelMap[color])
+                : []
+            }
           />
           <GoogleCalendarSettingCard
             isSynced={isSynced}
