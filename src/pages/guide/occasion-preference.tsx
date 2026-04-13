@@ -8,14 +8,18 @@ import { PrimaryButton } from '@/modules/common/components/PrimaryButton'
 import { occasionMetaMap, type Occasion } from '@/modules/common/types/occasion'
 import { OccasionOptionCard } from '@/modules/guide/components/OccasionOptionCard'
 import { clearOnboardingAddFlow } from '@/modules/guide/utils/onboardingAddFlow'
+import { useAppDispatch } from '@/store/hooks'
+import { updateUserOccasion } from '@/store/slices/userSlice'
 
 const OccasionPreference = () => {
   const router = useRouter()
+  const dispatch = useAppDispatch()
   const [occasionPreference, setOccasionPreference] = useState<Occasion>('socialGathering')
 
   const handleOccasionChange = async (value: string) => {
     try {
       await updateOccasion(value as Occasion)
+      dispatch(updateUserOccasion(value as Occasion))
       clearOnboardingAddFlow()
       await router.push('/guide/location-service')
     } catch (error) {
