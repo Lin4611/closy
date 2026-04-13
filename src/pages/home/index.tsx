@@ -15,10 +15,13 @@ const HomeOnboardingGate = dynamic(
     })),
   { ssr: false },
 )
+
 const Home = () => {
   const [isAdjustPromptOpen, setIsAdjustPromptOpen] = useState(true)
   const [isOnboardingVisible, setIsOnboardingVisible] = useState(false)
   const [isOutfitAdjustDrawerOpen, setIsOutfitAdjustDrawerOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+
   useEffect(() => {
     if (!isOnboardingVisible) return
 
@@ -35,6 +38,7 @@ const Home = () => {
   }, [isOnboardingVisible])
 
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   const clearHideTimer = () => {
     if (hideTimerRef.current) {
       clearTimeout(hideTimerRef.current)
@@ -55,9 +59,12 @@ const Home = () => {
 
   useEffect(() => {
     setHideTimer(2000)
-
+    const timer = setTimeout(() => {
+      setIsLoading(false)
+    }, 1000)
     return () => {
       clearHideTimer()
+      clearTimeout(timer)
     }
   }, [])
 
@@ -67,7 +74,7 @@ const Home = () => {
 
   return (
     <>
-      <AppShell>
+      <AppShell activeTab="home">
         <div className="sticky top-0 z-10">
           <HomeFilterBar />
         </div>
@@ -80,6 +87,7 @@ const Home = () => {
             <HomeOutfitPreview
               src="/home/model_man.webp"
               alt="model"
+              isLoading={isLoading}
               onDislikeClick={handleDislikeClick}
             />
           </div>
