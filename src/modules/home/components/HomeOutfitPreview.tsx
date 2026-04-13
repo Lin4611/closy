@@ -6,7 +6,7 @@ import { CircleIconButton } from './CircleIconButton'
 import { HomeOutfitPreviewSkeleton } from './HomeOutfitPreviewSkeleton'
 
 type HomeOutfitPreviewProps = {
-  src: string
+  src?: string
   alt: string
   disable?: boolean
   isLoading?: boolean
@@ -27,14 +27,16 @@ export const HomeOutfitPreview = ({
       {isLoading ? (
         <HomeOutfitPreviewSkeleton />
       ) : (
-        <Image
-          src={src}
-          alt={alt}
-          width={153}
-          height={440}
-          className={`h-110 w-[153px] object-contain transition-opacity duration-300 ${isImageLoaded ? 'opacity-100' : 'opacity-0'}`}
-          onLoad={() => setIsImageLoaded(true)}
-        />
+        src && (
+          <Image
+            src={src}
+            alt={alt}
+            width={139}
+            height={400}
+            className={`h-100 w-[139px] object-contain transition-opacity duration-300 ${isImageLoaded ? 'opacity-100' : 'opacity-0'}`}
+            onLoad={() => setIsImageLoaded(true)}
+          />
+        )
       )}
       <div className="absolute bottom-0 left-1/2 flex w-full max-w-[283px] -translate-x-1/2 items-center justify-between">
         <CircleIconButton
