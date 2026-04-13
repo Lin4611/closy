@@ -12,7 +12,7 @@ type CalendarSelectedOutfitPreviewProps = {
 export const CalendarSelectedOutfitPreview = ({ outfit, onClick }: CalendarSelectedOutfitPreviewProps) => {
   return (
     <div className="flex flex-col items-center gap-4 pb-2">
-      <div className="flex h-[262px] w-full items-center justify-center rounded-[24px] border border-neutral-200 bg-white">
+      <div className="flex h-65.5 w-full items-center justify-center rounded-[24px] border border-neutral-200 bg-white">
         {outfit ? (
           <Image src={outfit.imageUrl} alt="已選穿搭" width={144} height={256} className="h-64 w-36 object-contain" />
         ) : (

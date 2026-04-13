@@ -28,7 +28,7 @@ export const CalendarOccasionDialog = ({
 }) => {
   return (
     <AlertDialog open={open} onOpenChange={onClose}>
-      <AlertDialogContent className="w-[344px] rounded-[20px] bg-white px-5 py-4">
+      <AlertDialogContent className="w-86 rounded-[20px] bg-white px-5 py-4">
         <AlertDialogHeader className="gap-1 pb-2">
           <AlertDialogTitle className="font-h4 text-black">選擇你要出席的場合</AlertDialogTitle>
           <p className="font-paragraph-sm text-neutral-500">選擇一個最接近的情境，快速設定</p>

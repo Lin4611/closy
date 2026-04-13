@@ -8,6 +8,7 @@ import { CalendarOccasionChangeDialog } from '@/modules/calendar/components/Cale
 import { CalendarSuccessDialog } from '@/modules/calendar/components/CalendarSuccessDialog'
 import { mockGoogleEvents } from '@/modules/calendar/data/mockGoogleEvents'
 import { useCalendarStore } from '@/modules/calendar/hooks/useCalendarStore'
+import type { CalendarEntry } from '@/modules/calendar/types'
 import { clearCalendarFormDraft, clearCalendarSelectedOutfitDraft, getCalendarSelectedOutfitDraft, saveCalendarFormDraft } from '@/modules/calendar/utils/calendarDraftStorage'
 import { buildCalendarSelectOutfitReturnTo, buildCalendarSelectOutfitRoute, parseCalendarEditDateParam } from '@/modules/calendar/utils/calendarNavigation'
 import { getSelectableOutfitSummaryById } from '@/modules/calendar/utils/calendarOutfitAdapter'
@@ -15,15 +16,29 @@ import { canDeleteCalendarEntry, canEditCalendarDate, hasSelectedOutfit, isCalen
 import { AppShell } from '@/modules/common/components/AppShell'
 import type { Occasion } from '@/modules/common/types/occasion'
 
-const CalendarEditPage = () => {
+type CalendarEditFormState = {
+  occasionKey: Occasion | null
+  date: string
+  selectedOutfitId: string | null
+}
+
+const buildInitialFormState = (entry: CalendarEntry): CalendarEditFormState => {
+  const selectedOutfitDraft = getCalendarSelectedOutfitDraft()
+
+  return {
+    occasionKey: selectedOutfitDraft?.occasionKey ?? entry.occasionKey,
+    date: selectedOutfitDraft?.date || entry.date,
+    selectedOutfitId: selectedOutfitDraft?.selectedOutfitId ?? entry.selectedOutfitId,
+  }
+}
+
+const CalendarEditContent = ({ entry }: { entry: CalendarEntry }) => {
   const router = useRouter()
   const { entries, updateEntry, deleteEntry } = useCalendarStore()
-  const dateParam = parseCalendarEditDateParam(router.query.date)
-  const entry = dateParam ? entries.find((item) => item.date === dateParam) ?? null : null
-  const selectedOutfitDraft = useMemo(() => getCalendarSelectedOutfitDraft(), [])
-  const [occasionKey, setOccasionKey] = useState<Occasion | null>(entry?.occasionKey ?? null)
-  const [date, setDate] = useState(entry?.date ?? '')
-  const [selectedOutfitId, setSelectedOutfitId] = useState<string | null>(entry?.selectedOutfitId ?? null)
+  const initialFormState = useMemo(() => buildInitialFormState(entry), [entry])
+  const [occasionKey, setOccasionKey] = useState<Occasion | null>(initialFormState.occasionKey)
+  const [date, setDate] = useState(initialFormState.date)
+  const [selectedOutfitId, setSelectedOutfitId] = useState<string | null>(initialFormState.selectedOutfitId)
   const [pendingOccasionKey, setPendingOccasionKey] = useState<Occasion | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false)
@@ -31,14 +46,6 @@ const CalendarEditPage = () => {
   const [isOccasionChangeDialogOpen, setIsOccasionChangeDialogOpen] = useState(false)
 
   useEffect(() => {
-    if (!entry) return
-    setOccasionKey(selectedOutfitDraft?.occasionKey ?? entry.occasionKey)
-    setDate(selectedOutfitDraft?.date || entry.date)
-    setSelectedOutfitId(selectedOutfitDraft?.selectedOutfitId ?? entry.selectedOutfitId)
-  }, [entry, selectedOutfitDraft])
-
-  useEffect(() => {
-    if (!entry) return
     saveCalendarFormDraft({
       mode: 'edit',
       date,
@@ -47,11 +54,7 @@ const CalendarEditPage = () => {
       sourceEntryId: entry.id,
       returnTo: `/calendar/${entry.date}/edit`,
     })
-  }, [date, entry, occasionKey, selectedOutfitId])
-
-  if (!entry) {
-    return null
-  }
+  }, [date, entry.date, entry.id, occasionKey, selectedOutfitId])
 
   const selectedOutfit = selectedOutfitId ? getSelectableOutfitSummaryById(selectedOutfitId) : null
   const disabledDates = entries
@@ -59,7 +62,7 @@ const CalendarEditPage = () => {
     .map((item) => item.date)
 
   const handleOccasionChange = (nextOccasionKey: Occasion) => {
-    if (hasSelectedOutfit(entry) && shouldResetSelectedOutfit(occasionKey, nextOccasionKey)) {
+    if (hasSelectedOutfit({ ...entry, selectedOutfitId }) && shouldResetSelectedOutfit(occasionKey, nextOccasionKey)) {
       setPendingOccasionKey(nextOccasionKey)
       setIsOccasionChangeDialogOpen(true)
       return
@@ -149,6 +152,19 @@ const CalendarEditPage = () => {
       </div>
     </AppShell>
   )
+}
+
+const CalendarEditPage = () => {
+  const router = useRouter()
+  const { entries } = useCalendarStore()
+  const dateParam = parseCalendarEditDateParam(router.query.date)
+  const entry = dateParam ? entries.find((item) => item.date === dateParam) ?? null : null
+
+  if (!entry) {
+    return null
+  }
+
+  return <CalendarEditContent key={entry.id} entry={entry} />
 }
 
 export default CalendarEditPage

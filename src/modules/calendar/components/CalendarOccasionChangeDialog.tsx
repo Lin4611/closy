@@ -20,7 +20,7 @@ export const CalendarOccasionChangeDialog = ({
 }) => {
   return (
     <AlertDialog open={open} onOpenChange={onClose}>
-      <AlertDialogContent className="w-[250px] rounded-[20px] bg-white p-6">
+      <AlertDialogContent className="w-62.5 rounded-[20px] bg-white p-6">
         <AlertDialogHeader className="gap-2">
           <AlertDialogTitle className="font-paragraph-md text-black">已變更場合</AlertDialogTitle>
           <AlertDialogDescription className="font-paragraph-sm text-neutral-600">

@@ -18,7 +18,7 @@ export const CalendarSuccessDialog = ({
 }) => {
   return (
     <AlertDialog open={open} onOpenChange={onClose}>
-      <AlertDialogContent className="w-[250px] rounded-[20px] bg-white p-8">
+      <AlertDialogContent className="w-62.5 rounded-[20px] bg-white p-8">
         <AlertDialogHeader>
           <AlertDialogTitle className="font-paragraph-md text-black">{title}</AlertDialogTitle>
         </AlertDialogHeader>
