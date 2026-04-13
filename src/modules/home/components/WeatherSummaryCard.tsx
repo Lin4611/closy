@@ -20,7 +20,7 @@ export const WeatherSummaryCard = ({
         <p className="font-paragraph-sm text-neutral-800">{conditionLabel}</p>
       </div>
       <div className="flex w-full flex-col items-start gap-2 px-[3px]">
-        <p className="font-h3">{temperature}°</p>
+        <p className="font-h3">{temperature ? `${temperature}°` : '--'}</p>
         <p className="font-paragraph-sm text-neutral-800">{cityLabel}</p>
       </div>
     </section>
