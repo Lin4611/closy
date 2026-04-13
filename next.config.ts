@@ -6,7 +6,8 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'openweathermap.org',
+        hostname: 'www.cwa.gov.tw',
+        pathname: '/V8/assets/img/weather_icons/**',
       },
       {
         protocol: 'https',
