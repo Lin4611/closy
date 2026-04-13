@@ -126,10 +126,10 @@ export const OutfitAdjustDrawer = ({
         prev.map((msg) =>
           msg.id === loadingMessage.id
             ? {
-                ...msg,
-                text: aiText,
-                status: 'idle',
-              }
+              ...msg,
+              text: aiText,
+              status: 'idle',
+            }
             : msg,
         ),
       )
@@ -144,10 +144,10 @@ export const OutfitAdjustDrawer = ({
         prev.map((msg) =>
           msg.id === loadingMessage.id
             ? {
-                ...msg,
-                text: '調整失敗，請稍後再試',
-                status: 'error',
-              }
+              ...msg,
+              text: '調整失敗，請稍後再試',
+              status: 'error',
+            }
             : msg,
         ),
       )
@@ -183,7 +183,7 @@ export const OutfitAdjustDrawer = ({
 
   return (
     <Drawer open={open} onOpenChange={handleOpenChange} dismissible={dismissible}>
-      <DrawerContent className="mx-auto h-[666px] w-full max-w-[375px] gap-10 rounded-t-[40px] border-none bg-[#FFFEFE] px-4 pb-10 shadow-[0_1px_16px_rgba(0,0,0,0.1)]">
+      <DrawerContent className="mx-auto h-166.5 w-full max-w-93.75 gap-10 rounded-t-[40px] border-none bg-[#FFFEFE] px-4 pb-10 shadow-[0_1px_16px_rgba(0,0,0,0.1)]">
         {mode === 'initial' && (
           <>
             <div className="flex flex-col items-center justify-center text-center">
