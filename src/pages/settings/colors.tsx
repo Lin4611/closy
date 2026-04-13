@@ -23,8 +23,12 @@ const SettingColors = () => {
 
   const router = useRouter()
 
-  const handleStyleChange = async (value: string[]) => {
-    if (isSubmitting || value === savedColors) return
+  const handleColorChange = async (value: string[]) => {
+    if (
+      isSubmitting ||
+      (value.length === savedColors.length && value.every((v, i) => v === savedColors[i]))
+    )
+      return
 
     try {
       setIsSubmitting(true)
@@ -35,7 +39,7 @@ const SettingColors = () => {
       if (error instanceof ApiError) {
         showToast.error(error.message)
       } else {
-        showToast.error('更新場合失敗，請稍後再試')
+        showToast.error('更新色系失敗，請稍後再試')
       }
     } finally {
       setIsSubmitting(false)
@@ -68,7 +72,7 @@ const SettingColors = () => {
         <div className="mt-auto flex justify-center pt-6">
           <PrimaryButton
             content="確定"
-            onClick={() => handleStyleChange(colorPreference)}
+            onClick={() => handleColorChange(colorPreference)}
             className="w-40"
           />
         </div>

@@ -39,6 +39,7 @@ const userSlice = createSlice({
       state.user.preferences.colors = action.payload
     },
     mergeUserProfile: (state, action: PayloadAction<UserInfo>) => {
+      if (!state.user) return
       state.user = {
         ...(state.user ?? {
           userId: '',
