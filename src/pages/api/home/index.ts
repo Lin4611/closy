@@ -13,7 +13,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(401).json({ message: '尚未登入' })
   }
 
-  const day = Array.isArray(req.query.day) ? req.query.day[0] : (req.query.day ?? 'today')
+  const day = (req.query.day as string) ?? 'today'
 
   try {
     const response = await apiClient<ApiResponse<DayRecommendation>>({
@@ -24,7 +24,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         Authorization: `Bearer ${accessToken}`,
       },
     })
-
     return res.status(200).json(response)
   } catch (error) {
     if (error instanceof ApiError) {

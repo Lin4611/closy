@@ -11,7 +11,13 @@ import {
 } from 'redux-persist'
 import storage from 'redux-persist/lib/storage'
 
+import homeReducer from './slices/homeSlice'
 import userReducer from './slices/userSlice'
+
+const homePersistConfig = {
+  key: 'home',
+  storage,
+}
 
 const persistConfig = {
   key: 'user',
@@ -20,10 +26,12 @@ const persistConfig = {
 }
 
 const persistedUserReducer = persistReducer(persistConfig, userReducer)
+const persistedHomeReducer = persistReducer(homePersistConfig, homeReducer)
 
 export const store = configureStore({
   reducer: {
     user: persistedUserReducer,
+    home: persistedHomeReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
