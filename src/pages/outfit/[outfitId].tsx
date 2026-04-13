@@ -3,25 +3,43 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 
+import { cn } from '@/lib/utils'
 import { AppShell } from '@/modules/common/components/AppShell'
 import { mockOutfitDetails } from '@/modules/outfit/data/mockOutfits'
 
+const DEFAULT_BACK_HREF = '/outfit'
+
+const resolveBackHref = (returnTo: string | string[] | undefined) => {
+  if (typeof returnTo !== 'string') return DEFAULT_BACK_HREF
+  if (!returnTo.startsWith('/')) return DEFAULT_BACK_HREF
+
+  return returnTo
+}
+
+const resolveShowBottomNav = (hideBottomNav: string | string[] | undefined) => {
+  if (hideBottomNav !== '1' && hideBottomNav !== 'true') return true
+
+  return false
+}
+
 const OutfitDetailPage = () => {
   const router = useRouter()
-  const { outfitId } = router.query
+  const { outfitId, returnTo, hideBottomNav } = router.query
+  const backHref = resolveBackHref(returnTo)
+  const showBottomNav = resolveShowBottomNav(hideBottomNav)
 
   if (typeof outfitId !== 'string') return null
 
   const outfit = mockOutfitDetails.find((item) => item.id === outfitId)
   if (!outfit) {
     return (
-      <AppShell activeTab="outfit">
+      <AppShell activeTab="outfit" showBottomNav={showBottomNav}>
         <div className="flex min-h-0 flex-1 flex-col">
-          <header className="sticky top-0 z-10 bg-white px-4 py-[18px]">
+          <header className="sticky top-0 z-10 bg-white px-4 py-4.5">
             <div className="relative flex items-center justify-center">
               <Link
-                href="/outfit"
-                className="absolute left-0 flex size-10 items-center justify-center"
+                href={backHref}
+                className={cn('absolute left-0 flex size-10 items-center justify-center')}
               >
                 <ChevronLeft className="text-neutral-700" size={24} strokeWidth={2} />
               </Link>
@@ -37,14 +55,11 @@ const OutfitDetailPage = () => {
     )
   }
   return (
-    <AppShell activeTab="outfit">
+    <AppShell activeTab="outfit" showBottomNav={showBottomNav}>
       <div className="flex min-h-0 flex-1 flex-col">
-        <header className="sticky top-0 z-10 bg-white px-4 py-[18px]">
+        <header className="sticky top-0 z-10 bg-white px-4 py-4.5">
           <div className="relative flex items-center justify-center">
-            <Link
-              href="/outfit"
-              className="absolute left-0 flex size-10 items-center justify-center"
-            >
+            <Link href={backHref} className={cn('absolute left-0 flex size-10 items-center justify-center')}>
               <ChevronLeft className="text-neutral-700" size={24} strokeWidth={2} />
             </Link>
             <h1 className="font-label-xxl">穿搭詳情</h1>
@@ -57,7 +72,7 @@ const OutfitDetailPage = () => {
               alt={`outfit-${outfit.id}`}
               width={130}
               height={374}
-              className="h-[374px] w-[130px] object-contain"
+              className="h-93.5 w-32.5 object-contain"
             />
           </section>
 
@@ -65,8 +80,8 @@ const OutfitDetailPage = () => {
             <h2 className="font-label-xxl">搭配單品</h2>
             <div className="hide-scrollbar flex items-start gap-3 overflow-x-auto">
               {outfit.items.map((item) => (
-                <div key={item.id} className="flex min-w-[90px] flex-col items-center gap-2">
-                  <div className="flex h-[90px] w-[90px] items-center justify-center rounded-[20px] border border-neutral-300">
+                <div key={item.id} className="flex min-w-22.5 flex-col items-center gap-2">
+                  <div className="flex h-22.5 w-22.5 items-center justify-center rounded-[20px] border border-neutral-300">
                     <Image
                       src={item.imageUrl}
                       alt={item.name}

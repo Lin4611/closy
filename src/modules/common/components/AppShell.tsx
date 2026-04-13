@@ -1,16 +1,17 @@
 import { useRouter } from 'next/router'
 import { useState } from 'react'
 
-
+import { cn } from '@/lib/utils'
 import { BottomNav } from '@/modules/common/components/BottomNav'
 import { AddClothingDrawer } from '@/modules/common/components/overlay/AddClothingDrawer'
 
 type AppShellProps = {
   children: React.ReactNode
   activeTab?: 'home' | 'outfit' | 'wardrobe' | 'settings'
+  showBottomNav?: boolean
 }
 
-export const AppShell = ({ children, activeTab }: AppShellProps) => {
+export const AppShell = ({ children, activeTab, showBottomNav = true }: AppShellProps) => {
   const router = useRouter()
   const [isAddClothingDrawerOpen, setIsAddClothingDrawerOpen] = useState(false)
 
@@ -26,15 +27,19 @@ export const AppShell = ({ children, activeTab }: AppShellProps) => {
 
   return (
     <>
-      <main className="flex min-h-screen flex-col pb-20">{children}</main>
-      <BottomNav activeTab={activeTab} onAddClick={() => setIsAddClothingDrawerOpen(true)} />
-      <AddClothingDrawer
-        open={isAddClothingDrawerOpen}
-        onOpenChange={setIsAddClothingDrawerOpen}
-        onCameraClick={handleNavigateCamera}
-        onAlbumClick={handleNavigateAlbum}
-        dismissible={true}
-      />
+      <main className={cn('flex min-h-screen flex-col', showBottomNav && 'pb-20')}>{children}</main>
+      {showBottomNav ? (
+        <>
+          <BottomNav activeTab={activeTab} onAddClick={() => setIsAddClothingDrawerOpen(true)} />
+          <AddClothingDrawer
+            open={isAddClothingDrawerOpen}
+            onOpenChange={setIsAddClothingDrawerOpen}
+            onCameraClick={handleNavigateCamera}
+            onAlbumClick={handleNavigateAlbum}
+            dismissible={true}
+          />
+        </>
+      ) : null}
     </>
   )
 }

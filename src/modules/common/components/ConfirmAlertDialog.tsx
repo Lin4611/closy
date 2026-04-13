@@ -17,27 +17,56 @@ type ConfirmAlertDialogProps = {
   mode: 'confirm' | 'success' | 'settingSuccess'
   onConfirm?: () => void
   onClose?: () => void
+  title?: string
+  description?: string
+  confirmLabel?: string
+  cancelLabel?: string
+  confirmButtonClassName?: string
+  hideCancel?: boolean
 }
 
 const modeConfig = {
   confirm: {
     title: '確定要刪除嗎？',
     description: '刪除後將無法恢復所有資訊',
-    buttonClassName: '',
+    confirmLabel: '刪除',
+    cancelLabel: '取消',
+    confirmButtonClassName: 'bg-danger-300 text-white shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]',
   },
   success: {
     title: '已刪除此件穿搭',
     description: '',
-    buttonClassName: 'bg-white/10 text-neutral-800 border border-neutral-400',
+    confirmLabel: '確定',
+    cancelLabel: '取消',
+    confirmButtonClassName: 'bg-white/10 text-neutral-800 border border-neutral-400',
   },
   settingSuccess: {
     title: '設定成功',
     description: '',
-    buttonClassName: 'bg-primary-800 text-white',
+    confirmLabel: '確定',
+    cancelLabel: '取消',
+    confirmButtonClassName: 'bg-primary-800 text-white',
   },
-}
+} as const
 
-export const ConfirmAlertDialog = ({ open, mode, onConfirm, onClose }: ConfirmAlertDialogProps) => {
+export const ConfirmAlertDialog = ({
+  open,
+  mode,
+  onConfirm,
+  onClose,
+  title,
+  description,
+  confirmLabel,
+  cancelLabel,
+  confirmButtonClassName,
+  hideCancel = false,
+}: ConfirmAlertDialogProps) => {
+  const resolvedTitle = title ?? modeConfig[mode].title
+  const resolvedDescription = description ?? modeConfig[mode].description
+  const resolvedConfirmLabel = confirmLabel ?? modeConfig[mode].confirmLabel
+  const resolvedCancelLabel = cancelLabel ?? modeConfig[mode].cancelLabel
+  const resolvedConfirmButtonClassName = confirmButtonClassName ?? modeConfig[mode].confirmButtonClassName
+
   const handleActionClick = (event: MouseEvent<HTMLButtonElement>) => {
     if (mode === 'confirm') {
       event.preventDefault()
@@ -51,36 +80,43 @@ export const ConfirmAlertDialog = ({ open, mode, onConfirm, onClose }: ConfirmAl
   return (
     <AlertDialog open={open} onOpenChange={onClose}>
       {mode === 'confirm' ? (
-        <AlertDialogContent className="flex h-[228px] w-[320px] flex-col gap-4 rounded-[20px] bg-white p-8 shadow-[0_4px_6px_-4px_rgba(0,0,0,0.1),0_10px_15px_-3px_rgba(0,0,0,0.1)]">
+        <AlertDialogContent className="flex h-57 w-[320px] flex-col gap-4 rounded-[20px] bg-white p-8 shadow-[0_4px_6px_-4px_rgba(0,0,0,0.1),0_10px_15px_-3px_rgba(0,0,0,0.1)]">
           <AlertDialogHeader>
-            <AlertDialogTitle className="font-h4">確定要刪除嗎？</AlertDialogTitle>
-            <AlertDialogDescription className="font-paragraph-sm text-neutral-600">
-              刪除後將無法恢復所有資訊
-            </AlertDialogDescription>
+            <AlertDialogTitle className="font-h4">{resolvedTitle}</AlertDialogTitle>
+            {resolvedDescription ? (
+              <AlertDialogDescription className="font-paragraph-sm text-neutral-600">
+                {resolvedDescription}
+              </AlertDialogDescription>
+            ) : null}
           </AlertDialogHeader>
 
           <AlertDialogFooter>
-            <AlertDialogCancel
-              onClick={onClose}
-              variant={'default'}
-              className="font-label-sm h-11 w-full justify-center rounded-[12px] border border-neutral-400 bg-white/10 text-neutral-800"
-            >
-              取消
-            </AlertDialogCancel>
+            {!hideCancel ? (
+              <AlertDialogCancel
+                onClick={onClose}
+                variant={'default'}
+                className="font-label-sm h-11 w-full justify-center rounded-[12px] border border-neutral-400 bg-white/10 text-neutral-800"
+              >
+                {resolvedCancelLabel}
+              </AlertDialogCancel>
+            ) : null}
             <AlertDialogAction
               onClick={handleActionClick}
               variant={'default'}
-              className="bg-danger-300 font-label-sm h-11 w-full justify-center rounded-[12px] text-white shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]"
+              className={cn(
+                'font-label-sm h-11 w-full justify-center rounded-[12px]',
+                resolvedConfirmButtonClassName,
+              )}
             >
-              刪除
+              {resolvedConfirmLabel}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       ) : (
-        <AlertDialogContent className="flex h-[140px] w-[250px] flex-col gap-4 rounded-[20px] bg-white p-8">
+        <AlertDialogContent className="flex h-35 w-62.5 flex-col gap-4 rounded-[20px] bg-white p-8">
           <AlertDialogHeader>
             <AlertDialogTitle className="font-paragraph-md text-neutral-900">
-              {modeConfig[mode].title}
+              {resolvedTitle}
             </AlertDialogTitle>
           </AlertDialogHeader>
 
@@ -89,10 +125,10 @@ export const ConfirmAlertDialog = ({ open, mode, onConfirm, onClose }: ConfirmAl
               onClick={handleActionClick}
               className={cn(
                 'font-label-sm h-11 w-full justify-center rounded-[12px] shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]',
-                modeConfig[mode].buttonClassName,
+                resolvedConfirmButtonClassName,
               )}
             >
-              確定
+              {resolvedConfirmLabel}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
