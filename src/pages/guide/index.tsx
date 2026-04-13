@@ -46,7 +46,7 @@ const Guide = () => {
   }, [])
   return (
     <main className="mb-36 flex flex-col items-center justify-center gap-30">
-      <section className="mt-20 flex w-full flex-col items-center gap-12">
+      <section className="mt-20 flex w-full flex-col items-center gap-8">
         <div className="relative">
           {guideIntroSlides.map((slide, index) => (
             <div
