@@ -8,9 +8,12 @@ import { PrimaryButton } from '@/modules/common/components/PrimaryButton'
 import { updateGender } from '@/modules/guide/api/gender'
 import { GenderButton } from '@/modules/guide/components/GenderButton'
 import { getOnboardingAddFlow, setOnboardingAddFlow } from '@/modules/guide/utils/onboardingAddFlow'
+import { useAppDispatch } from '@/store/hooks'
+import { setProfileCompleted, updateUserGender } from '@/store/slices/userSlice'
 
 const Gender = () => {
   const router = useRouter()
+  const dispatch = useAppDispatch()
   const [selectedGender, setSelectedGender] = useState<'男性' | '女性' | ''>('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -22,6 +25,8 @@ const Gender = () => {
     try {
       setIsSubmitting(true)
       await updateGender(gender)
+      dispatch(updateUserGender(gender))
+      dispatch(setProfileCompleted())
 
       if (!getOnboardingAddFlow()) {
         setOnboardingAddFlow('top-required')
