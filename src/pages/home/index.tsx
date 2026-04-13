@@ -118,10 +118,17 @@ const Home = () => {
           <HomeFilterBar onDayChange={handleDayChange} />
         </div>
         <div className="relative">
-          <HomePreviewTopBar
-            expanded={isAdjustPromptOpen}
-            onClick={() => setIsOutfitAdjustDrawerOpen(true)}
-          />
+          {currentData ? (
+            <HomePreviewTopBar
+              wheather={currentData?.dayRecommendation.weather}
+              city={currentData?.dayRecommendation.city}
+              expanded={isAdjustPromptOpen}
+              onClick={() => setIsOutfitAdjustDrawerOpen(true)}
+            />
+          ) : (
+            <HomePreviewTopBar />
+          )}
+
           <div className="flex flex-col items-center justify-center pt-13">
             <HomeOutfitPreview
               src={currentData?.imageUrl}
@@ -131,7 +138,9 @@ const Home = () => {
             />
           </div>
         </div>
-        <HomeInsightsSection content={currentData?.dayRecommendation?.recommendation.reasoning} />
+        <HomeInsightsSection
+          content={currentData?.dayRecommendation?.recommendation.reasoning ?? '您還未新增任何衣物'}
+        />
         <OutfitAdjustDrawer
           open={isOutfitAdjustDrawerOpen}
           onOpenChange={setIsOutfitAdjustDrawerOpen}
