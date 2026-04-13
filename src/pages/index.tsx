@@ -2,12 +2,13 @@ import Image from 'next/image'
 import { useRouter } from 'next/router'
 import { useEffect } from 'react'
 
+import { useAppSelector } from '@/store/hooks'
+
 const SplashPage = () => {
   const router = useRouter()
-
+  const isLoggedIn = useAppSelector((state) => state.user.isLoggedIn)
   useEffect(() => {
     const timer = setTimeout(() => {
-      const isLoggedIn = false
       if (isLoggedIn) {
         router.replace('/home')
       } else {
@@ -15,7 +16,7 @@ const SplashPage = () => {
       }
     }, 1500)
     return () => clearTimeout(timer)
-  }, [router])
+  }, [router, isLoggedIn])
 
   return (
     <main className="flex min-h-screen flex-col items-center gap-20 pt-40 pb-[104px]">
