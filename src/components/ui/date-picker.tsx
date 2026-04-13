@@ -1,5 +1,5 @@
 import { CalendarDays } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -45,15 +45,14 @@ export const DatePicker = ({
   isDateDisabled,
 }: DatePickerProps) => {
   const selectedDate = useMemo(() => toDateValue(value), [value])
+  const selectedMonth = useMemo(
+    () => (selectedDate ? new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1) : null),
+    [selectedDate],
+  )
   const disabledDateSet = useMemo(() => new Set(disabledDates), [disabledDates])
   const [open, setOpen] = useState(false)
-  const [month, setMonth] = useState<Date>(selectedDate ?? new Date())
-
-  useEffect(() => {
-    if (selectedDate) {
-      setMonth(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1))
-    }
-  }, [selectedDate])
+  const [monthOverride, setMonthOverride] = useState<Date | null>(null)
+  const month = monthOverride ?? selectedMonth ?? new Date()
 
   const isDisabledDate = (date: Date) => {
     const dateKey = toDateKey(date)
@@ -69,7 +68,12 @@ export const DatePicker = ({
   return (
     <div className={cn('relative w-full', className)}>
       {name ? <input type="hidden" name={name} value={value ?? ''} /> : null}
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover open={open} onOpenChange={(nextOpen) => {
+          setOpen(nextOpen)
+          if (nextOpen) {
+            setMonthOverride(selectedMonth ?? new Date())
+          }
+        }}>
         <PopoverTrigger asChild>
           <button
             type="button"
@@ -99,7 +103,7 @@ export const DatePicker = ({
           <Calendar
             month={month}
             selected={selectedDate}
-            onMonthChange={setMonth}
+            onMonthChange={setMonthOverride}
             onSelect={(date) => {
               if (isDisabledDate(date)) return
               onChange?.(toDateKey(date))
