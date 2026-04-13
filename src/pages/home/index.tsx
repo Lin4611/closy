@@ -1,4 +1,5 @@
 import dynamic from 'next/dynamic'
+import { useRouter } from 'next/router'
 import { useRef, useState } from 'react'
 import { useEffect } from 'react'
 
@@ -24,6 +25,7 @@ const HomeOnboardingGate = dynamic(
 )
 
 const Home = () => {
+  const router = useRouter()
   const [isAdjustPromptOpen, setIsAdjustPromptOpen] = useState(true)
   const [isOnboardingVisible, setIsOnboardingVisible] = useState(false)
   const [isOutfitAdjustDrawerOpen, setIsOutfitAdjustDrawerOpen] = useState(false)
@@ -126,6 +128,7 @@ const Home = () => {
             city={currentData?.dayRecommendation.city}
             expanded={isAdjustPromptOpen}
             onClick={() => setIsOutfitAdjustDrawerOpen(true)}
+            onCalendarClick={() => void router.push('/calendar')}
           />
           <div className="flex flex-col items-center justify-center pt-13">
             <HomeOutfitPreview
