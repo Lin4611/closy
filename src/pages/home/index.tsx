@@ -124,7 +124,7 @@ const Home = () => {
         </div>
         <div className="relative">
           <HomePreviewTopBar
-            wheather={currentData?.dayRecommendation.weather}
+            weather={currentData?.dayRecommendation.weather}
             city={currentData?.dayRecommendation.city}
             expanded={isAdjustPromptOpen}
             onClick={() => setIsOutfitAdjustDrawerOpen(true)}
@@ -140,7 +140,7 @@ const Home = () => {
           </div>
         </div>
         <HomeInsightsSection
-          content={currentData?.dayRecommendation?.recommendation.reasoning ?? '您還未新增任何衣物'}
+          content={currentData?.dayRecommendation?.recommendation.reasoning ?? ''}
         />
         <OutfitAdjustDrawer
           open={isOutfitAdjustDrawerOpen}
