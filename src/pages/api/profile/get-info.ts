@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 
 import { ApiError, apiClient } from '@/lib/api/client'
 import type { ApiResponse } from '@/lib/api/types'
+import type { UserInfo } from '@/modules/common/types/userInfoTypes'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') return res.status(405).end()
@@ -13,7 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const response = await apiClient<ApiResponse<null>>({
+    const response = await apiClient<ApiResponse<UserInfo>>({
       baseUrl: process.env.API_BASE_URL,
       endpoint: '/user/information',
       method: 'GET',

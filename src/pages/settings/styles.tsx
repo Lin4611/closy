@@ -24,7 +24,11 @@ const SettingsStyles = () => {
   const router = useRouter()
 
   const handleStyleChange = async (value: string[]) => {
-    if (isSubmitting || value === savedStyles) return
+    if (
+      isSubmitting ||
+      (value.length === savedStyles.length && value.every((v, i) => v === savedStyles[i]))
+    )
+      return
 
     try {
       setIsSubmitting(true)
@@ -35,7 +39,7 @@ const SettingsStyles = () => {
       if (error instanceof ApiError) {
         showToast.error(error.message)
       } else {
-        showToast.error('更新場合失敗，請稍後再試')
+        showToast.error('更新風格失敗，請稍後再試')
       }
     } finally {
       setIsSubmitting(false)
@@ -44,7 +48,7 @@ const SettingsStyles = () => {
 
   return (
     <main className="flex min-h-screen flex-col">
-      <SettingsHeader title="場合" />
+      <SettingsHeader title="風格" />
       <div className="flex flex-1 flex-col items-center justify-center px-4 pt-3 pb-10">
         <div className="mx-auto grid grid-cols-2 gap-3">
           {stylesMetaMap.map((style) => (
