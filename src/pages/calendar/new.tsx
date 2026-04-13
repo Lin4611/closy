@@ -92,6 +92,7 @@ const CalendarNewPage = () => {
         <CalendarSuccessDialog
           open={isSuccessDialogOpen}
           title="新增成功"
+          confirmButtonClassName="bg-primary-800 text-white"
           onClose={() => {
             setIsSuccessDialogOpen(false)
             const targetMonth = date ? `${date.slice(0, 4)}年${date.slice(5, 7)}月` : null

@@ -7,7 +7,6 @@ import { SelectableOutfitCard } from '@/modules/calendar/components/SelectableOu
 import { SelectableOutfitEmptyState } from '@/modules/calendar/components/SelectableOutfitEmptyState'
 import { useCalendarOutfits } from '@/modules/calendar/hooks/useCalendarOutfits'
 import { getCalendarFormDraft, saveCalendarSelectedOutfitDraft } from '@/modules/calendar/utils/calendarDraftStorage'
-import { buildCalendarSelectOutfitRoute, buildOutfitDetailReturnTo } from '@/modules/calendar/utils/calendarNavigation'
 import { AppShell } from '@/modules/common/components/AppShell'
 
 const CalendarSelectOutfitPage = () => {
@@ -48,17 +47,6 @@ const CalendarSelectOutfitPage = () => {
                   outfit={outfit}
                   selected={selectedOutfitId === outfit.id}
                   onSelect={() => setSelectedOutfitId(outfit.id)}
-                  onPreview={() =>
-                    void router.push(
-                      buildOutfitDetailReturnTo({
-                        outfitId: outfit.id,
-                        returnTo: buildCalendarSelectOutfitRoute({
-                          returnTo,
-                          date: formDraft?.date ?? null,
-                        }),
-                      })
-                    )
-                  }
                 />
               ))}
             </div>

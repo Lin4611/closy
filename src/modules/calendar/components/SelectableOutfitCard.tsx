@@ -1,4 +1,4 @@
-import { Check, Eye } from 'lucide-react'
+import { Check } from 'lucide-react'
 import Image from 'next/image'
 
 import { cn } from '@/lib/utils'
@@ -8,14 +8,12 @@ type SelectableOutfitCardProps = {
   outfit: SelectableOutfitSummary
   selected: boolean
   onSelect: () => void
-  onPreview: () => void
 }
 
 export const SelectableOutfitCard = ({
   outfit,
   selected,
   onSelect,
-  onPreview,
 }: SelectableOutfitCardProps) => {
   return (
     <div
@@ -42,23 +40,9 @@ export const SelectableOutfitCard = ({
           height={176}
           className="h-44 w-30 object-contain"
         />
-        <button
-          type="button"
-          onClick={(event) => {
-            event.stopPropagation()
-            onPreview()
-          }}
-          aria-label="查看穿搭詳情"
-          className="absolute inset-y-3 left-3 flex w-18 items-center justify-center rounded-[12px] bg-transparent text-neutral-700"
-        >
-          <span className="sr-only">查看穿搭詳情</span>
-        </button>
-        <span className="pointer-events-none absolute left-3 bottom-3 flex size-7 items-center justify-center rounded-full bg-white/90 text-neutral-700 shadow-[0_1px_4px_rgba(0,0,0,0.12)]">
-          <Eye className="size-4" strokeWidth={2} />
-        </span>
         {selected ? (
-          <span className="absolute top-2 right-2 flex size-6 items-center justify-center rounded-full bg-neutral-900 text-white">
-            <Check className="size-4" strokeWidth={2.5} />
+          <span className="absolute top-2 right-2 flex size-8 items-center justify-center rounded-full bg-neutral-900 text-white shadow-[0_1px_4px_rgba(0,0,0,0.12)]">
+            <Check className="size-5" strokeWidth={2.5} />
           </span>
         ) : null}
       </div>
