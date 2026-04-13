@@ -27,8 +27,10 @@ const SettingsStyles = () => {
     if (
       isSubmitting ||
       (value.length === savedStyles.length && value.every((v, i) => v === savedStyles[i]))
-    )
+    ) {
+      router.push('/settings?status=unchanged')
       return
+    }
 
     try {
       setIsSubmitting(true)

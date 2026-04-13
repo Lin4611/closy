@@ -20,7 +20,10 @@ const SettingOccasion = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const router = useRouter()
   const handleOccasionChange = async (value: string) => {
-    if (isSubmitting || value === savedOccasion) return
+    if (isSubmitting || value === savedOccasion) {
+      router.push('/settings?status=unchanged')
+      return
+    }
     try {
       setIsSubmitting(true)
       await updateOccasion(value as Occasion)

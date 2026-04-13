@@ -27,8 +27,10 @@ const SettingColors = () => {
     if (
       isSubmitting ||
       (value.length === savedColors.length && value.every((v, i) => v === savedColors[i]))
-    )
+    ) {
+      router.push('/settings?status=unchanged')
       return
+    }
 
     try {
       setIsSubmitting(true)

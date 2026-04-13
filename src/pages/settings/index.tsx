@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useEffect } from 'react'
 
 import { Button } from '@/components/ui/button'
+import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
 import { getUserInfo } from '@/modules/common/api/userInfo'
 import { AppShell } from '@/modules/common/components/AppShell'
@@ -22,6 +23,12 @@ const Setting = () => {
   const dispatch = useAppDispatch()
 
   const user = useAppSelector((state) => state.user.user)
+  useEffect(() => {
+    if (router.query.status === 'unchanged') {
+      showToast.info('偏好設定未變更', 1500)
+      router.replace('/settings', undefined, { shallow: true })
+    }
+  }, [router.query.status])
   useEffect(() => {
     const fetchProfile = async () => {
       try {
