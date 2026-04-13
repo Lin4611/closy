@@ -26,6 +26,10 @@ const userSlice = createSlice({
       state.user = null
       state.isLoggedIn = false
     },
+    updateUserGender: (state, action: PayloadAction<'male' | 'female'>) => {
+      if (!state.user) return
+      state.user.gender = action.payload
+    },
     updateUserOccasion: (state, action: PayloadAction<Occasion>) => {
       if (!state.user) return
       state.user.preferences.occasions = action.payload
@@ -37,6 +41,10 @@ const userSlice = createSlice({
     updateUserColors: (state, action: PayloadAction<Colors[]>) => {
       if (!state.user) return
       state.user.preferences.colors = action.payload
+    },
+    setProfileCompleted: (state) => {
+      if (!state.user) return
+      state.user.isProfileCompleted = true
     },
     mergeUserProfile: (state, action: PayloadAction<UserInfo>) => {
       if (!state.user) return
@@ -64,6 +72,8 @@ const userSlice = createSlice({
 export const {
   setUser,
   clearUser,
+  setProfileCompleted,
+  updateUserGender,
   updateUserOccasion,
   updateUserStyles,
   updateUserColors,
