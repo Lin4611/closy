@@ -1,7 +1,6 @@
 import { useRouter } from 'next/router'
 import { useEffect, useMemo, useState } from 'react'
 
-import { CalendarDeleteEntryDialog } from '@/modules/calendar/components/CalendarDeleteEntryDialog'
 import { CalendarForm } from '@/modules/calendar/components/CalendarForm'
 import { CalendarHeader } from '@/modules/calendar/components/CalendarHeader'
 import { CalendarOccasionChangeDialog } from '@/modules/calendar/components/CalendarOccasionChangeDialog'
@@ -12,7 +11,7 @@ import type { CalendarEntry } from '@/modules/calendar/types'
 import { clearCalendarFormDraft, clearCalendarSelectedOutfitDraft, getCalendarSelectedOutfitDraft, saveCalendarFormDraft } from '@/modules/calendar/utils/calendarDraftStorage'
 import { buildCalendarSelectOutfitReturnTo, buildCalendarSelectOutfitRoute, parseCalendarEditDateParam } from '@/modules/calendar/utils/calendarNavigation'
 import { getSelectableOutfitSummaryById } from '@/modules/calendar/utils/calendarOutfitAdapter'
-import { canDeleteCalendarEntry, canEditCalendarDate, hasSelectedOutfit, isCalendarDateBlocked, shouldResetSelectedOutfit } from '@/modules/calendar/utils/calendarRules'
+import { canEditCalendarDate, hasSelectedOutfit, isCalendarDateBlocked, shouldResetSelectedOutfit } from '@/modules/calendar/utils/calendarRules'
 import { AppShell } from '@/modules/common/components/AppShell'
 import type { Occasion } from '@/modules/common/types/occasion'
 
@@ -34,15 +33,13 @@ const buildInitialFormState = (entry: CalendarEntry): CalendarEditFormState => {
 
 const CalendarEditContent = ({ entry }: { entry: CalendarEntry }) => {
   const router = useRouter()
-  const { entries, updateEntry, deleteEntry } = useCalendarStore()
+  const { entries, updateEntry } = useCalendarStore()
   const initialFormState = useMemo(() => buildInitialFormState(entry), [entry])
   const [occasionKey, setOccasionKey] = useState<Occasion | null>(initialFormState.occasionKey)
   const [date, setDate] = useState(initialFormState.date)
   const [selectedOutfitId, setSelectedOutfitId] = useState<string | null>(initialFormState.selectedOutfitId)
   const [pendingOccasionKey, setPendingOccasionKey] = useState<Occasion | null>(null)
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false)
-  const [successTitle, setSuccessTitle] = useState('編輯成功')
   const [isOccasionChangeDialogOpen, setIsOccasionChangeDialogOpen] = useState(false)
 
   useEffect(() => {
@@ -87,7 +84,6 @@ const CalendarEditContent = ({ entry }: { entry: CalendarEntry }) => {
 
     clearCalendarFormDraft()
     clearCalendarSelectedOutfitDraft()
-    setSuccessTitle('編輯成功')
     setIsSuccessDialogOpen(true)
   }
 
@@ -109,25 +105,6 @@ const CalendarEditContent = ({ entry }: { entry: CalendarEntry }) => {
           }}
           onSubmit={handleSubmit}
         />
-        {canDeleteCalendarEntry(entry) ? (
-          <div className="px-4 pb-8">
-            <button type="button" onClick={() => setIsDeleteDialogOpen(true)} className="w-full text-left font-paragraph-sm text-neutral-400">
-              刪除此行事曆
-            </button>
-          </div>
-        ) : null}
-        <CalendarDeleteEntryDialog
-          open={isDeleteDialogOpen}
-          onClose={() => setIsDeleteDialogOpen(false)}
-          onConfirm={() => {
-            deleteEntry(entry.id)
-            clearCalendarFormDraft()
-            clearCalendarSelectedOutfitDraft()
-            setIsDeleteDialogOpen(false)
-            setSuccessTitle('已刪除行事曆')
-            setIsSuccessDialogOpen(true)
-          }}
-        />
         <CalendarOccasionChangeDialog
           open={isOccasionChangeDialogOpen}
           onClose={() => setIsOccasionChangeDialogOpen(false)}
@@ -143,10 +120,14 @@ const CalendarEditContent = ({ entry }: { entry: CalendarEntry }) => {
         />
         <CalendarSuccessDialog
           open={isSuccessDialogOpen}
-          title={successTitle}
+          title="編輯成功"
           onClose={() => {
             setIsSuccessDialogOpen(false)
-            void router.push('/calendar')
+            const targetMonth = date ? `${date.slice(0, 4)}年${date.slice(5, 7)}月` : `${entry.date.slice(0, 4)}年${entry.date.slice(5, 7)}月`
+            void router.push({
+              pathname: '/calendar',
+              query: { month: targetMonth },
+            })
           }}
         />
       </div>

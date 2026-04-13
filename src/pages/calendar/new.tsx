@@ -94,7 +94,11 @@ const CalendarNewPage = () => {
           title="新增成功"
           onClose={() => {
             setIsSuccessDialogOpen(false)
-            void router.push('/calendar')
+            const targetMonth = date ? `${date.slice(0, 4)}年${date.slice(5, 7)}月` : null
+            void router.push({
+              pathname: '/calendar',
+              query: targetMonth ? { month: targetMonth } : undefined,
+            })
           }}
         />
       </div>

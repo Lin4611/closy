@@ -7,7 +7,7 @@ import { SelectableOutfitCard } from '@/modules/calendar/components/SelectableOu
 import { SelectableOutfitEmptyState } from '@/modules/calendar/components/SelectableOutfitEmptyState'
 import { useCalendarOutfits } from '@/modules/calendar/hooks/useCalendarOutfits'
 import { getCalendarFormDraft, saveCalendarSelectedOutfitDraft } from '@/modules/calendar/utils/calendarDraftStorage'
-import { buildOutfitDetailReturnTo } from '@/modules/calendar/utils/calendarNavigation'
+import { buildCalendarSelectOutfitRoute, buildOutfitDetailReturnTo } from '@/modules/calendar/utils/calendarNavigation'
 import { AppShell } from '@/modules/common/components/AppShell'
 
 const CalendarSelectOutfitPage = () => {
@@ -52,7 +52,10 @@ const CalendarSelectOutfitPage = () => {
                     void router.push(
                       buildOutfitDetailReturnTo({
                         outfitId: outfit.id,
-                        returnTo: '/calendar/select-outfit',
+                        returnTo: buildCalendarSelectOutfitRoute({
+                          returnTo,
+                          date: formDraft?.date ?? null,
+                        }),
                       })
                     )
                   }

@@ -28,7 +28,19 @@ const CalendarPage = () => {
     )
     return uniqueMonths.length > 0 ? uniqueMonths : ['2026年03月']
   }, [entries])
-  const [selectedMonth, setSelectedMonth] = useState(monthOptions[0] ?? '2026年03月')
+  const requestedMonth = typeof router.query.month === 'string' ? router.query.month : null
+  const [userSelectedMonth, setUserSelectedMonth] = useState<string | null>(null)
+  const selectedMonth = useMemo(() => {
+    if (userSelectedMonth && monthOptions.includes(userSelectedMonth)) {
+      return userSelectedMonth
+    }
+
+    if (requestedMonth && monthOptions.includes(requestedMonth)) {
+      return requestedMonth
+    }
+
+    return monthOptions[0] ?? '2026年03月'
+  }, [monthOptions, requestedMonth, userSelectedMonth])
 
   const visibleEntries = useMemo(() => {
     const normalized = selectedMonth.replace('年', '-').replace('月', '')
@@ -57,7 +69,7 @@ const CalendarPage = () => {
           month={selectedMonth}
           monthOptions={monthOptions}
           isSynced={isSynced}
-          onMonthChange={setSelectedMonth}
+          onMonthChange={setUserSelectedMonth}
           onSyncChange={setIsSynced}
         />
         <div className="flex flex-1 flex-col gap-4 px-4 pb-6">
