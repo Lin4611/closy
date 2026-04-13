@@ -31,6 +31,15 @@ const homeSlice = createSlice({
       }
       state.cacheDate = new Date().toISOString().split('T')[0]
     },
+    updateDayImageUrl: (
+      state,
+      action: PayloadAction<{ day: 'today' | 'tomorrow'; imageUrl: string }>,
+    ) => {
+      const dayState = state[action.payload.day]
+      if (dayState) {
+        dayState.imageUrl = action.payload.imageUrl
+      }
+    },
     clearDayCache: (state) => {
       state.today = null
       state.tomorrow = null
@@ -38,5 +47,5 @@ const homeSlice = createSlice({
   },
 })
 
-export const { setDayCache, clearDayCache } = homeSlice.actions
+export const { setDayCache, clearDayCache, updateDayImageUrl } = homeSlice.actions
 export default homeSlice.reducer
