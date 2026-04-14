@@ -29,7 +29,7 @@ const Home = () => {
   const [isAdjustPromptOpen, setIsAdjustPromptOpen] = useState(true)
   const [isOnboardingVisible, setIsOnboardingVisible] = useState(false)
   const [isOutfitAdjustDrawerOpen, setIsOutfitAdjustDrawerOpen] = useState(false)
-  const [isImageLoading, setIsImageLoading] = useState(false)
+  // const [isImageLoading, setIsImageLoading] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const dispatch = useAppDispatch()
   const homeState = useAppSelector((state) => state.home)
@@ -48,14 +48,14 @@ const Home = () => {
         setDayCache({ day, cache: { dayRecommendation: res, imageUrl: '/home/model_man.webp' } }),
       )
       setIsLoading(false)
-      setIsImageLoading(true)
+      // setIsImageLoading(true)
       // const { imageUrl } = await generateOutfit({ selectedItems: res.recommendation.selectedItems })
       // dispatch(updateDayImageUrl({ day, imageUrl }))
     } catch (e) {
       if (e instanceof ApiError) showToast.error(e.message)
     } finally {
       setIsLoading(false)
-      setIsImageLoading(false)
+      // setIsImageLoading(false)
     }
   }
 
@@ -136,7 +136,7 @@ const Home = () => {
             <HomeOutfitPreview
               src={currentData?.imageUrl}
               alt={`${activeDay}穿搭`}
-              isLoading={isLoading || isImageLoading || !currentData}
+              isLoading={isLoading || !currentData}
               onDislikeClick={handleDislikeClick}
             />
           </div>
