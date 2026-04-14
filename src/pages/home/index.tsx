@@ -7,14 +7,14 @@ import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
 import { AppShell } from '@/modules/common/components/AppShell'
 import { getHomeRecommendation } from '@/modules/home/api/home'
-import { generateOutfit } from '@/modules/home/api/outfit'
+// import { generateOutfit } from '@/modules/home/api/outfit'
 import { HomeFilterBar } from '@/modules/home/components/HomeFilterBar'
 import { HomeInsightsSection } from '@/modules/home/components/HomeInsightsSection'
 import { HomeOutfitPreview } from '@/modules/home/components/HomeOutfitPreview'
 import { HomePreviewTopBar } from '@/modules/home/components/HomePreviewTopBar'
 import { OutfitAdjustDrawer } from '@/modules/home/components/outfit-adjust-drawer/OutfitAdjustDrawer'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
-import { clearDayCache, setDayCache, updateDayImageUrl } from '@/store/slices/homeSlice'
+import { clearDayCache, setDayCache } from '@/store/slices/homeSlice'
 
 const HomeOnboardingGate = dynamic(
   () =>
@@ -29,7 +29,7 @@ const Home = () => {
   const [isAdjustPromptOpen, setIsAdjustPromptOpen] = useState(true)
   const [isOnboardingVisible, setIsOnboardingVisible] = useState(false)
   const [isOutfitAdjustDrawerOpen, setIsOutfitAdjustDrawerOpen] = useState(false)
-  const [isImageLoading, setIsImageLoading] = useState(false)
+  // const [isImageLoading, setIsImageLoading] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const dispatch = useAppDispatch()
   const homeState = useAppSelector((state) => state.home)
@@ -44,16 +44,18 @@ const Home = () => {
     setIsLoading(true)
     try {
       const res = await getHomeRecommendation(day)
-      dispatch(setDayCache({ day, cache: { dayRecommendation: res, imageUrl: '' } }))
+      dispatch(
+        setDayCache({ day, cache: { dayRecommendation: res, imageUrl: '/home/model_man.webp' } }),
+      )
       setIsLoading(false)
-      setIsImageLoading(true)
-      const { imageUrl } = await generateOutfit({ selectedItems: res.recommendation.selectedItems })
-      dispatch(updateDayImageUrl({ day, imageUrl }))
+      // setIsImageLoading(true)
+      // const { imageUrl } = await generateOutfit({ selectedItems: res.recommendation.selectedItems })
+      // dispatch(updateDayImageUrl({ day, imageUrl }))
     } catch (e) {
       if (e instanceof ApiError) showToast.error(e.message)
     } finally {
       setIsLoading(false)
-      setIsImageLoading(false)
+      // setIsImageLoading(false)
     }
   }
 
@@ -134,7 +136,7 @@ const Home = () => {
             <HomeOutfitPreview
               src={currentData?.imageUrl}
               alt={`${activeDay}穿搭`}
-              isLoading={isLoading || isImageLoading || !currentData}
+              isLoading={isLoading || !currentData}
               onDislikeClick={handleDislikeClick}
             />
           </div>
