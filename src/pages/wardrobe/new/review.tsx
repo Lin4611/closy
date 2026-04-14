@@ -11,11 +11,7 @@ import { WardrobeReviewForm } from '@/modules/wardrobe/components/WardrobeReview
 import { useWardrobeCreationFlow } from '@/modules/wardrobe/hooks/useWardrobeCreationFlow'
 import { useWardrobeMock } from '@/modules/wardrobe/hooks/useWardrobeMock'
 import type { WardrobeReviewDraft } from '@/modules/wardrobe/types'
-import {
-  mapApiCategoryToWardrobeCategory,
-  mapCreateClothesResponseItemToWardrobeItem,
-  mapWardrobeReviewDraftToCreateClothesRequest,
-} from '@/modules/wardrobe/utils/apiMappers'
+import { mapWardrobeReviewDraftToCreateClothesRequest } from '@/modules/wardrobe/utils/apiMappers'
 
 const getSaveErrorMessage = (error: unknown) => {
   if (error instanceof ApiError) {
@@ -57,7 +53,7 @@ const getNextOnboardingRoute = (savedCategory: WardrobeReviewDraft['category']) 
 
 const WardrobeReviewPage = () => {
   const router = useRouter()
-  const { replaceItems, clearRecognitionDraft } = useWardrobeMock()
+  const { syncCreatedItemFromServer, clearRecognitionDraft } = useWardrobeMock()
   const { getContext, getReviewDraft, saveReviewDraft, clearFlow } = useWardrobeCreationFlow()
 
   const [draft, setDraft] = useState<WardrobeReviewDraft | null>(null)
@@ -111,23 +107,13 @@ const WardrobeReviewPage = () => {
         imageHash: removeBackgroundResult.imageHash,
       })
 
-      const result = await createClothes(payload)
+      const createdItem = await createClothes(payload)
 
-      if (!Array.isArray(result.list) || result.list.length === 0) {
-        throw new Error('新增衣物成功，但未取得衣櫃列表資料')
-      }
-
-      const createdItem = result.list.find((item) => item.imageHash === removeBackgroundResult.imageHash)
-
-      if (!createdItem) {
-        throw new Error('新增衣物成功，但無法確認本次建立的衣物資料')
-      }
-
-      replaceItems(result.list.map(mapCreateClothesResponseItemToWardrobeItem))
+      syncCreatedItemFromServer(createdItem)
       clearRecognitionDraft()
       clearFlow()
 
-      const nextRoute = getNextOnboardingRoute(mapApiCategoryToWardrobeCategory(createdItem.category))
+      const nextRoute = getNextOnboardingRoute(createdItem.category)
 
       await router.replace(nextRoute)
     } catch (error) {

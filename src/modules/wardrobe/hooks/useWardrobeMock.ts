@@ -28,7 +28,7 @@ const safeParseItems = (value: string | null): WardrobeItem[] => {
   try {
     const parsed = JSON.parse(value) as WardrobeItem[]
 
-    if (!Array.isArray(parsed) || parsed.length === 0) {
+    if (!Array.isArray(parsed)) {
       return mockWardrobeItems
     }
 
@@ -121,7 +121,7 @@ export const useWardrobeMock = () => {
   )
   const isReady = typeof window !== 'undefined'
 
-  const appendItem = useCallback((item: WardrobeItem) => {
+  const syncItemFromServer = useCallback((item: WardrobeItem) => {
     const normalizedItem = normalizeItem(item)
     const nextItems = getStoredItemsSnapshot().filter(
       (storedItem) => storedItem.id !== normalizedItem.id
@@ -132,11 +132,26 @@ export const useWardrobeMock = () => {
     return normalizedItem
   }, [])
 
-  const replaceItems = useCallback((items: WardrobeItem[]) => {
+  const syncCreatedItemFromServer = useCallback(
+    (item: WardrobeItem) => syncItemFromServer(item),
+    [syncItemFromServer]
+  )
+
+  const hydrateItemsFromServer = useCallback((items: WardrobeItem[]) => {
     writeStoredItems(items)
 
     return items.map(normalizeItem)
   }, [])
+
+  const appendItem = useCallback(
+    (item: WardrobeItem) => syncCreatedItemFromServer(item),
+    [syncCreatedItemFromServer]
+  )
+
+  const replaceItems = useCallback(
+    (items: WardrobeItem[]) => hydrateItemsFromServer(items),
+    [hydrateItemsFromServer]
+  )
 
   const addItem = useCallback(
     (draft: WardrobeDraftItem) => {
@@ -202,6 +217,9 @@ export const useWardrobeMock = () => {
     () => ({
       isReady,
       items,
+      syncItemFromServer,
+      syncCreatedItemFromServer,
+      hydrateItemsFromServer,
       appendItem,
       replaceItems,
       addItem,
@@ -216,6 +234,7 @@ export const useWardrobeMock = () => {
     [
       addItem,
       appendItem,
+      hydrateItemsFromServer,
       replaceItems,
       clearRecognitionDraft,
       deleteItem,
@@ -225,6 +244,8 @@ export const useWardrobeMock = () => {
       items,
       resetWardrobe,
       saveRecognitionDraft,
+      syncItemFromServer,
+      syncCreatedItemFromServer,
       updateItem,
     ]
   )
