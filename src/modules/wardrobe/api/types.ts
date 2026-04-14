@@ -61,7 +61,7 @@ export type CreateClothesRequest = {
   brand: string
 }
 
-export type CreateClothesResponseItem = {
+export type ClothesApiItem = {
   _id: string
   category: ClothesApiCategory
   name: string
@@ -76,10 +76,21 @@ export type CreateClothesResponseItem = {
   imgUrl?: string
 }
 
-export type CreateClothesResponseData = {
-  message: string
-  list: CreateClothesResponseItem[]
+export type GetClothesListResponseData = {
+  list: ClothesApiItem[]
 }
+
+export type GetClothesDetailResponseData = ClothesApiItem
+
+export type CreateClothesResponseData = ClothesApiItem
+
+export type UpdateClothesRequest = Partial<
+  Pick<CreateClothesRequest, 'category' | 'name' | 'color' | 'occasions' | 'seasons' | 'brand'>
+>
+
+export type UpdateClothesResponseData = ClothesApiItem
+
+export type DeleteClothesResponseData = Record<string, never>
 
 export type WardrobeApiMappingSnapshot = {
   category: {
