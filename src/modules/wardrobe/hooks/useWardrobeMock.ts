@@ -121,7 +121,7 @@ export const useWardrobeMock = () => {
   )
   const isReady = typeof window !== 'undefined'
 
-  const syncCreatedItemFromServer = useCallback((item: WardrobeItem) => {
+  const syncItemFromServer = useCallback((item: WardrobeItem) => {
     const normalizedItem = normalizeItem(item)
     const nextItems = getStoredItemsSnapshot().filter(
       (storedItem) => storedItem.id !== normalizedItem.id
@@ -131,6 +131,11 @@ export const useWardrobeMock = () => {
 
     return normalizedItem
   }, [])
+
+  const syncCreatedItemFromServer = useCallback(
+    (item: WardrobeItem) => syncItemFromServer(item),
+    [syncItemFromServer]
+  )
 
   const hydrateItemsFromServer = useCallback((items: WardrobeItem[]) => {
     writeStoredItems(items)
@@ -212,6 +217,7 @@ export const useWardrobeMock = () => {
     () => ({
       isReady,
       items,
+      syncItemFromServer,
       syncCreatedItemFromServer,
       hydrateItemsFromServer,
       appendItem,
@@ -238,6 +244,7 @@ export const useWardrobeMock = () => {
       items,
       resetWardrobe,
       saveRecognitionDraft,
+      syncItemFromServer,
       syncCreatedItemFromServer,
       updateItem,
     ]

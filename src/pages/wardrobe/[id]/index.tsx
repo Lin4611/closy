@@ -5,7 +5,9 @@ import { useRouter } from 'next/router'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { showToast } from '@/components/ui/sonner'
+import { ApiError } from '@/lib/api/client'
 import { AppShell } from '@/modules/common/components/AppShell'
+import { getClothesDetail } from '@/modules/wardrobe/api/getClothesDetail'
 import { DeleteClothingDialog } from '@/modules/wardrobe/components/DeleteClothingDialog'
 import { WardrobeColorPalette } from '@/modules/wardrobe/components/WardrobeColorPalette'
 import { WardrobeDetailSection } from '@/modules/wardrobe/components/WardrobeDetailSection'
@@ -14,14 +16,19 @@ import { wardrobeCategoryOptions } from '@/modules/wardrobe/constants/categoryOp
 import { wardrobeOccasionOptions } from '@/modules/wardrobe/constants/occasionOptions'
 import { wardrobeSeasonOptions } from '@/modules/wardrobe/constants/seasonOptions'
 import { useWardrobeMock } from '@/modules/wardrobe/hooks/useWardrobeMock'
+import type { WardrobeItem } from '@/modules/wardrobe/types'
 
 const WardrobeDetailPage = () => {
   const router = useRouter()
   const { id } = router.query
-  const { getItemById } = useWardrobeMock()
+  const { deleteItem, getItemById, isReady, syncItemFromServer } = useWardrobeMock()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isNotFound, setIsNotFound] = useState(false)
+  const [item, setItem] = useState<WardrobeItem | null>(null)
   const menuRef = useRef<HTMLDivElement | null>(null)
+  const hydratedDetailIdRef = useRef<string | null>(null)
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -34,12 +41,84 @@ const WardrobeDetailPage = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const item = useMemo(() => {
+  const cachedItem = useMemo(() => {
     if (typeof id !== 'string') return null
     return getItemById(id)
   }, [getItemById, id])
 
-  if (!item) {
+  useEffect(() => {
+    if (!isReady || typeof id !== 'string') {
+      return
+    }
+
+    if (hydratedDetailIdRef.current === id) {
+      return
+    }
+
+    hydratedDetailIdRef.current = id
+
+    let isActive = true
+
+    setItem(cachedItem)
+    setIsLoading(true)
+    setIsNotFound(false)
+
+    const loadWardrobeItem = async () => {
+      try {
+        const serverItem = await getClothesDetail(id)
+
+        if (!isActive) {
+          return
+        }
+
+        const syncedItem = syncItemFromServer(serverItem)
+        setItem(syncedItem)
+        setIsNotFound(false)
+      } catch (error) {
+        if (!isActive) {
+          return
+        }
+
+        if (error instanceof ApiError && error.statusCode === 404) {
+          deleteItem(id)
+          setItem(null)
+          setIsNotFound(true)
+          return
+        }
+
+        if (!cachedItem) {
+          setItem(null)
+        }
+
+        showToast.error('取得衣物資訊失敗')
+      } finally {
+        if (isActive) {
+          setIsLoading(false)
+        }
+      }
+    }
+
+    void loadWardrobeItem()
+
+    return () => {
+      isActive = false
+    }
+  }, [cachedItem, deleteItem, id, isReady, syncItemFromServer])
+
+  if (!isReady || typeof id !== 'string' || (isLoading && !item)) {
+    return (
+      <div className="px-4 py-10">
+        <Link href="/wardrobe" className="font-label-sm text-neutral-500">
+          ← 返回我的衣櫃
+        </Link>
+        <div className="mt-10 rounded-[24px] bg-white p-6 text-center">
+          <p className="font-label-md text-neutral-900">載入中...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (isNotFound || !item) {
     return (
       <div className="px-4 py-10">
         <Link href="/wardrobe" className="font-label-sm text-neutral-500">
