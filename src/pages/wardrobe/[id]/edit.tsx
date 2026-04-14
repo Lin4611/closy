@@ -3,9 +3,12 @@ import { useRouter } from 'next/router'
 import { useMemo, useState } from 'react'
 
 import { showToast } from '@/components/ui/sonner'
+import { ApiError } from '@/lib/api/client'
+import { updateClothes } from '@/modules/wardrobe/api/updateClothes'
 import { WardrobeReviewForm } from '@/modules/wardrobe/components/WardrobeReviewForm'
 import { useWardrobeMock } from '@/modules/wardrobe/hooks/useWardrobeMock'
 import type { WardrobeItem, WardrobeReviewDraft } from '@/modules/wardrobe/types'
+import { mapWardrobeReviewDraftToUpdateClothesRequest } from '@/modules/wardrobe/utils/apiMappers'
 
 const createDraftFromItem = (item: WardrobeItem): WardrobeReviewDraft => ({
   name: item.name,
@@ -18,14 +21,49 @@ const createDraftFromItem = (item: WardrobeItem): WardrobeReviewDraft => ({
   note: item.note,
 })
 
+const getSaveErrorMessage = (error: unknown) => {
+  if (error instanceof ApiError) {
+    return error.message
+  }
+
+  if (error instanceof Error && error.message.trim()) {
+    return error.message
+  }
+
+  return '編輯衣物失敗，請稍後再試'
+}
+
 type WardrobeEditContentProps = {
   item: WardrobeItem
 }
 
 const WardrobeEditContent = ({ item }: WardrobeEditContentProps) => {
+  const router = useRouter()
+  const { syncItemFromServer } = useWardrobeMock()
   const [draft, setDraft] = useState<WardrobeReviewDraft>(() => createDraftFromItem(item))
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const isDisabled = !draft.name.trim() || !draft.colorKey
+  const isDisabled = !draft.name.trim() || !draft.colorKey || isSubmitting
+
+  const handleSave = async () => {
+    if (isDisabled) {
+      return
+    }
+
+    try {
+      setIsSubmitting(true)
+
+      const payload = mapWardrobeReviewDraftToUpdateClothesRequest(draft)
+      const updatedItem = await updateClothes(item.id, payload)
+
+      syncItemFromServer(updatedItem)
+      await router.replace(`/wardrobe/${updatedItem.id}`)
+    } catch (error) {
+      showToast.error(getSaveErrorMessage(error))
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   return (
     <div className="bg-neutral-100 pb-24">
@@ -43,14 +81,11 @@ const WardrobeEditContent = ({ item }: WardrobeEditContentProps) => {
         <button
           type="button"
           disabled={isDisabled}
-          onClick={() => {
-            showToast.error('目前尚未支援編輯衣物同步')
-          }}
-          className={`font-label-md h-11 w-full rounded-full ${
-            isDisabled ? 'bg-neutral-300 text-neutral-500' : 'bg-primary-900 text-white'
-          }`}
+          onClick={() => void handleSave()}
+          className={`font-label-md h-11 w-full rounded-full ${isDisabled ? 'bg-neutral-300 text-neutral-500' : 'bg-primary-900 text-white'
+            }`}
         >
-          儲存
+          {isSubmitting ? '儲存中...' : '儲存'}
         </button>
       </div>
     </div>

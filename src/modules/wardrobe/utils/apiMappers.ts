@@ -1,3 +1,4 @@
+
 import type {
   AnalyzeClothesResponseData,
   ClothesApiCategory,
@@ -6,6 +7,7 @@ import type {
   ClothesApiSeason,
   ClothesApiItem,
   CreateClothesRequest,
+  UpdateClothesRequest,
   WardrobeApiMappingSnapshot,
 } from '@/modules/wardrobe/api/types'
 import type {
@@ -162,6 +164,23 @@ export const mapWardrobeReviewDraftToCreateClothesRequest = (
     category: mapWardrobeCategoryToApiCategory(draft.category),
     cloudImgUrl: options.cloudImgUrl,
     imageHash: options.imageHash,
+    name: draft.name.trim(),
+    color: mapWardrobeColorToApiColor(draft.colorKey),
+    occasions: draft.occasionKeys.map(mapWardrobeOccasionToApiOccasion),
+    seasons: draft.seasonKeys.map(mapWardrobeSeasonToApiSeason),
+    brand: draft.brand.trim(),
+  }
+}
+
+export const mapWardrobeReviewDraftToUpdateClothesRequest = (
+  draft: WardrobeReviewDraft
+): UpdateClothesRequest => {
+  if (!draft.colorKey) {
+    throw new Error('缺少衣物主色，無法建立編輯衣物請求')
+  }
+
+  return {
+    category: mapWardrobeCategoryToApiCategory(draft.category),
     name: draft.name.trim(),
     color: mapWardrobeColorToApiColor(draft.colorKey),
     occasions: draft.occasionKeys.map(mapWardrobeOccasionToApiOccasion),
