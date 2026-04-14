@@ -53,7 +53,7 @@ const getNextOnboardingRoute = (savedCategory: WardrobeReviewDraft['category']) 
 
 const WardrobeReviewPage = () => {
   const router = useRouter()
-  const { appendItem, clearRecognitionDraft } = useWardrobeMock()
+  const { syncCreatedItemFromServer, clearRecognitionDraft } = useWardrobeMock()
   const { getContext, getReviewDraft, saveReviewDraft, clearFlow } = useWardrobeCreationFlow()
 
   const [draft, setDraft] = useState<WardrobeReviewDraft | null>(null)
@@ -109,7 +109,7 @@ const WardrobeReviewPage = () => {
 
       const createdItem = await createClothes(payload)
 
-      appendItem(createdItem)
+      syncCreatedItemFromServer(createdItem)
       clearRecognitionDraft()
       clearFlow()
 
