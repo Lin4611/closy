@@ -13,7 +13,7 @@ import { useWardrobeMock } from '@/modules/wardrobe/hooks/useWardrobeMock'
 import type { WardrobeReviewDraft } from '@/modules/wardrobe/types'
 import {
   mapApiCategoryToWardrobeCategory,
-  mapCreateClothesResponseItemToWardrobeItem,
+  mapClothesApiItemToWardrobeItem,
   mapWardrobeReviewDraftToCreateClothesRequest,
 } from '@/modules/wardrobe/utils/apiMappers'
 
@@ -57,7 +57,7 @@ const getNextOnboardingRoute = (savedCategory: WardrobeReviewDraft['category']) 
 
 const WardrobeReviewPage = () => {
   const router = useRouter()
-  const { replaceItems, clearRecognitionDraft } = useWardrobeMock()
+  const { appendItem, clearRecognitionDraft } = useWardrobeMock()
   const { getContext, getReviewDraft, saveReviewDraft, clearFlow } = useWardrobeCreationFlow()
 
   const [draft, setDraft] = useState<WardrobeReviewDraft | null>(null)
@@ -111,19 +111,13 @@ const WardrobeReviewPage = () => {
         imageHash: removeBackgroundResult.imageHash,
       })
 
-      const result = await createClothes(payload)
+      const createdItem = await createClothes(payload)
 
-      if (!Array.isArray(result.list) || result.list.length === 0) {
-        throw new Error('新增衣物成功，但未取得衣櫃列表資料')
+      if (createdItem.imageHash !== removeBackgroundResult.imageHash) {
+        throw new Error('新增衣物成功，但回傳的衣物資料與本次建立內容不一致')
       }
 
-      const createdItem = result.list.find((item) => item.imageHash === removeBackgroundResult.imageHash)
-
-      if (!createdItem) {
-        throw new Error('新增衣物成功，但無法確認本次建立的衣物資料')
-      }
-
-      replaceItems(result.list.map(mapCreateClothesResponseItemToWardrobeItem))
+      appendItem(mapClothesApiItemToWardrobeItem(createdItem))
       clearRecognitionDraft()
       clearFlow()
 

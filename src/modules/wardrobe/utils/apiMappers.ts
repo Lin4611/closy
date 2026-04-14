@@ -4,8 +4,8 @@ import type {
   ClothesApiColor,
   ClothesApiOccasion,
   ClothesApiSeason,
+  ClothesApiItem,
   CreateClothesRequest,
-  CreateClothesResponseItem,
   WardrobeApiMappingSnapshot,
 } from '@/modules/wardrobe/api/types'
 import type {
@@ -170,9 +170,7 @@ export const mapWardrobeReviewDraftToCreateClothesRequest = (
   }
 }
 
-export const mapCreateClothesResponseItemToWardrobeItem = (
-  item: CreateClothesResponseItem
-): WardrobeItem => ({
+export const mapClothesApiItemToWardrobeItem = (item: ClothesApiItem): WardrobeItem => ({
   id: item._id,
   name: item.name,
   brand: item.brand,
