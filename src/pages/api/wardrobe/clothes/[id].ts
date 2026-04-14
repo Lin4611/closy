@@ -9,8 +9,8 @@ import type {
   UpdateClothesResponseData,
 } from '@/modules/wardrobe/api/types'
 
-import type { ErrorResponse } from '../shared'
-import { getApiBaseUrl, getApiErrorResponse, getRouteIdParam, isUpdateClothesRequest } from '../shared'
+import type { ErrorResponse } from '../../../../lib/api/wardrobe/shared'
+import { getApiBaseUrl, getApiErrorResponse, getRouteIdParam, isUpdateClothesRequest } from '../../../../lib/api/wardrobe/shared'
 
 type WardrobeClothesDetailResponse =
   | ApiResponse<GetClothesDetailResponseData>

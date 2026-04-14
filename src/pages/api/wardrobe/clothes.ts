@@ -4,8 +4,8 @@ import { apiClient } from '@/lib/api/client'
 import type { ApiResponse } from '@/lib/api/types'
 import type { CreateClothesRequest, CreateClothesResponseData, GetClothesListResponseData } from '@/modules/wardrobe/api/types'
 
-import type { ErrorResponse } from './shared'
-import { getApiBaseUrl, getApiErrorResponse, isCreateClothesRequest } from './shared'
+import type { ErrorResponse } from '../../../lib/api/wardrobe/shared'
+import { getApiBaseUrl, getApiErrorResponse, isCreateClothesRequest } from '../../../lib/api/wardrobe/shared'
 
 type WardrobeClothesResponse = ApiResponse<CreateClothesResponseData> | ApiResponse<GetClothesListResponseData>
 
