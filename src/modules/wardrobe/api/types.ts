@@ -84,6 +84,10 @@ export type GetClothesDetailResponseData = ClothesApiItem
 
 export type CreateClothesResponseData = ClothesApiItem
 
+export type UpdateClothesRequest = Partial<
+  Pick<CreateClothesRequest, 'category' | 'name' | 'color' | 'occasions' | 'seasons' | 'brand'>
+>
+
 export type UpdateClothesResponseData = ClothesApiItem
 
 export type DeleteClothesResponseData = Record<string, never>
