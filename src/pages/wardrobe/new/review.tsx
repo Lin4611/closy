@@ -11,11 +11,7 @@ import { WardrobeReviewForm } from '@/modules/wardrobe/components/WardrobeReview
 import { useWardrobeCreationFlow } from '@/modules/wardrobe/hooks/useWardrobeCreationFlow'
 import { useWardrobeMock } from '@/modules/wardrobe/hooks/useWardrobeMock'
 import type { WardrobeReviewDraft } from '@/modules/wardrobe/types'
-import {
-  mapApiCategoryToWardrobeCategory,
-  mapClothesApiItemToWardrobeItem,
-  mapWardrobeReviewDraftToCreateClothesRequest,
-} from '@/modules/wardrobe/utils/apiMappers'
+import { mapWardrobeReviewDraftToCreateClothesRequest } from '@/modules/wardrobe/utils/apiMappers'
 
 const getSaveErrorMessage = (error: unknown) => {
   if (error instanceof ApiError) {
@@ -113,15 +109,11 @@ const WardrobeReviewPage = () => {
 
       const createdItem = await createClothes(payload)
 
-      if (createdItem.imageHash !== removeBackgroundResult.imageHash) {
-        throw new Error('新增衣物成功，但回傳的衣物資料與本次建立內容不一致')
-      }
-
-      appendItem(mapClothesApiItemToWardrobeItem(createdItem))
+      appendItem(createdItem)
       clearRecognitionDraft()
       clearFlow()
 
-      const nextRoute = getNextOnboardingRoute(mapApiCategoryToWardrobeCategory(createdItem.category))
+      const nextRoute = getNextOnboardingRoute(createdItem.category)
 
       await router.replace(nextRoute)
     } catch (error) {
