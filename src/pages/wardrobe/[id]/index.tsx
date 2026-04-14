@@ -119,6 +119,20 @@ const WardrobeDetailPage = () => {
     }
   }, [cachedItem, deleteItem, id, isReady, syncItemFromServer])
 
+  useEffect(() => {
+    if (typeof id !== 'string' || !cachedItem) {
+      return
+    }
+
+    setItem((currentItem) => {
+      if (!currentItem || currentItem.id !== cachedItem.id) {
+        return currentItem
+      }
+
+      return currentItem === cachedItem ? currentItem : cachedItem
+    })
+  }, [cachedItem, id])
+
   if (!isReady || typeof id !== 'string' || (isLoading && !item)) {
     return (
       <div className="px-4 py-10">
