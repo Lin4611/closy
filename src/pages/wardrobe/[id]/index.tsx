@@ -7,6 +7,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
 import { AppShell } from '@/modules/common/components/AppShell'
+import { deleteClothes } from '@/modules/wardrobe/api/deleteClothes'
 import { getClothesDetail } from '@/modules/wardrobe/api/getClothesDetail'
 import { DeleteClothingDialog } from '@/modules/wardrobe/components/DeleteClothingDialog'
 import { WardrobeColorPalette } from '@/modules/wardrobe/components/WardrobeColorPalette'
@@ -18,12 +19,25 @@ import { wardrobeSeasonOptions } from '@/modules/wardrobe/constants/seasonOption
 import { useWardrobeMock } from '@/modules/wardrobe/hooks/useWardrobeMock'
 import type { WardrobeItem } from '@/modules/wardrobe/types'
 
+const getDeleteErrorMessage = (error: unknown) => {
+  if (error instanceof ApiError) {
+    return error.message
+  }
+
+  if (error instanceof Error && error.message.trim()) {
+    return error.message
+  }
+
+  return '刪除衣物失敗，請稍後再試'
+}
+
 const WardrobeDetailPage = () => {
   const router = useRouter()
   const { id } = router.query
   const { deleteItem, getItemById, isReady, syncItemFromServer } = useWardrobeMock()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isNotFound, setIsNotFound] = useState(false)
   const [item, setItem] = useState<WardrobeItem | null>(null)
@@ -248,10 +262,32 @@ const WardrobeDetailPage = () => {
 
         <DeleteClothingDialog
           open={isDeleteOpen}
-          onClose={() => setIsDeleteOpen(false)}
-          onConfirm={() => {
+          onClose={() => {
+            if (isDeleting) {
+              return
+            }
+
             setIsDeleteOpen(false)
-            showToast.error('目前尚未支援刪除衣物')
+          }}
+          onConfirm={() => {
+            if (isDeleting) {
+              return
+            }
+
+            void (async () => {
+              try {
+                setIsDeleting(true)
+                await deleteClothes(item.id)
+                deleteItem(item.id)
+                setIsDeleteOpen(false)
+                showToast.success('已刪除衣物')
+                await router.replace('/wardrobe')
+              } catch (error) {
+                showToast.error(getDeleteErrorMessage(error))
+              } finally {
+                setIsDeleting(false)
+              }
+            })()
           }}
         />
       </div>
