@@ -95,12 +95,25 @@ const WardrobeEditContent = ({ item }: WardrobeEditContentProps) => {
 const WardrobeEditPage = () => {
   const router = useRouter()
   const { id } = router.query
-  const { getItemById } = useWardrobeMock()
+  const { getItemById, isReady } = useWardrobeMock()
 
   const item = useMemo(() => {
     if (typeof id !== 'string') return null
     return getItemById(id)
   }, [getItemById, id])
+
+  if (!router.isReady || !isReady || typeof id !== 'string') {
+    return (
+      <div className="px-4 py-10">
+        <Link href="/wardrobe" className="font-label-sm text-neutral-500">
+          ← 返回我的衣櫃
+        </Link>
+        <div className="mt-10 rounded-[24px] bg-white p-6 text-center">
+          <p className="font-label-md text-neutral-900">載入中...</p>
+        </div>
+      </div>
+    )
+  }
 
   if (!item) {
     return (
