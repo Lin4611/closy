@@ -28,7 +28,7 @@ const safeParseItems = (value: string | null): WardrobeItem[] => {
   try {
     const parsed = JSON.parse(value) as WardrobeItem[]
 
-    if (!Array.isArray(parsed) || parsed.length === 0) {
+    if (!Array.isArray(parsed)) {
       return mockWardrobeItems
     }
 
