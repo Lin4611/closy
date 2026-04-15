@@ -28,7 +28,7 @@ const withPWA = withPWAInit({
     document: '/offline',
   },
   workboxOptions: {
-    exclude: [/dynamic-css-manifest\.json$/],
+    exclude: [/dynamic-css-manifest\.json$/, /\/_next\/static\/chunks\/pages\//],
     additionalManifestEntries: [
       { url: '/offline', revision: '1' },
       { url: '/manifest.json', revision: '1' },
