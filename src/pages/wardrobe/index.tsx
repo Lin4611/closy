@@ -6,6 +6,7 @@ import { AppShell } from '@/modules/common/components/AppShell'
 import { deleteClothes } from '@/modules/wardrobe/api/deleteClothes'
 import { getClothesList } from '@/modules/wardrobe/api/getClothesList'
 import { DeleteClothingDialog } from '@/modules/wardrobe/components/DeleteClothingDialog'
+import { WardrobeEmptyState } from '@/modules/wardrobe/components/WardrobeEmptyState'
 import { WardrobeFilterChips } from '@/modules/wardrobe/components/WardrobeFilterChips'
 import { WardrobeGrid } from '@/modules/wardrobe/components/WardrobeGrid'
 import { WardrobeHeader } from '@/modules/wardrobe/components/WardrobeHeader'
@@ -81,20 +82,40 @@ const WardrobePage = () => {
     return items.filter((item) => item.category === activeCategory)
   }, [activeCategory, items])
 
+  const isWardrobeEmpty = items.length === 0
+
   return (
     <AppShell activeTab="wardrobe">
-      <div className="relative">
+      <div className="relative flex min-h-[calc(100dvh-80px)] flex-col overflow-hidden">
         <WardrobeHeader />
 
-        <main className="mt-16 space-y-6 pt-5">
-          <WardrobeFilterChips
-            activeCategory={activeCategory}
-            counts={counts}
-            onChange={setActiveCategory}
-          />
+        {isWardrobeEmpty ? (
+          <main className="flex min-h-0 flex-1 flex-col overflow-hidden pt-16">
+            <div className="pt-5 pb-4">
+              <WardrobeFilterChips
+                activeCategory={activeCategory}
+                counts={counts}
+                onChange={setActiveCategory}
+              />
+            </div>
 
-          <WardrobeGrid items={filteredItems} onDelete={setDeleteTargetId} />
-        </main>
+            <WardrobeEmptyState />
+          </main>
+        ) : (
+          <main className="flex min-h-0 flex-1 flex-col pt-16">
+            <div className="min-h-0 flex-1 overflow-y-auto">
+              <div className="sticky top-0 z-10 pt-5 pb-4">
+                <WardrobeFilterChips
+                  activeCategory={activeCategory}
+                  counts={counts}
+                  onChange={setActiveCategory}
+                />
+              </div>
+
+              <WardrobeGrid items={filteredItems} onDelete={setDeleteTargetId} />
+            </div>
+          </main>
+        )}
 
         <DeleteClothingDialog
           open={Boolean(deleteTargetId)}
