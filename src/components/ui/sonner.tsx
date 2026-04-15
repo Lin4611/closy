@@ -10,10 +10,21 @@ const toneStyles = {
   info: 'bg-white text-neutral-500',
 } as const
 
-const ToastPortal = ({ message, tone }: { message: string; tone: keyof typeof toneStyles }) => {
+const ToastPortal = ({
+  message,
+  tone,
+  toastId,
+}: {
+  message: string
+  tone: keyof typeof toneStyles
+  toastId: string | number
+}) => {
   if (typeof document === 'undefined') return null
   return ReactDOM.createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      onClick={() => toast.dismiss(toastId)}
+    >
       <Overlay />
       <div
         className={cn(
@@ -30,15 +41,15 @@ const ToastPortal = ({ message, tone }: { message: string; tone: keyof typeof to
 
 export const showToast = {
   success: (message: string, duration: number = 2000) =>
-    toast.custom(() => <ToastPortal message={message} tone="success" />, {
+    toast.custom((t) => <ToastPortal message={message} toastId={t} tone="success" />, {
       duration,
     }),
   error: (message: string, duration: number = 2000) =>
-    toast.custom(() => <ToastPortal message={message} tone="error" />, {
+    toast.custom((t) => <ToastPortal message={message} toastId={t} tone="error" />, {
       duration,
     }),
   info: (message: string, duration: number = 2000) =>
-    toast.custom(() => <ToastPortal message={message} tone="info" />, {
+    toast.custom((t) => <ToastPortal message={message} toastId={t} tone="info" />, {
       duration,
     }),
 }
