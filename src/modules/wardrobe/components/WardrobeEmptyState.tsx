@@ -7,7 +7,7 @@ export const WardrobeEmptyState = () => {
         <p className="font-label-xl text-neutral-600">尚未新增衣服</p>
       </div>
 
-      <div className="pointer-events-none fixed bottom-19 left-1/2 z-60 -translate-x-1/2">
+      <div className="pointer-events-none fixed bottom-19 left-1/2 z-50 -translate-x-1/2">
         <SpeechBubble className="whitespace-nowrap">點選+號開始新增衣物</SpeechBubble>
       </div>
     </section>

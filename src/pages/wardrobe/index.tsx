@@ -82,7 +82,7 @@ const WardrobePage = () => {
     return items.filter((item) => item.category === activeCategory)
   }, [activeCategory, items])
 
-  const isWardrobeEmpty = items.length === 0
+  const isWardrobeEmpty = filteredItems.length === 0
 
   return (
     <AppShell activeTab="wardrobe">
