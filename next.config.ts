@@ -20,17 +20,15 @@ const nextConfig: NextConfig = {
 
 const withPWA = withPWAInit({
   dest: 'public',
-  cacheOnFrontEndNav: true,
-  aggressiveFrontEndNavCaching: true,
   reloadOnOnline: true,
   disable: process.env.NODE_ENV === 'development',
   fallbacks: {
-    document: '/offline',
+    document: '/_offline',
   },
   workboxOptions: {
-    exclude: [/dynamic-css-manifest\.json$/],
+    exclude: [/dynamic-css-manifest\.json$/, /\/_next\/static\/chunks\/pages\//],
     additionalManifestEntries: [
-      { url: '/offline', revision: '1' },
+      { url: '/_offline', revision: '1' },
       { url: '/manifest.json', revision: '1' },
       { url: '/favicon.ico', revision: '1' },
     ],
@@ -42,7 +40,7 @@ const withPWA = withPWAInit({
           plugins: [
             {
               handlerDidError: async () =>
-                (await caches.match('/offline', { ignoreSearch: true })) ?? Response.error(),
+                (await caches.match('/_offline', { ignoreSearch: true })) ?? Response.error(),
             },
           ],
         },

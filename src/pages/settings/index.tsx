@@ -76,14 +76,14 @@ const Setting = () => {
               user?.preferences?.occasions ? occasionLabelMap[user.preferences.occasions] : ''
             }
             defaultStyle={
-              user?.preferences?.styles
+              user?.preferences?.styles?.length
                 ? user.preferences.styles.map((style) => stylesLabelMap[style])
-                : []
+                : ['未設定']
             }
             defaultColor={
-              user?.preferences?.colors
+              user?.preferences?.colors?.length
                 ? user.preferences.colors.map((color) => colorsLabelMap[color])
-                : []
+                : ['未設定']
             }
           />
           <GoogleCalendarSettingCard
