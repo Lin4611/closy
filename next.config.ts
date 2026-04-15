@@ -20,15 +20,13 @@ const nextConfig: NextConfig = {
 
 const withPWA = withPWAInit({
   dest: 'public',
-  cacheOnFrontEndNav: true,
-  aggressiveFrontEndNavCaching: true,
   reloadOnOnline: true,
   disable: process.env.NODE_ENV === 'development',
   fallbacks: {
     document: '/offline',
   },
   workboxOptions: {
-    exclude: [/dynamic-css-manifest\.json$/],
+    exclude: [/dynamic-css-manifest\.json$/, /\/_next\/static\/chunks\/pages\//],
     additionalManifestEntries: [
       { url: '/offline', revision: '1' },
       { url: '/manifest.json', revision: '1' },
