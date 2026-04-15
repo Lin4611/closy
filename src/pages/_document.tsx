@@ -6,6 +6,14 @@ export default function Document() {
   return (
     <Html lang="zh-TW" className={inter.className}>
       <Head>
+        <link rel="preconnect" href="https://accounts.google.com" />
+        <link rel="preconnect" href="https://res.cloudinary.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://www.cwa.gov.tw" crossOrigin="anonymous" />
+
+        <link rel="dns-prefetch" href="https://accounts.google.com" />
+        <link rel="dns-prefetch" href="https://res.cloudinary.com" />
+        <link rel="dns-prefetch" href="https://www.cwa.gov.tw" />
+
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#fafafa" />
         <meta name="mobile-web-app-capable" content="yes" />
