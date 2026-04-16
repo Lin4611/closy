@@ -12,7 +12,7 @@ type CalendarHeaderProps = {
 
 export const CalendarHeader = ({ title, backHref = '/home', rightSlot, className }: CalendarHeaderProps) => {
   return (
-    <header className={cn('sticky top-0 z-10 bg-white px-4 py-4.5', className)}>
+    <header className={cn('px-4 py-4.5', className)}>
       <div className="relative flex items-center justify-center">
         <Link href={backHref} className="absolute left-0 flex size-10 items-center justify-center">
           <ChevronLeft className="text-neutral-700" size={24} strokeWidth={2} />
