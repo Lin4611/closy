@@ -1,28 +1,20 @@
+import Link from 'next/link'
+
 import { cn } from '@/lib/utils'
 
 type BottomNavItemProps = {
   label: string
   active: boolean
-  onClick: () => void
+  href: string
   icon: React.ElementType
-  disabled?: boolean
   id?: string
 }
 
-export const BottomNavItem = ({
-  label,
-  active,
-  onClick,
-  icon: Icon,
-  disabled,
-  id,
-}: BottomNavItemProps) => {
+export const BottomNavItem = ({ label, active, href, icon: Icon, id }: BottomNavItemProps) => {
   return (
-    <button
-      type="button"
-      onClick={onClick}
+    <Link
+      href={href}
       className="flex h-16 flex-1 flex-col items-center justify-center gap-2"
-      disabled={disabled}
       id={id}
     >
       <Icon
@@ -32,6 +24,6 @@ export const BottomNavItem = ({
       <span className={cn('font-label-xxs-r', active ? 'text-primary-700' : 'text-neutral-500')}>
         {label}
       </span>
-    </button>
+    </Link>
   )
 }
