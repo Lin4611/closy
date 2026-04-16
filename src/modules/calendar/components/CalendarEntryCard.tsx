@@ -64,7 +64,7 @@ export const CalendarEntryCard = ({
             />
           ) : (
             <Image
-              src="/calendar/figure-silhouette.svg"
+              src="/calendar/figure-silhouette.png"
               alt="未選穿搭"
               width={48}
               height={64}

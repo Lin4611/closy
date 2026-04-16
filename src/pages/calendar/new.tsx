@@ -67,7 +67,7 @@ const CalendarNewPage = () => {
 
   return (
     <AppShell showBottomNav={false}>
-      <div className="flex min-h-screen flex-col bg-white">
+      <div className="flex min-h-screen flex-col">
         <CalendarHeader title="新增" backHref="/calendar" />
         <CalendarForm
           occasionKey={occasionKey}

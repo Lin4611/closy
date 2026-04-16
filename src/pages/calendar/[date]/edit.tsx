@@ -89,7 +89,7 @@ const CalendarEditContent = ({ entry }: { entry: CalendarEntry }) => {
 
   return (
     <AppShell showBottomNav={false}>
-      <div className="flex min-h-screen flex-col bg-white">
+      <div className="flex min-h-screen flex-col">
         <CalendarHeader title="編輯" backHref="/calendar" />
         <CalendarForm
           occasionKey={occasionKey}
