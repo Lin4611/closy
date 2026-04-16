@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
 import { cn } from '@/lib/utils'
+import { ConfirmAlertDialog } from '@/modules/common/components/ConfirmAlertDialog'
 import { getOnboardingAddFlow, setOnboardingAddFlow } from '@/modules/guide/utils/onboardingAddFlow'
 import { createClothes } from '@/modules/wardrobe/api/createClothes'
 import { WardrobeReviewForm } from '@/modules/wardrobe/components/WardrobeReviewForm'
@@ -59,6 +60,8 @@ const WardrobeReviewPage = () => {
 
   const [draft, setDraft] = useState<WardrobeReviewDraft | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false)
+  const [successRedirectTo, setSuccessRedirectTo] = useState<string | null>(null)
 
   useEffect(() => {
     const savedDraft = getReviewDraft()
@@ -114,9 +117,8 @@ const WardrobeReviewPage = () => {
       clearRecognitionDraft()
       clearFlow()
 
-      const nextRoute = getNextOnboardingRoute(createdItem.category)
-
-      await router.replace(nextRoute)
+      setSuccessRedirectTo(getNextOnboardingRoute(createdItem.category))
+      setIsSuccessDialogOpen(true)
     } catch (error) {
       showToast.error(getSaveErrorMessage(error))
     } finally {
@@ -129,31 +131,45 @@ const WardrobeReviewPage = () => {
   }
 
   return (
-    <div className="relative bg-neutral-100">
-      <header className="relative flex items-center justify-center h-16 px-4 pt-5 pb-4">
-        <Link href={backHref} className="absolute left-4 flex size-10 items-center justify-center" aria-label="返回圖片確認頁">
-          <ChevronLeft className="text-neutral-700" size={24} strokeWidth={2} />
-        </Link>
-        <h1 className="absolute left-1/2 -translate-x-1/2 font-label-xxl text-neutral-900">編輯衣物資訊</h1>
-        <span className="w-10" />
-      </header>
+    <>
+      <div className="relative bg-neutral-100">
+        <header className="relative flex items-center justify-center h-16 px-4 pt-5 pb-4">
+          <Link href={backHref} className="absolute left-4 flex size-10 items-center justify-center" aria-label="返回圖片確認頁">
+            <ChevronLeft className="text-neutral-700" size={24} strokeWidth={2} />
+          </Link>
+          <h1 className="absolute left-1/2 -translate-x-1/2 font-label-xxl text-neutral-900">編輯衣物資訊</h1>
+          <span className="w-10" />
+        </header>
 
-      <WardrobeReviewForm value={draft} onChange={handleDraftChange} />
+        <WardrobeReviewForm value={draft} onChange={handleDraftChange} />
 
-      <div className="fixed right-0 bottom-0 left-0 z-40 mx-auto w-full max-w-93.75 bg-neutral-100 px-4 py-4">
-        <button
-          type="button"
-          disabled={isDisabled}
-          onClick={() => void handleSave()}
-          className={cn(
-            'h-11 w-full rounded-full font-label-md',
-            isDisabled ? 'bg-neutral-300 text-neutral-500' : 'bg-primary-900 text-white'
-          )}
-        >
-          {isSubmitting ? '儲存中...' : '儲存'}
-        </button>
+        <div className="fixed right-0 bottom-0 left-0 z-40 mx-auto w-full max-w-93.75 bg-neutral-100 px-4 py-4">
+          <button
+            type="button"
+            disabled={isDisabled}
+            onClick={() => void handleSave()}
+            className={cn(
+              'h-11 w-full rounded-full font-label-md',
+              isDisabled ? 'bg-neutral-300 text-neutral-500' : 'bg-primary-900 text-white'
+            )}
+          >
+            {isSubmitting ? '儲存中...' : '儲存'}
+          </button>
+        </div>
       </div>
-    </div>
+
+      <ConfirmAlertDialog
+        open={isSuccessDialogOpen}
+        mode="settingSuccess"
+        title="新增成功"
+        onClose={() => {
+          setIsSuccessDialogOpen(false)
+          if (successRedirectTo) {
+            void router.replace(successRedirectTo)
+          }
+        }}
+      />
+    </>
   )
 }
 

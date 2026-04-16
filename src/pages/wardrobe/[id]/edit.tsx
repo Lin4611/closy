@@ -58,6 +58,7 @@ const WardrobeEditContent = ({ item }: WardrobeEditContentProps) => {
       const updatedItem = await updateClothes(item.id, payload)
 
       syncItemFromServer(updatedItem)
+      showToast.success('編輯成功')
       await router.replace(`/wardrobe/${updatedItem.id}`)
     } catch (error) {
       showToast.error(getSaveErrorMessage(error))
@@ -107,7 +108,7 @@ const WardrobeEditPage = () => {
     return (
       <div className="px-4 py-10">
         <Link href="/wardrobe" className="font-label-sm text-neutral-500">
-          ← 返回我的衣櫃
+          <ChevronLeft className="text-neutral-700" size={24} strokeWidth={2} />
         </Link>
         <div className="mt-10 rounded-[24px] bg-white p-6 text-center">
           <p className="font-label-md text-neutral-900">載入中...</p>
@@ -120,7 +121,7 @@ const WardrobeEditPage = () => {
     return (
       <div className="px-4 py-10">
         <Link href="/wardrobe" className="font-label-sm text-neutral-500">
-          ← 返回我的衣櫃
+          <ChevronLeft className="text-neutral-700" size={24} strokeWidth={2} />
         </Link>
         <div className="mt-10 rounded-[24px] bg-white p-6 text-center">
           <p className="font-label-md text-neutral-900">找不到可編輯的衣物</p>
