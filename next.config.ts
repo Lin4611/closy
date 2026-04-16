@@ -30,24 +30,13 @@ const withPWA = withPWAInit({
     additionalManifestEntries: [{ url: '/_offline', revision: '1' }],
     runtimeCaching: [
       {
-        urlPattern: /^https:\/\/res\.cloudinary\.com\/.*/,
+        urlPattern: /\/_next\/image/,
         handler: 'CacheFirst',
         options: {
-          cacheName: 'cloudinary-images',
+          cacheName: 'next-image-cache',
           expiration: {
             maxEntries: 200,
             maxAgeSeconds: 60 * 60 * 24 * 30,
-          },
-        },
-      },
-      {
-        urlPattern: /^https:\/\/www\.cwa\.gov\.tw\/V8\/assets\/img\/weather_icons\/.*/,
-        handler: 'CacheFirst',
-        options: {
-          cacheName: 'weather-icons',
-          expiration: {
-            maxEntries: 50,
-            maxAgeSeconds: 60 * 60 * 24 * 7,
           },
         },
       },
