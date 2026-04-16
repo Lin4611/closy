@@ -129,12 +129,12 @@ const WardrobeReviewPage = () => {
   }
 
   return (
-    <div className="relative bg-neutral-100 pb-24">
-      <header className="relative flex items-center justify-center px-4 pt-5 pb-4">
+    <div className="relative bg-neutral-100">
+      <header className="relative flex items-center justify-center h-16 px-4 pt-5 pb-4">
         <Link href={backHref} className="absolute left-4 flex size-10 items-center justify-center" aria-label="返回圖片確認頁">
           <ChevronLeft className="text-neutral-700" size={24} strokeWidth={2} />
         </Link>
-        <h1 className="font-label-md text-neutral-900">編輯衣物資訊</h1>
+        <h1 className="absolute left-1/2 -translate-x-1/2 font-label-xxl text-neutral-900">編輯衣物資訊</h1>
         <span className="w-10" />
       </header>
 

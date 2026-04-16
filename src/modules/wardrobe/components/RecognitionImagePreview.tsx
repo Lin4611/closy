@@ -19,11 +19,11 @@ export const RecognitionImagePreview = ({
   return (
     <div
       className={cn(
-        'flex w-full items-center justify-center overflow-hidden rounded-[12px] border border-neutral-200 bg-white p-4',
+        'flex w-full items-center justify-center overflow-hidden rounded-[12px] border border-neutral-200 bg-white',
         className
       )}
     >
-      <div className="relative flex h-80 w-full items-center justify-center overflow-hidden rounded-[12px] bg-neutral-50">
+      <div className="relative flex w-full items-center justify-center overflow-hidden rounded-[12px]">
         {src ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={src} alt={alt} className={cn('h-full w-full object-contain', imageClassName)} />
