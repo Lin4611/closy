@@ -1,4 +1,4 @@
-import { ImagePlus } from 'lucide-react'
+import { ChevronLeft, ImagePlus } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useRef, useState, type ChangeEvent } from 'react'
@@ -74,12 +74,12 @@ const WardrobeAlbumPage = () => {
 
   return (
     <div className="relative flex min-h-screen flex-col bg-neutral-100">
-      <header className="flex items-center justify-between px-4 pt-5 pb-4">
-        <Link href={backHref} className="font-label-sm text-neutral-500">
-          ←
+      <header className="relative flex items-center justify-center px-4 pt-5 pb-4">
+        <Link href={backHref} className="absolute left-4 flex size-10 items-center justify-center" aria-label="返回上一頁">
+          <ChevronLeft className="text-neutral-700" size={24} strokeWidth={2} />
         </Link>
         <h1 className="font-label-md text-neutral-900">從相簿上傳</h1>
-        <span className="w-4" />
+        <span className="w-10" />
       </header>
 
       <input

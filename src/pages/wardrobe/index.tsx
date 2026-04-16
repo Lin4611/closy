@@ -87,7 +87,7 @@ const WardrobePage = () => {
   return (
     <AppShell activeTab="wardrobe">
       <div className="relative flex min-h-[calc(100dvh-80px)] flex-col overflow-hidden">
-        <div className="fixed top-0 left-1/2 z-20 w-full max-w-93.75 -translate-x-1/2 bg-white">
+        <div className="fixed top-0 left-1/2 z-20 w-full max-w-93.75 -translate-x-1/2">
           <WardrobeHeader />
           <div className="pt-5 bg-neutral-100">
             <WardrobeFilterChips

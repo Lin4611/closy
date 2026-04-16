@@ -1,3 +1,4 @@
+import { ChevronLeft } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useMemo, useState } from 'react'
@@ -66,13 +67,13 @@ const WardrobeEditContent = ({ item }: WardrobeEditContentProps) => {
   }
 
   return (
-    <div className="bg-neutral-100 pb-24">
-      <header className="flex items-center justify-between px-4 pt-5 pb-4">
-        <Link href={`/wardrobe/${item.id}`} className="font-label-sm text-neutral-500">
-          ←
+    <div className="bg-neutral-100 ">
+      <header className="relative flex items-center justify-center h-16 px-4 pt-5 pb-4">
+        <Link href={`/wardrobe/${item.id}`} className="absolute left-4 flex size-10 items-center justify-center" aria-label="返回衣物詳細頁">
+          <ChevronLeft className="text-neutral-700" size={24} strokeWidth={2} />
         </Link>
-        <h1 className="font-label-md text-neutral-900">編輯衣物資訊</h1>
-        <span className="w-4" />
+        <h1 className="absolute left-1/2 -translate-x-1/2 font-label-xxl text-neutral-900">編輯衣物資訊</h1>
+        <span className="w-10" />
       </header>
 
       <WardrobeReviewForm value={draft} onChange={setDraft} />

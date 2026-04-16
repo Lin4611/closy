@@ -1,4 +1,4 @@
-import { Camera, CameraOff, RefreshCw } from 'lucide-react'
+import { Camera, CameraOff, ChevronLeft, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
@@ -53,12 +53,12 @@ const WardrobeCameraPage = () => {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#18181F] text-white">
-      <header className="flex items-center justify-between px-4 pt-5 pb-3">
-        <Link href={backHref} className="font-label-sm text-white/80">
-          ×
+      <header className="relative flex items-center justify-center px-4 pt-5 pb-3">
+        <Link href={backHref} className="absolute left-4 flex size-10 items-center justify-center" aria-label="返回上一頁">
+          <ChevronLeft className="text-neutral-700" size={24} strokeWidth={2} />
         </Link>
         <span className="font-label-sm text-white/80">拍攝衣物</span>
-        <span className="w-4" />
+        <span className="w-10" />
       </header>
 
       <div className="px-4 pt-1 pb-6">

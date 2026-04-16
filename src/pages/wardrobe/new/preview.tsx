@@ -1,4 +1,4 @@
-import { ArrowLeft } from 'lucide-react'
+import { ChevronLeft } from 'lucide-react'
 import { useRouter } from 'next/router'
 import { useEffect, useMemo, useState } from 'react'
 
@@ -113,19 +113,19 @@ const WardrobePreviewPage = () => {
 
   return (
     <div className="relative flex min-h-screen flex-col bg-neutral-100">
-      <header className="flex items-center justify-between px-4 pt-5 pb-4">
+      <header className="relative flex items-center justify-center px-4 pt-5 pb-4">
         <button
           type="button"
           onClick={() => {
             void handleReset()
           }}
-          className="flex size-8 items-center justify-center text-neutral-500"
+          className="absolute left-4 flex size-10 items-center justify-center"
           aria-label="返回上一頁"
         >
-          <ArrowLeft className="size-4" />
+          <ChevronLeft className="text-neutral-700" size={24} strokeWidth={2} />
         </button>
         <h1 className="font-label-md text-neutral-900">{pageTitle}</h1>
-        <span className="w-8" />
+        <span className="w-10" />
       </header>
 
       <main className="flex flex-1 flex-col px-4 pb-24">
