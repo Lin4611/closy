@@ -26,28 +26,19 @@ const withPWA = withPWAInit({
     document: '/_offline',
   },
   workboxOptions: {
-    exclude: [/dynamic-css-manifest\.json$/, /\/_next\/static\/chunks\/pages\//],
-    additionalManifestEntries: [
-      { url: '/_offline', revision: '1' },
-      { url: '/manifest.json', revision: '1' },
-      { url: '/favicon.ico', revision: '1' },
-    ],
+    exclude: [/dynamic-css-manifest\.json$/, /chunks\/pages\//],
+    additionalManifestEntries: [{ url: '/_offline', revision: '1' }],
     runtimeCaching: [
       {
-        urlPattern: ({ request }) => request.mode === 'navigate',
-        handler: 'NetworkOnly',
+        urlPattern: /\/_next\/image/,
+        handler: 'CacheFirst',
         options: {
-          plugins: [
-            {
-              handlerDidError: async () =>
-                (await caches.match('/_offline', { ignoreSearch: true })) ?? Response.error(),
-            },
-          ],
+          cacheName: 'next-image-cache',
+          expiration: {
+            maxEntries: 200,
+            maxAgeSeconds: 60 * 60 * 24 * 30,
+          },
         },
-      },
-      {
-        urlPattern: /^\/api\//,
-        handler: 'NetworkOnly',
       },
     ],
   },
