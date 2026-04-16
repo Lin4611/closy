@@ -8,14 +8,23 @@ type BottomNavItemProps = {
   href: string
   icon: React.ElementType
   id?: string
+  disabled?: boolean
 }
 
-export const BottomNavItem = ({ label, active, href, icon: Icon, id }: BottomNavItemProps) => {
+export const BottomNavItem = ({
+  label,
+  active,
+  href,
+  icon: Icon,
+  id,
+  disabled,
+}: BottomNavItemProps) => {
   return (
     <Link
       href={href}
       className="flex h-16 flex-1 flex-col items-center justify-center gap-2"
       id={id}
+      aria-disabled={disabled}
     >
       <Icon
         size={24}
