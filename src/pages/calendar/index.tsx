@@ -14,6 +14,7 @@ import { useCalendarStore } from '@/modules/calendar/hooks/useCalendarStore'
 import type { CalendarEntry } from '@/modules/calendar/types'
 import { buildOutfitDetailReturnTo, getCalendarEditRoute } from '@/modules/calendar/utils/calendarNavigation'
 import { getSelectableOutfitSummaryById } from '@/modules/calendar/utils/calendarOutfitAdapter'
+import { sortCalendarEntriesForHome } from '@/modules/calendar/utils/calendarRules'
 import { AppShell } from '@/modules/common/components/AppShell'
 
 const CalendarPage = () => {
@@ -44,35 +45,38 @@ const CalendarPage = () => {
 
   const visibleEntries = useMemo(() => {
     const normalized = selectedMonth.replace('年', '-').replace('月', '')
-    return entries.filter((entry) => entry.date.startsWith(normalized))
+    return sortCalendarEntriesForHome(entries.filter((entry) => entry.date.startsWith(normalized)))
   }, [entries, selectedMonth])
 
   return (
     <AppShell showBottomNav={false}>
       <div className="flex min-h-screen flex-col bg-[#F6F6F4]">
-        <CalendarHeader
-          title="行事曆"
-          rightSlot={
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              onClick={() => void router.push('/calendar/new')}
-              className="rounded-full text-neutral-800"
-              aria-label="新增行事曆"
-            >
-              <Plus className="size-5" strokeWidth={2} />
-            </Button>
-          }
-        />
-        <CalendarMonthBar
-          month={selectedMonth}
-          monthOptions={monthOptions}
-          isSynced={isSynced}
-          onMonthChange={setUserSelectedMonth}
-          onSyncChange={setIsSynced}
-        />
-        <div className="flex flex-1 flex-col gap-4 px-4 pb-6">
+        <div className="sticky top-0 z-20 bg-white shadow-[0_1px_0_rgba(17,24,39,0.08)]">
+          <CalendarHeader
+            title="行事曆"
+            className="bg-transparent shadow-none"
+            rightSlot={
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => void router.push('/calendar/new')}
+                className="rounded-full text-neutral-800"
+                aria-label="新增行事曆"
+              >
+                <Plus className="size-5" strokeWidth={2} />
+              </Button>
+            }
+          />
+          <CalendarMonthBar
+            month={selectedMonth}
+            monthOptions={monthOptions}
+            isSynced={isSynced}
+            onMonthChange={setUserSelectedMonth}
+            onSyncChange={setIsSynced}
+          />
+        </div>
+        <div className="flex flex-1 flex-col gap-4 px-4 pt-4 pb-6">
           {visibleEntries.length === 0 ? (
             <CalendarEmptyState />
           ) : (
@@ -90,12 +94,12 @@ const CalendarPage = () => {
                   onPreviewOutfit={
                     entry.selectedOutfitId
                       ? () =>
-                        void router.push(
-                          buildOutfitDetailReturnTo({
-                            outfitId: entry.selectedOutfitId as string,
-                            returnTo: '/calendar',
-                          })
-                        )
+                          void router.push(
+                            buildOutfitDetailReturnTo({
+                              outfitId: entry.selectedOutfitId as string,
+                              returnTo: '/calendar',
+                            })
+                          )
                       : undefined
                   }
                   onEdit={() => void router.push(getCalendarEditRoute(entry.date))}

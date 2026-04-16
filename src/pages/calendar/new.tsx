@@ -3,14 +3,15 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { CalendarForm } from '@/modules/calendar/components/CalendarForm'
 import { CalendarHeader } from '@/modules/calendar/components/CalendarHeader'
+import { CalendarOccasionChangeDialog } from '@/modules/calendar/components/CalendarOccasionChangeDialog'
 import { CalendarOccasionDialog } from '@/modules/calendar/components/CalendarOccasionDialog'
 import { CalendarSuccessDialog } from '@/modules/calendar/components/CalendarSuccessDialog'
 import { mockGoogleEvents } from '@/modules/calendar/data/mockGoogleEvents'
 import { useCalendarStore } from '@/modules/calendar/hooks/useCalendarStore'
-import { getCalendarFormDraft, saveCalendarFormDraft, clearCalendarFormDraft, getCalendarSelectedOutfitDraft, clearCalendarSelectedOutfitDraft } from '@/modules/calendar/utils/calendarDraftStorage'
+import { getCalendarFormDraft, saveCalendarFormDraft, clearCalendarFormDraft, getCalendarSelectedOutfitDraft, clearCalendarSelectedOutfitDraft, clearCalendarFlowDrafts } from '@/modules/calendar/utils/calendarDraftStorage'
 import { buildCalendarSelectOutfitReturnTo, buildCalendarSelectOutfitRoute } from '@/modules/calendar/utils/calendarNavigation'
 import { getSelectableOutfitSummaryById } from '@/modules/calendar/utils/calendarOutfitAdapter'
-import { isCalendarDateBlocked } from '@/modules/calendar/utils/calendarRules'
+import { hasSelectedOutfit, isCalendarDateBlocked, shouldResetSelectedOutfit } from '@/modules/calendar/utils/calendarRules'
 import { AppShell } from '@/modules/common/components/AppShell'
 import type { Occasion } from '@/modules/common/types/occasion'
 
@@ -22,7 +23,9 @@ const CalendarNewPage = () => {
   const [occasionKey, setOccasionKey] = useState<Occasion | null>(selectedOutfitDraft?.occasionKey ?? initialDraft?.occasionKey ?? null)
   const [date, setDate] = useState(selectedOutfitDraft?.date || initialDraft?.date || '')
   const [selectedOutfitId, setSelectedOutfitId] = useState<string | null>(selectedOutfitDraft?.selectedOutfitId ?? initialDraft?.selectedOutfitId ?? null)
+  const [pendingOccasionKey, setPendingOccasionKey] = useState<Occasion | null>(null)
   const [isOccasionDialogOpen, setIsOccasionDialogOpen] = useState(!(selectedOutfitDraft?.occasionKey ?? initialDraft?.occasionKey))
+  const [isOccasionChangeDialogOpen, setIsOccasionChangeDialogOpen] = useState(false)
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false)
 
   useEffect(() => {
@@ -49,6 +52,30 @@ const CalendarNewPage = () => {
       .map((entry) => entry.date)
   }, [entries])
 
+  const handleOccasionChange = (nextOccasionKey: Occasion) => {
+    if (hasSelectedOutfit({ selectedOutfitId }) && shouldResetSelectedOutfit(occasionKey, nextOccasionKey)) {
+      setPendingOccasionKey(nextOccasionKey)
+      setIsOccasionChangeDialogOpen(true)
+      return
+    }
+
+    setOccasionKey(nextOccasionKey)
+  }
+
+  const handleSelectOutfit = () => {
+    saveCalendarFormDraft({
+      mode: 'new',
+      date,
+      occasionKey,
+      selectedOutfitId,
+      sourceEntryId: null,
+      returnTo: '/calendar/new',
+    })
+
+    const returnTo = buildCalendarSelectOutfitReturnTo({ mode: 'new' })
+    void router.push(buildCalendarSelectOutfitRoute({ returnTo, date }))
+  }
+
   const handleSubmit = () => {
     if (!occasionKey || !date) return
     if (isCalendarDateBlocked({ date, entries, googleEvents: mockGoogleEvents })) return
@@ -67,19 +94,23 @@ const CalendarNewPage = () => {
 
   return (
     <AppShell showBottomNav={false}>
-      <div className="flex min-h-screen flex-col bg-white">
-        <CalendarHeader title="新增" backHref="/calendar" />
+      <div className="flex min-h-screen flex-col">
+        <CalendarHeader
+          title="新增"
+          backHref="/calendar"
+          onBackClick={() => {
+            clearCalendarFlowDrafts()
+            void router.push('/calendar')
+          }}
+        />
         <CalendarForm
           occasionKey={occasionKey}
           date={date}
           outfit={selectedOutfit}
           disabledDates={disabledDates}
-          onOccasionChange={setOccasionKey}
+          onOccasionChange={handleOccasionChange}
           onDateChange={setDate}
-          onSelectOutfit={() => {
-            const returnTo = buildCalendarSelectOutfitReturnTo({ mode: 'new' })
-            void router.push(buildCalendarSelectOutfitRoute({ returnTo, date }))
-          }}
+          onSelectOutfit={handleSelectOutfit}
           onSubmit={handleSubmit}
         />
         <CalendarOccasionDialog
@@ -88,6 +119,32 @@ const CalendarNewPage = () => {
           onSelect={setOccasionKey}
           onClose={() => setIsOccasionDialogOpen(false)}
           onConfirm={() => setIsOccasionDialogOpen(false)}
+        />
+
+        <CalendarOccasionChangeDialog
+          open={isOccasionChangeDialogOpen}
+          onClose={() => {
+            setPendingOccasionKey(null)
+            setIsOccasionChangeDialogOpen(false)
+          }}
+          onConfirm={() => {
+            if (!pendingOccasionKey) return
+
+            saveCalendarFormDraft({
+              mode: 'new',
+              date,
+              occasionKey: pendingOccasionKey,
+              selectedOutfitId: null,
+              sourceEntryId: null,
+              returnTo: '/calendar/new',
+            })
+            setOccasionKey(pendingOccasionKey)
+            setSelectedOutfitId(null)
+            setPendingOccasionKey(null)
+            setIsOccasionChangeDialogOpen(false)
+            const returnTo = buildCalendarSelectOutfitReturnTo({ mode: 'new' })
+            void router.push(buildCalendarSelectOutfitRoute({ returnTo, date }))
+          }}
         />
         <CalendarSuccessDialog
           open={isSuccessDialogOpen}

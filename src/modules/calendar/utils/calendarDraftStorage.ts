@@ -130,3 +130,8 @@ export const clearCalendarSelectedOutfitDraft = () => {
 
   window.sessionStorage.removeItem(CALENDAR_SELECTED_OUTFIT_DRAFT_STORAGE_KEY)
 }
+
+export const clearCalendarFlowDrafts = () => {
+  clearCalendarFormDraft()
+  clearCalendarSelectedOutfitDraft()
+}

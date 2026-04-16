@@ -1,9 +1,7 @@
-import { ImagePlus } from 'lucide-react'
-import Link from 'next/link'
+import { ChevronLeft, ImagePlus } from 'lucide-react'
 import { useRouter } from 'next/router'
 import { useRef, useState, type ChangeEvent } from 'react'
 
-import { Button } from '@/components/ui/button'
 import { showToast } from '@/components/ui/sonner'
 import { PrimaryButton } from '@/modules/common/components/PrimaryButton'
 import { useWardrobeCreationFlow } from '@/modules/wardrobe/hooks/useWardrobeCreationFlow'
@@ -74,12 +72,19 @@ const WardrobeAlbumPage = () => {
 
   return (
     <div className="relative flex min-h-screen flex-col bg-neutral-100">
-      <header className="flex items-center justify-between px-4 pt-5 pb-4">
-        <Link href={backHref} className="font-label-sm text-neutral-500">
-          ←
-        </Link>
-        <h1 className="font-label-md text-neutral-900">從相簿上傳</h1>
-        <span className="w-4" />
+      <header className="relative flex items-center justify-center h-16 px-4 pt-5 pb-4">
+        <button
+          type="button"
+          onClick={() => {
+            void router.push(backHref)
+          }}
+          className="absolute left-4 flex size-10 items-center justify-center text-neutral-500"
+          aria-label="返回上一頁"
+        >
+          <ChevronLeft className="text-neutral-700" size={24} strokeWidth={2} />
+        </button>
+        <h1 className="absolute left-1/2 -translate-x-1/2 font-label-xxl text-neutral-900">從相簿上傳</h1>
+        <span className="w-10" />
       </header>
 
       <input
@@ -90,33 +95,35 @@ const WardrobeAlbumPage = () => {
         onChange={handleFileChange}
       />
 
-      <main className="flex flex-1 flex-col px-4 pb-24">
-        <section className="flex flex-1 items-center justify-center pb-6">
-          <Button
+      <main className="flex flex-1 flex-col px-6 pb-16">
+        <section className="rounded-[12px] bg-white p-2">
+          <button
             type="button"
-            variant="outline"
             disabled={isSubmitting}
             onClick={handleOpenAlbum}
-            className="h-auto w-full rounded-[12px] border-neutral-200 bg-white p-4 hover:bg-white"
+            className="flex min-h-[50vh] w-full flex-col items-center justify-center rounded-[12px] bg-neutral-50 px-6 text-center"
           >
-            <div className="flex min-h-80 w-full flex-col items-center justify-center rounded-[12px] border border-dashed border-neutral-200 bg-neutral-50 px-6 text-center">
-              <div className="mb-4 flex size-15 items-center justify-center rounded-full bg-primary-100 text-primary-900">
-                <ImagePlus className="size-7" />
-              </div>
-              <div className="space-y-2">
-                <p className="font-label-md text-neutral-900">選擇要新增的衣物照片</p>
-                <p className="font-paragraph-sm text-neutral-500">
-                  開啟系統相簿或檔案選擇器，挑選單一衣物圖片後先確認預覽。
-                </p>
-              </div>
+            <div className="mb-6 text-neutral-900">
+              <ImagePlus className="size-10" />
             </div>
-          </Button>
+            <div className="w-full max-w-65 space-y-3">
+              <p className="font-label-xl text-neutral-900">選擇要新增的衣物照片</p>
+              <p className="wrap-break-word font-paragraph-sm leading-6 text-neutral-500">
+                開啟系統相簿或檔案選擇器，挑選單一衣物圖片後先確認預覽。
+              </p>
+            </div>
+          </button>
         </section>
 
-        <div className="space-y-3 pt-4">
-          <PrimaryButton content="選擇相片" disabled={isSubmitting} loading={isSubmitting} onClick={handleOpenAlbum} />
+        <div className="space-y-4 pt-8">
+          <PrimaryButton
+            content={isSubmitting ? '處理中...' : '選擇相片'}
+            disabled={isSubmitting}
+            loading={isSubmitting}
+            onClick={handleOpenAlbum}
+          />
 
-          <p className="text-center font-paragraph-xs text-neutral-500">
+          <p className="px-2 text-center font-paragraph-xs leading-6 text-neutral-500">
             支援 {SUPPORTED_RECOGNITION_IMAGE_FORMAT_TEXT} 格式，系統會先整理圖片後再進入預覽
           </p>
         </div>

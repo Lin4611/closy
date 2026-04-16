@@ -6,7 +6,12 @@ import { cn } from '@/lib/utils'
 import { CalendarGoogleEventList } from '@/modules/calendar/components/CalendarGoogleEventList'
 import { CalendarLocalEntryMenu } from '@/modules/calendar/components/CalendarLocalEntryMenu'
 import type { CalendarEntry, CalendarGoogleEvent, SelectableOutfitSummary } from '@/modules/calendar/types'
-import { getCalendarEventsByDate, hasSelectedOutfit, isGoogleCalendarEntry } from '@/modules/calendar/utils/calendarRules'
+import {
+  getCalendarEventsByDate,
+  hasSelectedOutfit,
+  isCalendarEntryExpired,
+  isGoogleCalendarEntry,
+} from '@/modules/calendar/utils/calendarRules'
 import { occasionLabelMap } from '@/modules/common/types/occasion'
 
 type CalendarEntryCardProps = {
@@ -31,11 +36,17 @@ export const CalendarEntryCard = ({
   const [isExpanded, setIsExpanded] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const isGoogleEntry = isGoogleCalendarEntry(entry)
+  const isExpired = isCalendarEntryExpired(entry)
   const events = useMemo(() => getCalendarEventsByDate(entry.date, googleEvents), [entry.date, googleEvents])
   const hasOutfit = hasSelectedOutfit(entry)
 
   return (
-    <article className="rounded-[20px] bg-white p-4 shadow-[0_1px_4px_rgba(0,0,0,0.06)]">
+    <article
+      className={cn(
+        'rounded-[20px] bg-white p-4 shadow-[0_1px_4px_rgba(0,0,0,0.06)] transition-opacity',
+        isExpired && 'bg-neutral-100 text-neutral-400 opacity-90'
+      )}
+    >
       <div className="relative flex items-start gap-3">
         <button
           type="button"
@@ -43,32 +54,56 @@ export const CalendarEntryCard = ({
           disabled={!onPreviewOutfit}
           className="flex h-16 w-12 shrink-0 items-center justify-center overflow-hidden rounded-[12px] disabled:pointer-events-none"
         >
-          <Image
-            src={selectedOutfit?.imageUrl ?? '/outfit/mock-1.webp'}
-            alt="行事曆穿搭"
-            width={48}
-            height={64}
-            className="h-16 w-12 object-contain"
-          />
+          {hasOutfit && selectedOutfit ? (
+            <Image
+              src={selectedOutfit.imageUrl}
+              alt="行事曆穿搭"
+              width={48}
+              height={64}
+              className={cn('h-16 w-12 object-contain', isExpired && 'opacity-60 grayscale')}
+            />
+          ) : (
+            <Image
+              src="/calendar/figure-silhouette.png"
+              alt="未選穿搭"
+              width={48}
+              height={64}
+              className={cn('h-16 w-12 object-contain', isExpired && 'opacity-45')}
+            />
+          )}
         </button>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <p className="font-h4 text-neutral-900">{formatDateLabel(entry.date)}</p>
-            {isGoogleEntry ? <span className="font-label-md text-neutral-700">({events.length})</span> : null}
+            <p className={cn('font-h4 text-neutral-900', isExpired && 'text-neutral-400')}>{formatDateLabel(entry.date)}</p>
             {isGoogleEntry ? (
-              <button type="button" onClick={() => setIsExpanded((value) => !value)} className="text-neutral-700">
+              <span className={cn('font-label-md text-neutral-700', isExpired && 'text-neutral-400')}>({events.length})</span>
+            ) : null}
+            {isGoogleEntry ? (
+              <button
+                type="button"
+                onClick={() => setIsExpanded((value) => !value)}
+                className={cn('text-neutral-700', isExpired && 'cursor-not-allowed text-neutral-400')}
+                disabled={isExpired}
+                aria-disabled={isExpired}
+              >
                 {isExpanded ? <ChevronUp className="size-5" /> : <ChevronDown className="size-5" />}
               </button>
             ) : null}
           </div>
           <div className="flex flex-wrap items-center gap-2 pt-2">
-            <span className="rounded-full bg-primary-800 px-3 py-1 font-paragraph-sm text-white">
+            <span
+              className={cn(
+                'rounded-full bg-primary-800 px-3 py-1 font-paragraph-sm text-white',
+                isExpired && 'bg-neutral-300 text-white'
+              )}
+            >
               #{occasionLabelMap[entry.occasionKey]}
             </span>
             <span
               className={cn(
                 'rounded-full px-3 py-1 font-paragraph-sm',
-                hasOutfit ? 'bg-[#E9F6EE] text-[#3AA769]' : 'bg-[#FCEEEE] text-[#E35D59]'
+                hasOutfit ? 'bg-[#E9F6EE] text-[#3AA769]' : 'bg-[#FCEEEE] text-[#E35D59]',
+                isExpired && 'bg-neutral-200 text-neutral-400'
               )}
             >
               {hasOutfit ? '已選穿搭' : '未選穿搭'}
@@ -76,7 +111,14 @@ export const CalendarEntryCard = ({
           </div>
         </div>
         {isGoogleEntry ? (
-          <button type="button" onClick={onEdit} aria-label="編輯行事曆" className="pt-1 text-neutral-700">
+          <button
+            type="button"
+            onClick={onEdit}
+            aria-label="編輯行事曆"
+            className={cn('pt-1 text-neutral-700', isExpired && 'cursor-not-allowed text-neutral-400')}
+            disabled={isExpired}
+            aria-disabled={isExpired}
+          >
             <Pencil className="size-5" strokeWidth={2} />
           </button>
         ) : (
@@ -85,12 +127,14 @@ export const CalendarEntryCard = ({
               type="button"
               onClick={() => setIsMenuOpen((value) => !value)}
               aria-label="更多操作"
-              className="pt-1 text-neutral-700"
+              className={cn('pt-1 text-neutral-700', isExpired && 'cursor-not-allowed text-neutral-400')}
+              disabled={isExpired}
+              aria-disabled={isExpired}
             >
               <EllipsisVertical className="size-5" strokeWidth={2} />
             </button>
             <CalendarLocalEntryMenu
-              open={isMenuOpen}
+              open={!isExpired && isMenuOpen}
               onEdit={() => {
                 setIsMenuOpen(false)
                 onEdit()
@@ -103,7 +147,7 @@ export const CalendarEntryCard = ({
           </div>
         )}
       </div>
-      {isGoogleEntry && isExpanded ? <CalendarGoogleEventList events={events} /> : null}
+      {isGoogleEntry && isExpanded && !isExpired ? <CalendarGoogleEventList events={events} /> : null}
     </article>
   )
 }

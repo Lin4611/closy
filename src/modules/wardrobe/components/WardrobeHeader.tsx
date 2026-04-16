@@ -4,7 +4,7 @@ type WardrobeHeaderProps = {
 
 export const WardrobeHeader = ({ title = '我的衣櫃' }: WardrobeHeaderProps) => {
   return (
-    <header className="bg-white px-4 py-3 fixed top-0 max-w-93.75 w-full z-10">
+    <header className="sticky top-0 z-10 shrink-0 bg-white px-4 py-3 shadow-[0px_1px_3px_0px_#18181B0D]">
       <h1 className="font-h1 text-neutral-900">{title}</h1>
     </header>
   )

@@ -29,15 +29,16 @@ const CalendarSelectOutfitPage = () => {
 
   return (
     <AppShell showBottomNav={false}>
-      <div className="flex min-h-screen flex-col bg-[#F6F6F4]">
+      <div className="flex min-h-screen flex-col">
         <CalendarHeader title="選擇穿搭" backHref={returnTo} />
         {isEmpty ? (
           <SelectableOutfitEmptyState onGoHome={() => void router.push('/home')} onSkip={() => handleComplete(null)} />
         ) : (
           <>
             <div className="px-4 pb-6">
-              <div className="rounded-[16px] bg-[#FDEEEE] px-3 py-2 font-paragraph-sm text-[#8F6A6A]">
-                略過後可隨時修改，或等待前一天「Closy」依天氣及場合為你推薦。
+              <div className="flex items-center gap-3 rounded-[12px] bg-danger-100 font-label-sm px-4 py-2">
+                <span className="mt-0.5 rounded-full bg-danger-300 px-2 py-0.5  text-white whitespace-nowrap">小提醒</span>
+                <p className=" text-neutral-600">略過後可隨時修改，或等待前一天「Closy」依天氣及場合為你推薦。</p>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3 px-4 pb-32">
@@ -46,11 +47,11 @@ const CalendarSelectOutfitPage = () => {
                   key={outfit.id}
                   outfit={outfit}
                   selected={selectedOutfitId === outfit.id}
-                  onSelect={() => setSelectedOutfitId(outfit.id)}
+                  onSelect={() => setSelectedOutfitId((currentId) => (currentId === outfit.id ? null : outfit.id))}
                 />
               ))}
             </div>
-            <div className="fixed inset-x-0 bottom-0 z-10 bg-white px-4 py-4 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
+            <div className="fixed inset-x-0 bottom-0 z-10 px-4 py-4">
               <div className="mx-auto flex max-w-sm flex-col gap-3">
                 <Button type="button" variant="brand" size="xl" onClick={() => handleComplete(selectedOutfitId)}>
                   下一步
