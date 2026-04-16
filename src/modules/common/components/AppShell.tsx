@@ -1,11 +1,9 @@
 import { useRouter } from 'next/router'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { cn } from '@/lib/utils'
 import { BottomNav } from '@/modules/common/components/BottomNav'
 import { AddClothingDrawer } from '@/modules/common/components/overlay/AddClothingDrawer'
-
-import { bottomNavItems } from '../data/bottom-nav'
 
 type AppShellProps = {
   children: React.ReactNode
@@ -15,10 +13,6 @@ type AppShellProps = {
 
 export const AppShell = ({ children, activeTab, showBottomNav = true }: AppShellProps) => {
   const router = useRouter()
-
-  useEffect(() => {
-    bottomNavItems.forEach((item) => router.prefetch(item.href))
-  }, [router])
 
   const [isAddClothingDrawerOpen, setIsAddClothingDrawerOpen] = useState(false)
 
