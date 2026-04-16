@@ -14,7 +14,7 @@ export const WeatherSummaryCard = ({
   iconSrc,
 }: WeatherSummaryCardProps) => {
   return (
-    <section className="flex h-33.75 w-full max-w-15 flex-col items-start justify-between px-0.5">
+    <section className="flex w-full max-w-15 flex-col items-start justify-center gap-5 px-0.5">
       <div className="flex w-full flex-col items-center justify-between">
         <Image src={iconSrc} alt={conditionLabel} width={40} height={40} />
         <p className="font-paragraph-sm text-neutral-800">{conditionLabel}</p>

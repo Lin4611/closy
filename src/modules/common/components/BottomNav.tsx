@@ -22,12 +22,7 @@ export const BottomNav = ({ activeTab, onAddClick }: BottomNavProps) => {
     })()
 
   const renderNavItem = (item: TBottomNavItem) => (
-    <BottomNavItem
-      key={item.id}
-      {...item}
-      active={currentTab === item.id}
-      onClick={() => router.push(item.href)}
-    />
+    <BottomNavItem key={item.id} {...item} active={currentTab === item.id} />
   )
 
   const handleAddClick = () => {

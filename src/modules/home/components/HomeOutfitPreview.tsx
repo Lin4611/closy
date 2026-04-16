@@ -28,14 +28,16 @@ export const HomeOutfitPreview = ({
         <HomeOutfitPreviewSkeleton />
       ) : (
         src && (
-          <Image
-            src={src}
-            alt={alt}
-            width={139}
-            height={400}
-            className={`h-100 w-[139px] object-contain transition-opacity duration-300 ${isImageLoaded ? 'opacity-100' : 'opacity-0'}`}
-            onLoad={() => setIsImageLoaded(true)}
-          />
+          <div className="h-100 w-[139px]">
+            <Image
+              src={src}
+              alt={alt}
+              width={139}
+              height={400}
+              className={`h-100 w-[139px] object-contain transition-opacity duration-300 ${isImageLoaded ? 'opacity-100' : 'opacity-0'}`}
+              onLoad={() => setIsImageLoaded(true)}
+            />
+          </div>
         )
       )}
       <div className="absolute bottom-0 left-1/2 flex w-full max-w-[283px] -translate-x-1/2 items-center justify-between">
