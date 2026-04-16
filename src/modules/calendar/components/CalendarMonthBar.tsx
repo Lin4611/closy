@@ -26,7 +26,7 @@ export const CalendarMonthBar = ({
   className,
 }: CalendarMonthBarProps) => {
   return (
-    <div className={cn('flex items-center gap-3 px-4 pt-2 pb-4', className)}>
+    <div className={cn('flex items-center gap-3 border-b border-neutral-200 px-4 pt-2 pb-4', className)}>
       <select
         value={month}
         onChange={(event) => onMonthChange(event.target.value)}

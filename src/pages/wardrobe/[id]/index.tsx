@@ -1,4 +1,4 @@
-import { EllipsisVertical, Package } from 'lucide-react'
+import { ChevronLeft, EllipsisVertical, Package } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -162,12 +162,12 @@ const WardrobeDetailPage = () => {
   return (
     <AppShell activeTab="wardrobe">
       <div className="relative bg-neutral-100">
-        <header className="flex items-center justify-between px-4 pt-5 pb-2">
-          <Link href="/wardrobe" className="font-label-sm text-neutral-500">
-            ←
+        <header className="relative flex items-center justify-center h-16 px-4 pt-5 pb-2">
+          <Link href="/wardrobe" className="absolute left-4 flex size-10 items-center justify-center" aria-label="返回我的衣櫃">
+            <ChevronLeft className="text-neutral-700" size={24} strokeWidth={2} />
           </Link>
 
-          <div ref={menuRef} className="relative">
+          <div ref={menuRef} className="absolute right-4">
             <button
               type="button"
               onClick={() => setIsMenuOpen((prev) => !prev)}
@@ -209,7 +209,7 @@ const WardrobeDetailPage = () => {
           </div>
         </section>
 
-        <section className="min-h-[calc(100vh-248px)] rounded-t-[28px] bg-white px-4 pt-5 pb-24 shadow-[0_-2px_8px_rgba(15,23,42,0.04)]">
+        <section className="min-h-[calc(100vh-248px)] rounded-t-[28px] bg-white px-4 pt-5 pb-10 shadow-[0_-2px_8px_rgba(15,23,42,0.04)]">
           <div>
             <h1 className="text-h3 text-neutral-900">
               {item.brand} {item.name}

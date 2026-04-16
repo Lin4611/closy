@@ -80,3 +80,28 @@ export const isCalendarDateBlocked = ({
 export const sortCalendarEntriesByDateDesc = (entries: CalendarEntry[]) => {
   return [...entries].sort((left, right) => right.date.localeCompare(left.date))
 }
+
+const getTodayDateKey = () => {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+
+  return `${year}-${month}-${day}`
+}
+
+export const isCalendarEntryExpired = (entry: Pick<CalendarEntry, 'date'>) => {
+  return entry.date < getTodayDateKey()
+}
+
+export const sortCalendarEntriesForHome = (entries: CalendarEntry[]) => {
+  const upcomingEntries = entries
+    .filter((entry) => !isCalendarEntryExpired(entry))
+    .sort((left, right) => left.date.localeCompare(right.date))
+
+  const expiredEntries = entries
+    .filter((entry) => isCalendarEntryExpired(entry))
+    .sort((left, right) => right.date.localeCompare(left.date))
+
+  return [...upcomingEntries, ...expiredEntries]
+}

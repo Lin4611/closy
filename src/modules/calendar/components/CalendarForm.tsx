@@ -32,19 +32,19 @@ export const CalendarForm = ({
   onSubmit,
 }: CalendarFormProps) => {
   return (
-    <div className="flex flex-1 flex-col px-4 pb-8">
+    <div className="flex flex-1 flex-col">
       <div className="pt-2">
         <CalendarSelectedOutfitPreview outfit={outfit} onClick={onSelectOutfit} />
       </div>
-      <div className="mt-4 rounded-[28px] bg-[#FAF9F7] px-5 py-6">
-        <div>
+      <div className="flex flex-1 flex-col mt-4 rounded-t-[40px] bg-white px-4 py-5 shadow-[0_1px_16px_rgba(0,0,0,0.1)]">
+        <div className="px-4">
           <label className="pb-2 font-label-md text-neutral-700">
             場合<span className="text-danger-300">*</span>
           </label>
           <select
             value={occasionKey ?? ''}
             onChange={(event) => onOccasionChange(event.target.value as Occasion)}
-            className="mt-2 h-13 w-full rounded-[20px] border border-neutral-300 bg-white px-4 font-paragraph-md text-neutral-800 outline-none"
+            className="mt-2 h-13 w-full rounded-[16px] border border-neutral-300 bg-white pl-5 py-3 font-paragraph-lg text-neutral-800 outline-none"
           >
             <option value="" disabled>
               選擇場合
@@ -56,7 +56,7 @@ export const CalendarForm = ({
             ))}
           </select>
         </div>
-        <div className="pt-5">
+        <div className="px-4 pt-4">
           <label className={cn('pb-2 font-label-md', disabledDate ? 'text-neutral-400' : 'text-neutral-700')}>
             日期<span className="text-danger-300">*</span>
           </label>
@@ -68,10 +68,10 @@ export const CalendarForm = ({
             className="mt-2"
           />
         </div>
+        <Button type="button" variant="brand" size="xl" className="mx-auto mt-10 w-33" onClick={onSubmit} disabled={!occasionKey || !date}>
+          {submitLabel}
+        </Button>
       </div>
-      <Button type="button" variant="brand" size="xl" className="mx-auto mt-9 w-33" onClick={onSubmit} disabled={!occasionKey || !date}>
-        {submitLabel}
-      </Button>
     </div>
   )
 }

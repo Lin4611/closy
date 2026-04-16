@@ -15,7 +15,7 @@ export const WardrobeFilterChips = ({
   onChange,
 }: WardrobeFilterChipsProps) => {
   return (
-    <div className="scrollbar-hide flex gap-2 overflow-x-auto px-4">
+    <div className="no-scrollbar flex gap-2 overflow-x-auto px-4">
       {wardrobeCategoryOptions.map((option) => {
         const count = counts[option.key] ?? 0
         const isActive = activeCategory === option.key
@@ -26,10 +26,10 @@ export const WardrobeFilterChips = ({
             type="button"
             onClick={() => onChange(option.key)}
             className={cn(
-              'shrink-0 rounded-full border px-3 py-1 font-label-xs transition-colors',
+              'shrink-0 rounded-full border-[0.5px] px-3 py-1 font-label-md transition-colors',
               isActive
-                ? 'border-primary-900 bg-primary-900 text-white'
-                : 'border-neutral-300 bg-white text-neutral-500'
+                ? 'border-primary-800 bg-primary-800 text-white'
+                : 'border-neutral-500 bg-white text-neutral-500'
             )}
           >
             {option.label}({count})

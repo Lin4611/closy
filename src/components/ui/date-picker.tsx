@@ -69,11 +69,11 @@ export const DatePicker = ({
     <div className={cn('relative w-full', className)}>
       {name ? <input type="hidden" name={name} value={value ?? ''} /> : null}
       <Popover open={open} onOpenChange={(nextOpen) => {
-          setOpen(nextOpen)
-          if (nextOpen) {
-            setMonthOverride(selectedMonth ?? new Date())
-          }
-        }}>
+        setOpen(nextOpen)
+        if (nextOpen) {
+          setMonthOverride(selectedMonth ?? new Date())
+        }
+      }}>
         <PopoverTrigger asChild>
           <button
             type="button"
@@ -81,7 +81,7 @@ export const DatePicker = ({
             disabled={disabled}
             aria-label="選擇日期"
             className={cn(
-              'h-13 w-full rounded-[20px] border border-neutral-300 bg-white px-4 pr-12 text-left font-paragraph-md text-neutral-800 outline-none transition-colors focus-visible:border-primary-800 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-400 disabled:opacity-100',
+              ' font-paragraph-lg h-13 w-full rounded-[16px] border border-neutral-300 bg-white px-5 py-3 text-left text-neutral-800 outline-none transition-colors focus-visible:border-primary-800 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-400 disabled:opacity-100',
               inputClassName,
             )}
           >
