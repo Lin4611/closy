@@ -35,8 +35,8 @@ const Home = () => {
   const homeState = useAppSelector((state) => state.home)
   const [activeDay, setActiveDay] = useState<'today' | 'tomorrow'>('today')
 
-  const fetchDayOutfit = async (day: 'today' | 'tomorrow') => {
-    if (homeState[day]) {
+  const fetchDayOutfit = async (day: 'today' | 'tomorrow', force = false) => {
+    if (homeState[day] && !force) {
       setIsLoading(false)
       return
     }
@@ -92,12 +92,19 @@ const Home = () => {
       hideTimerRef.current = null
     }
   }
+
+  const handleOccasionChange = () => {
+    dispatch(clearDayCache())
+    fetchDayOutfit(activeDay, true)
+  }
+
   const setHideTimer = (duration: number) => {
     hideTimerRef.current = setTimeout(() => {
       setIsAdjustPromptOpen(false)
       hideTimerRef.current = null
     }, duration)
   }
+
   const showAdjustPrompt = (duration: number) => {
     setIsAdjustPromptOpen(true)
     clearHideTimer()
@@ -120,7 +127,7 @@ const Home = () => {
     <>
       <AppShell activeTab="home">
         <div className="sticky top-0 z-10">
-          <HomeFilterBar onDayChange={handleDayChange} />
+          <HomeFilterBar onDayChange={handleDayChange} onOccasionChange={handleOccasionChange} />
         </div>
         <div className="relative">
           <HomePreviewTopBar
