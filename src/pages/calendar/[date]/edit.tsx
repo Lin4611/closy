@@ -8,7 +8,7 @@ import { CalendarSuccessDialog } from '@/modules/calendar/components/CalendarSuc
 import { mockGoogleEvents } from '@/modules/calendar/data/mockGoogleEvents'
 import { useCalendarStore } from '@/modules/calendar/hooks/useCalendarStore'
 import type { CalendarEntry } from '@/modules/calendar/types'
-import { clearCalendarFormDraft, clearCalendarSelectedOutfitDraft, getCalendarSelectedOutfitDraft, saveCalendarFormDraft } from '@/modules/calendar/utils/calendarDraftStorage'
+import { clearCalendarFormDraft, clearCalendarSelectedOutfitDraft, getCalendarSelectedOutfitDraft, saveCalendarFormDraft, clearCalendarFlowDrafts } from '@/modules/calendar/utils/calendarDraftStorage'
 import { buildCalendarSelectOutfitReturnTo, buildCalendarSelectOutfitRoute, parseCalendarEditDateParam } from '@/modules/calendar/utils/calendarNavigation'
 import { getSelectableOutfitSummaryById } from '@/modules/calendar/utils/calendarOutfitAdapter'
 import { canEditCalendarDate, hasSelectedOutfit, isCalendarDateBlocked, shouldResetSelectedOutfit } from '@/modules/calendar/utils/calendarRules'
@@ -68,6 +68,20 @@ const CalendarEditContent = ({ entry }: { entry: CalendarEntry }) => {
     setOccasionKey(nextOccasionKey)
   }
 
+  const handleSelectOutfit = () => {
+    saveCalendarFormDraft({
+      mode: 'edit',
+      date,
+      occasionKey,
+      selectedOutfitId,
+      sourceEntryId: entry.id,
+      returnTo: `/calendar/${entry.date}/edit`,
+    })
+
+    const returnTo = buildCalendarSelectOutfitReturnTo({ mode: 'edit', date: entry.date })
+    void router.push(buildCalendarSelectOutfitRoute({ returnTo, date }))
+  }
+
   const handleSubmit = () => {
     if (!occasionKey || !date) return
     if (isCalendarDateBlocked({ date, entries, googleEvents: mockGoogleEvents, currentEntryId: entry.id })) return
@@ -90,7 +104,14 @@ const CalendarEditContent = ({ entry }: { entry: CalendarEntry }) => {
   return (
     <AppShell showBottomNav={false}>
       <div className="flex min-h-screen flex-col">
-        <CalendarHeader title="編輯" backHref="/calendar" />
+        <CalendarHeader
+          title="編輯"
+          backHref="/calendar"
+          onBackClick={() => {
+            clearCalendarFlowDrafts()
+            void router.push('/calendar')
+          }}
+        />
         <CalendarForm
           occasionKey={occasionKey}
           date={date}
@@ -99,23 +120,32 @@ const CalendarEditContent = ({ entry }: { entry: CalendarEntry }) => {
           disabledDates={disabledDates}
           onOccasionChange={handleOccasionChange}
           onDateChange={setDate}
-          onSelectOutfit={() => {
-            const returnTo = buildCalendarSelectOutfitReturnTo({ mode: 'edit', date: entry.date })
-            void router.push(buildCalendarSelectOutfitRoute({ returnTo, date }))
-          }}
+          onSelectOutfit={handleSelectOutfit}
           onSubmit={handleSubmit}
         />
         <CalendarOccasionChangeDialog
           open={isOccasionChangeDialogOpen}
-          onClose={() => setIsOccasionChangeDialogOpen(false)}
+          onClose={() => {
+            setPendingOccasionKey(null)
+            setIsOccasionChangeDialogOpen(false)
+          }}
           onConfirm={() => {
-            if (pendingOccasionKey) {
-              setOccasionKey(pendingOccasionKey)
-              setSelectedOutfitId(null)
-              setIsOccasionChangeDialogOpen(false)
-              const returnTo = buildCalendarSelectOutfitReturnTo({ mode: 'edit', date: entry.date })
-              void router.push(buildCalendarSelectOutfitRoute({ returnTo, date }))
-            }
+            if (!pendingOccasionKey) return
+
+            saveCalendarFormDraft({
+              mode: 'edit',
+              date,
+              occasionKey: pendingOccasionKey,
+              selectedOutfitId: null,
+              sourceEntryId: entry.id,
+              returnTo: `/calendar/${entry.date}/edit`,
+            })
+            setOccasionKey(pendingOccasionKey)
+            setSelectedOutfitId(null)
+            setPendingOccasionKey(null)
+            setIsOccasionChangeDialogOpen(false)
+            const returnTo = buildCalendarSelectOutfitReturnTo({ mode: 'edit', date: entry.date })
+            void router.push(buildCalendarSelectOutfitRoute({ returnTo, date }))
           }}
         />
         <CalendarSuccessDialog

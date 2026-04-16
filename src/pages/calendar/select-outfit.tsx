@@ -47,7 +47,7 @@ const CalendarSelectOutfitPage = () => {
                   key={outfit.id}
                   outfit={outfit}
                   selected={selectedOutfitId === outfit.id}
-                  onSelect={() => setSelectedOutfitId(outfit.id)}
+                  onSelect={() => setSelectedOutfitId((currentId) => (currentId === outfit.id ? null : outfit.id))}
                 />
               ))}
             </div>
