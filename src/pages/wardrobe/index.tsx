@@ -87,31 +87,24 @@ const WardrobePage = () => {
   return (
     <AppShell activeTab="wardrobe">
       <div className="relative flex min-h-[calc(100dvh-80px)] flex-col overflow-hidden">
-        <WardrobeHeader />
+        <div className="fixed top-0 left-1/2 z-20 w-full max-w-93.75 -translate-x-1/2 bg-white">
+          <WardrobeHeader />
+          <div className="pt-5 bg-neutral-100">
+            <WardrobeFilterChips
+              activeCategory={activeCategory}
+              counts={counts}
+              onChange={setActiveCategory}
+            />
+          </div>
+        </div>
 
         {isWardrobeEmpty ? (
-          <main className="flex min-h-0 flex-1 flex-col overflow-hidden pt-16">
-            <div className="pt-5 pb-4">
-              <WardrobeFilterChips
-                activeCategory={activeCategory}
-                counts={counts}
-                onChange={setActiveCategory}
-              />
-            </div>
-
+          <main className="flex min-h-0 flex-1 flex-col overflow-hidden pt-34">
             <WardrobeEmptyState />
           </main>
         ) : (
-          <main className="flex min-h-0 flex-1 flex-col pt-16">
+          <main className="flex min-h-0 flex-1 flex-col pt-34">
             <div className="min-h-0 flex-1 overflow-y-auto">
-              <div className="sticky top-0 z-10 pt-5 pb-4">
-                <WardrobeFilterChips
-                  activeCategory={activeCategory}
-                  counts={counts}
-                  onChange={setActiveCategory}
-                />
-              </div>
-
               <WardrobeGrid items={filteredItems} onDelete={setDeleteTargetId} />
             </div>
           </main>
