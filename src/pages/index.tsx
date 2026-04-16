@@ -8,7 +8,12 @@ const SplashPage = () => {
   const router = useRouter()
   const isLoggedIn = useAppSelector((state) => state.user.isLoggedIn)
   const isProfileCompleted = useAppSelector((state) => state.user.user?.isProfileCompleted)
+
   useEffect(() => {
+    if (isLoggedIn && isProfileCompleted) {
+      router.prefetch('/home')
+    }
+
     const timer = setTimeout(() => {
       if (isLoggedIn) {
         if (isProfileCompleted) {
@@ -19,7 +24,7 @@ const SplashPage = () => {
       } else {
         router.replace('/guide')
       }
-    }, 1500)
+    }, 1000)
     return () => clearTimeout(timer)
   }, [router, isLoggedIn, isProfileCompleted])
 
