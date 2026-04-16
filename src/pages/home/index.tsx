@@ -61,7 +61,7 @@ const Home = () => {
     const today = new Date().toISOString().split('T')[0]
     const isStale = homeState.cacheDate !== today
     if (isStale) dispatch(clearDayCache())
-    fetchDayOutfit('today')
+    fetchDayOutfit('today', isStale)
   }, [])
 
   const handleDayChange = (day: 'today' | 'tomorrow') => {
