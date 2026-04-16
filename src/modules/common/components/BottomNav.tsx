@@ -35,7 +35,7 @@ export const BottomNav = ({ activeTab, onAddClick }: BottomNavProps) => {
   }
 
   return (
-    <div className="fixed bottom-0 left-1/2 z-50 w-full max-w-93.75 -translate-x-1/2">
+    <div className="fixed bottom-0 left-1/2 z-40 w-full max-w-93.75 -translate-x-1/2">
       <div className="flex h-20 items-center justify-center rounded-[10px] border border-neutral-200 bg-white px-1 py-2">
         {bottomNavItems.slice(0, 2).map(renderNavItem)}
         <AddClothButton onClick={handleAddClick} />

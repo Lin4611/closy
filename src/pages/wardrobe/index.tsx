@@ -6,6 +6,7 @@ import { AppShell } from '@/modules/common/components/AppShell'
 import { deleteClothes } from '@/modules/wardrobe/api/deleteClothes'
 import { getClothesList } from '@/modules/wardrobe/api/getClothesList'
 import { DeleteClothingDialog } from '@/modules/wardrobe/components/DeleteClothingDialog'
+import { WardrobeEmptyState } from '@/modules/wardrobe/components/WardrobeEmptyState'
 import { WardrobeFilterChips } from '@/modules/wardrobe/components/WardrobeFilterChips'
 import { WardrobeGrid } from '@/modules/wardrobe/components/WardrobeGrid'
 import { WardrobeHeader } from '@/modules/wardrobe/components/WardrobeHeader'
@@ -81,20 +82,31 @@ const WardrobePage = () => {
     return items.filter((item) => item.category === activeCategory)
   }, [activeCategory, items])
 
+  const isWardrobeEmpty = filteredItems.length === 0
+
   return (
     <AppShell activeTab="wardrobe">
-      <div className="relative">
-        <WardrobeHeader />
+      <div className="flex min-h-[calc(100dvh-80px)] flex-col">
+        <div className="sticky top-0 z-20 shrink-0">
+          <WardrobeHeader />
+          <div className="bg-neutral-100 mt-0.75 py-5">
+            <WardrobeFilterChips
+              activeCategory={activeCategory}
+              counts={counts}
+              onChange={setActiveCategory}
+            />
+          </div>
+        </div>
 
-        <main className="mt-16 space-y-6 pt-5">
-          <WardrobeFilterChips
-            activeCategory={activeCategory}
-            counts={counts}
-            onChange={setActiveCategory}
-          />
-
-          <WardrobeGrid items={filteredItems} onDelete={setDeleteTargetId} />
-        </main>
+        {isWardrobeEmpty ? (
+          <main className="flex min-h-0 flex-1 flex-col overflow-hidden">
+            <WardrobeEmptyState />
+          </main>
+        ) : (
+          <main className="min-h-0 flex-1 overflow-y-auto">
+            <WardrobeGrid items={filteredItems} onDelete={setDeleteTargetId} />
+          </main>
+        )}
 
         <DeleteClothingDialog
           open={Boolean(deleteTargetId)}
