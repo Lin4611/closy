@@ -8,7 +8,7 @@ type GuideBottomNavProps = {
 
 export const GuideBottomNav = ({ onAddClick }: GuideBottomNavProps) => {
   const renderNavItem = (item: TBottomNavItem) => (
-    <BottomNavItem key={item.id} {...item} active={item.id === 'home'} href={item.href} />
+    <BottomNavItem key={item.id} {...item} active={item.id === 'home'} />
   )
 
   const handleAddClick = () => {
