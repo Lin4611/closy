@@ -9,9 +9,11 @@ import type { Occasion } from '@/modules/common/types/occasion'
 type CalendarFormProps = {
   occasionKey: Occasion | null
   date: string
+  initialDisplayDate?: string
   outfit: SelectableOutfitSummary | null
   disabledDate?: boolean
   disabledDates?: string[]
+  isDateDisabled?: (value: string) => boolean
   submitLabel?: string
   onOccasionChange: (occasionKey: Occasion) => void
   onDateChange: (date: string) => void
@@ -22,9 +24,11 @@ type CalendarFormProps = {
 export const CalendarForm = ({
   occasionKey,
   date,
+  initialDisplayDate,
   outfit,
   disabledDate = false,
   disabledDates = [],
+  isDateDisabled,
   submitLabel = '確定',
   onOccasionChange,
   onDateChange,
@@ -63,8 +67,10 @@ export const CalendarForm = ({
           <DatePicker
             value={date}
             onChange={onDateChange}
+            initialDisplayValue={initialDisplayDate}
             disabled={disabledDate}
             disabledDates={disabledDates}
+            isDateDisabled={isDateDisabled}
             className="mt-2"
           />
         </div>
