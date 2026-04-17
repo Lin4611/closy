@@ -28,7 +28,7 @@ const getCurrentMonthLabel = () => {
 const CalendarPage = () => {
   const router = useRouter()
   const { entries, deleteEntry } = useCalendarStore()
-  const [isSynced, setIsSynced] = useState(true)
+  const [isSynced, setIsSynced] = useState(false)
   const [deletingEntry, setDeletingEntry] = useState<CalendarEntry | null>(null)
   const [isDeleteSuccessOpen, setIsDeleteSuccessOpen] = useState(false)
   const currentMonthLabel = useMemo(() => getCurrentMonthLabel(), [])

@@ -93,7 +93,7 @@ const Setting = () => {
             text={isSyncing ? '同步中' : isSynced ? '已同步' : '未同步'}
           />
           <Button
-            className="h-[67px] w-full justify-start rounded-[20px] bg-white px-4 shadow-[1px_1px_4px_rgba(0,0,0,0.1),inset_0_0_0_0.5px_rgba(50,18,51,0.24)] transition duration-300 ease-out"
+            className="h-16.75 w-full justify-start rounded-[20px] bg-white px-4 shadow-[1px_1px_4px_rgba(0,0,0,0.1),inset_0_0_0_0.5px_rgba(50,18,51,0.24)] transition duration-300 ease-out"
             onClick={handleLogout}
           >
             <span className="font-paragraph-md text-danger-300">登出</span>
