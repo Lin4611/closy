@@ -2,10 +2,12 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 
 import { ApiError, apiClient } from '@/lib/api/client'
 import type { ApiResponse } from '@/lib/api/types'
+import type { Occasion } from '@/modules/common/types/occasion'
 import type { ClothingItem } from '@/modules/home/types/dayRecommendationTypes'
 
 type GenerateOutfitBody = {
   selectedItems: ClothingItem[]
+  occasion: Occasion
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -17,17 +19,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(401).json({ message: '尚未登入' })
   }
 
-  const { selectedItems } = req.body as GenerateOutfitBody
+  const { selectedItems, occasion } = req.body as GenerateOutfitBody
 
   try {
-    const response = await apiClient<ApiResponse<{ imageUrl: string }>>({
+    const response = await apiClient<ApiResponse<{ outfitImgUrl: string; occasion: Occasion }>>({
       baseUrl: process.env.API_BASE_URL,
       endpoint: `/home/outfit`,
       method: 'POST',
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
-      body: { selectedItems },
+      body: { selectedItems, occasion },
     })
 
     return res.status(200).json(response)
