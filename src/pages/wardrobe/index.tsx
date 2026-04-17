@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
 import { AppShell } from '@/modules/common/components/AppShell'
+import { SuccessAlertDialog } from '@/modules/common/components/SuccessAlertDialog'
 import { deleteClothes } from '@/modules/wardrobe/api/deleteClothes'
 import { getClothesList } from '@/modules/wardrobe/api/getClothesList'
 import { DeleteClothingDialog } from '@/modules/wardrobe/components/DeleteClothingDialog'
@@ -65,6 +66,7 @@ const WardrobePage = () => {
 
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isDeleteSuccessOpen, setIsDeleteSuccessOpen] = useState(false)
 
   const counts = useMemo(() => {
     return items.reduce(
@@ -87,9 +89,9 @@ const WardrobePage = () => {
   return (
     <AppShell activeTab="wardrobe">
       <div className="flex min-h-[calc(100dvh-80px)] flex-col">
-        <div className="sticky top-0 z-20 shrink-0">
+        <div className="sticky top-0 z-20 shrink-0 bg-neutral-100">
           <WardrobeHeader />
-          <div className="bg-neutral-100 mt-0.75 py-5">
+          <div className="py-5">
             <WardrobeFilterChips
               activeCategory={activeCategory}
               counts={counts}
@@ -128,13 +130,21 @@ const WardrobePage = () => {
                 await deleteClothes(deleteTargetId)
                 deleteItem(deleteTargetId)
                 setDeleteTargetId(null)
-                showToast.success('已刪除衣物')
+                setIsDeleteSuccessOpen(true)
               } catch (error) {
                 showToast.error(getDeleteErrorMessage(error))
               } finally {
                 setIsDeleting(false)
               }
             })()
+          }}
+        />
+
+        <SuccessAlertDialog
+          open={isDeleteSuccessOpen}
+          title="已刪除衣物"
+          onClose={() => {
+            setIsDeleteSuccessOpen(false)
           }}
         />
       </div>

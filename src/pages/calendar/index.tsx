@@ -17,18 +17,28 @@ import { getSelectableOutfitSummaryById } from '@/modules/calendar/utils/calenda
 import { sortCalendarEntriesForHome } from '@/modules/calendar/utils/calendarRules'
 import { AppShell } from '@/modules/common/components/AppShell'
 
+const getCurrentMonthLabel = () => {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+
+  return `${year}年${month}月`
+}
+
 const CalendarPage = () => {
   const router = useRouter()
   const { entries, deleteEntry } = useCalendarStore()
-  const [isSynced, setIsSynced] = useState(true)
+  const [isSynced, setIsSynced] = useState(false)
   const [deletingEntry, setDeletingEntry] = useState<CalendarEntry | null>(null)
   const [isDeleteSuccessOpen, setIsDeleteSuccessOpen] = useState(false)
+  const currentMonthLabel = useMemo(() => getCurrentMonthLabel(), [])
   const monthOptions = useMemo(() => {
     const uniqueMonths = Array.from(
-      new Set(entries.map((entry) => entry.date.slice(0, 7).replace('-', '年') + '月'))
+      new Set([currentMonthLabel, ...entries.map((entry) => entry.date.slice(0, 7).replace('-', '年') + '月')])
     )
-    return uniqueMonths.length > 0 ? uniqueMonths : ['2026年03月']
-  }, [entries])
+
+    return uniqueMonths.sort((left, right) => right.localeCompare(left))
+  }, [currentMonthLabel, entries])
   const requestedMonth = typeof router.query.month === 'string' ? router.query.month : null
   const [userSelectedMonth, setUserSelectedMonth] = useState<string | null>(null)
   const selectedMonth = useMemo(() => {
@@ -40,8 +50,12 @@ const CalendarPage = () => {
       return requestedMonth
     }
 
-    return monthOptions[0] ?? '2026年03月'
-  }, [monthOptions, requestedMonth, userSelectedMonth])
+    if (monthOptions.includes(currentMonthLabel)) {
+      return currentMonthLabel
+    }
+
+    return monthOptions[0] ?? currentMonthLabel
+  }, [currentMonthLabel, monthOptions, requestedMonth, userSelectedMonth])
 
   const visibleEntries = useMemo(() => {
     const normalized = selectedMonth.replace('年', '-').replace('月', '')
@@ -76,7 +90,7 @@ const CalendarPage = () => {
             onSyncChange={setIsSynced}
           />
         </div>
-        <div className="flex flex-1 flex-col gap-4 px-4 pt-4 pb-6">
+        <div className="flex flex-1 flex-col gap-4 px-4 pt-4 pb-20">
           {visibleEntries.length === 0 ? (
             <CalendarEmptyState />
           ) : (
@@ -94,12 +108,12 @@ const CalendarPage = () => {
                   onPreviewOutfit={
                     entry.selectedOutfitId
                       ? () =>
-                          void router.push(
-                            buildOutfitDetailReturnTo({
-                              outfitId: entry.selectedOutfitId as string,
-                              returnTo: '/calendar',
-                            })
-                          )
+                        void router.push(
+                          buildOutfitDetailReturnTo({
+                            outfitId: entry.selectedOutfitId as string,
+                            returnTo: '/calendar',
+                          })
+                        )
                       : undefined
                   }
                   onEdit={() => void router.push(getCalendarEditRoute(entry.date))}
