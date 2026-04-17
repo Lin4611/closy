@@ -145,7 +145,11 @@ const CalendarNewPage = () => {
           open={isOccasionDialogOpen}
           selectedOccasionKey={occasionKey}
           onSelect={setOccasionKey}
-          onClose={() => setIsOccasionDialogOpen(false)}
+          onClose={() => {
+            clearCalendarFlowDrafts()
+            setIsOccasionDialogOpen(false)
+            void router.push('/calendar')
+          }}
           onConfirm={() => setIsOccasionDialogOpen(false)}
         />
 
