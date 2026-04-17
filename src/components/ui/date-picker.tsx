@@ -97,7 +97,7 @@ export const DatePicker = ({
             </span>
             <span
               className={cn(
-                'absolute top-1/2 right-4 flex -translate-y-1/2 items-center justify-center text-neutral-500',
+                'absolute top-1/2 right-5 flex -translate-y-1/2 items-center justify-center text-neutral-500',
                 disabled && 'text-neutral-300',
                 iconClassName,
               )}

@@ -1,3 +1,5 @@
+import { ChevronDown } from 'lucide-react'
+
 import { Button } from '@/components/ui/button'
 import { DatePicker } from '@/components/ui/date-picker'
 import { cn } from '@/lib/utils'
@@ -45,20 +47,25 @@ export const CalendarForm = ({
           <label className="pb-2 font-label-md text-neutral-700">
             場合<span className="text-danger-300">*</span>
           </label>
-          <select
-            value={occasionKey ?? ''}
-            onChange={(event) => onOccasionChange(event.target.value as Occasion)}
-            className="mt-2 h-13 w-full rounded-[16px] border border-neutral-300 bg-white pl-5 py-3 font-paragraph-lg text-neutral-800 outline-none"
-          >
-            <option value="" disabled>
-              選擇場合
-            </option>
-            {calendarOccasionOptions.map((option) => (
-              <option key={option.key} value={option.key}>
-                {option.name}
+          <div className="relative mt-2">
+            <select
+              value={occasionKey ?? ''}
+              onChange={(event) => onOccasionChange(event.target.value as Occasion)}
+              className="h-13 w-full appearance-none rounded-[16px] border border-neutral-300 bg-white py-3 pr-12 pl-5 font-paragraph-lg text-neutral-800 outline-none"
+            >
+              <option value="" disabled>
+                選擇場合
               </option>
-            ))}
-          </select>
+              {calendarOccasionOptions.map((option) => (
+                <option key={option.key} value={option.key}>
+                  {option.name}
+                </option>
+              ))}
+            </select>
+            <span className="pointer-events-none absolute top-1/2 right-5 flex -translate-y-1/2 items-center justify-center text-neutral-500">
+              <ChevronDown className="size-5" strokeWidth={1.5} />
+            </span>
+          </div>
         </div>
         <div className="px-4 pt-4">
           <label className={cn('pb-2 font-label-md', disabledDate ? 'text-neutral-400' : 'text-neutral-700')}>
