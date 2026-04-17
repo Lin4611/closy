@@ -1,5 +1,7 @@
-import type { BaseApiResponse } from './types'
+import { store } from '@/store'
+import { clearUser } from '@/store/slices/userSlice'
 
+import type { BaseApiResponse } from './types'
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 
 type ApiClientOptions<TBody = unknown> = {
@@ -65,11 +67,17 @@ export const apiClient = async <TResponse, TBody = unknown>({
   }
 
   if (!response.ok) {
+    if (response.status === 401) {
+      const isLoggedIn = store.getState().user.isLoggedIn
+      if (isLoggedIn) {
+        store.dispatch(clearUser())
+      }
+    }
     const message =
       typeof data === 'object' &&
-        data !== null &&
-        'message' in data &&
-        typeof (data as { message?: unknown }).message === 'string'
+      data !== null &&
+      'message' in data &&
+      typeof (data as { message?: unknown }).message === 'string'
         ? (data as { message: string }).message
         : '請求失敗'
 
