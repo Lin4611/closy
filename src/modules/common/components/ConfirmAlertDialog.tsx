@@ -23,6 +23,11 @@ type ConfirmAlertDialogProps = {
   cancelLabel?: string
   confirmButtonClassName?: string
   hideCancel?: boolean
+  contentClassName?: string
+  headerClassName?: string
+  titleClassName?: string
+  descriptionClassName?: string
+  footerClassName?: string
 }
 
 const modeConfig = {
@@ -60,6 +65,11 @@ export const ConfirmAlertDialog = ({
   cancelLabel,
   confirmButtonClassName,
   hideCancel = false,
+  contentClassName,
+  headerClassName,
+  titleClassName,
+  descriptionClassName,
+  footerClassName,
 }: ConfirmAlertDialogProps) => {
   const resolvedTitle = title ?? modeConfig[mode].title
   const resolvedDescription = description ?? modeConfig[mode].description
@@ -80,17 +90,22 @@ export const ConfirmAlertDialog = ({
   return (
     <AlertDialog open={open} onOpenChange={onClose}>
       {mode === 'confirm' ? (
-        <AlertDialogContent className="flex h-57 w-[320px] flex-col gap-4 rounded-[20px] bg-white p-8 shadow-[0_4px_6px_-4px_rgba(0,0,0,0.1),0_10px_15px_-3px_rgba(0,0,0,0.1)]">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="font-h4">{resolvedTitle}</AlertDialogTitle>
+        <AlertDialogContent
+          className={cn(
+            'flex h-57 w-[320px] flex-col gap-4 rounded-[20px] bg-white p-8 shadow-[0_4px_6px_-4px_rgba(0,0,0,0.1),0_10px_15px_-3px_rgba(0,0,0,0.1)]',
+            contentClassName,
+          )}
+        >
+          <AlertDialogHeader className={headerClassName}>
+            <AlertDialogTitle className={cn('font-h4', titleClassName)}>{resolvedTitle}</AlertDialogTitle>
             {resolvedDescription ? (
-              <AlertDialogDescription className="font-paragraph-sm text-neutral-600">
+              <AlertDialogDescription className={cn('font-paragraph-sm text-neutral-600', descriptionClassName)}>
                 {resolvedDescription}
               </AlertDialogDescription>
             ) : null}
           </AlertDialogHeader>
 
-          <AlertDialogFooter>
+          <AlertDialogFooter className={footerClassName}>
             {!hideCancel ? (
               <AlertDialogCancel
                 onClick={onClose}

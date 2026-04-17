@@ -90,7 +90,7 @@ const CalendarPage = () => {
             onSyncChange={setIsSynced}
           />
         </div>
-        <div className="flex flex-1 flex-col gap-4 px-4 pt-4 pb-6">
+        <div className="flex flex-1 flex-col gap-4 px-4 pt-4 pb-20">
           {visibleEntries.length === 0 ? (
             <CalendarEmptyState />
           ) : (
@@ -108,12 +108,12 @@ const CalendarPage = () => {
                   onPreviewOutfit={
                     entry.selectedOutfitId
                       ? () =>
-                          void router.push(
-                            buildOutfitDetailReturnTo({
-                              outfitId: entry.selectedOutfitId as string,
-                              returnTo: '/calendar',
-                            })
-                          )
+                        void router.push(
+                          buildOutfitDetailReturnTo({
+                            outfitId: entry.selectedOutfitId as string,
+                            returnTo: '/calendar',
+                          })
+                        )
                       : undefined
                   }
                   onEdit={() => void router.push(getCalendarEditRoute(entry.date))}
