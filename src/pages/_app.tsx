@@ -45,7 +45,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
     }, 1000)
     return () => clearTimeout(timer)
   }, [isSplash, isLoggedIn, isProfileCompleted, router])
-
+  if (isProtected && !isLoggedIn) return null
   return <>{children}</>
 }
 
