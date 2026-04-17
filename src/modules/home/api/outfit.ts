@@ -9,8 +9,8 @@ type GenerateOutfitPayload = {
 
 export const generateOutfit = async (
   payload: GenerateOutfitPayload,
-): Promise<{ imageUrl: string }> => {
-  const res = await apiClient<ApiResponse<{ imageUrl: string }>, GenerateOutfitPayload>({
+): Promise<{ outfitImgUrl: string }> => {
+  const res = await apiClient<ApiResponse<{ outfitImgUrl: string }>, GenerateOutfitPayload>({
     endpoint: '/api/home/generate-outfit',
     method: 'POST',
     body: payload,

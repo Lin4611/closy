@@ -4,7 +4,7 @@ import type { DayRecommendation } from '@/modules/home/types/dayRecommendationTy
 
 type DayCache = {
   dayRecommendation: DayRecommendation
-  imageUrl: string
+  outfitImgUrl: string
 }
 
 type HomeState = {
@@ -33,11 +33,11 @@ const homeSlice = createSlice({
     },
     updateDayImageUrl: (
       state,
-      action: PayloadAction<{ day: 'today' | 'tomorrow'; imageUrl: string }>,
+      action: PayloadAction<{ day: 'today' | 'tomorrow'; outfitImgUrl: string }>,
     ) => {
       const dayState = state[action.payload.day]
       if (dayState) {
-        dayState.imageUrl = action.payload.imageUrl
+        dayState.outfitImgUrl = action.payload.outfitImgUrl
       }
     },
     clearDayCache: (state) => {

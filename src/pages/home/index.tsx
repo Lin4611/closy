@@ -44,11 +44,13 @@ const Home = () => {
     setIsLoading(true)
     try {
       const res = await getHomeRecommendation(day)
-      dispatch(setDayCache({ day, cache: { dayRecommendation: res, imageUrl: '' } }))
+      dispatch(setDayCache({ day, cache: { dayRecommendation: res, outfitImgUrl: '' } }))
       setIsLoading(false)
       setIsImageLoading(true)
-      const { imageUrl } = await generateOutfit({ selectedItems: res.recommendation.selectedItems })
-      dispatch(updateDayImageUrl({ day, imageUrl }))
+      const { outfitImgUrl } = await generateOutfit({
+        selectedItems: res.recommendation.selectedItems,
+      })
+      dispatch(updateDayImageUrl({ day, outfitImgUrl }))
     } catch (e) {
       if (e instanceof ApiError) showToast.error(e.message)
     } finally {
@@ -139,7 +141,7 @@ const Home = () => {
           />
           <div className="flex flex-col items-center justify-center pt-13">
             <HomeOutfitPreview
-              src={currentData?.imageUrl}
+              src={currentData?.outfitImgUrl || '/home/model_man.webp'}
               alt={`${activeDay}穿搭`}
               isLoading={isLoading || isImageLoading || !currentData}
               onDislikeClick={handleDislikeClick}

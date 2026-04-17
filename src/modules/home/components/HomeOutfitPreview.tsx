@@ -23,12 +23,12 @@ export const HomeOutfitPreview = ({
   const [isImageLoaded, setIsImageLoaded] = useState(false)
 
   return (
-    <div className="relative flex w-full flex-col items-center justify-center">
+    <div className="relative flex h-100 w-full flex-col items-center justify-center">
       {isLoading ? (
         <HomeOutfitPreviewSkeleton />
       ) : (
         src && (
-          <div className="h-100 w-[139px]">
+          <div className="relative h-100 w-[139px] shrink-0">
             <Image
               src={src}
               alt={alt}
