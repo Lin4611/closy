@@ -47,10 +47,13 @@ const Home = () => {
       dispatch(setDayCache({ day, cache: { dayRecommendation: res, outfitImgUrl: '' } }))
       setIsLoading(false)
       setIsImageLoading(true)
-      const { outfitImgUrl } = await generateOutfit({
+      const result = await generateOutfit({
         selectedItems: res.recommendation.selectedItems,
+        occasion: res.recommendation.occasion,
       })
-      dispatch(updateDayImageUrl({ day, outfitImgUrl }))
+      dispatch(
+        updateDayImageUrl({ day, outfitImgUrl: result.outfitImgUrl, occasion: result.occasion }),
+      )
     } catch (e) {
       if (e instanceof ApiError) showToast.error(e.message)
     } finally {
