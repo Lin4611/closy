@@ -20,14 +20,15 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   const isLoggedIn = useAppSelector((state) => state.user.isLoggedIn)
   const isProfileCompleted = useAppSelector((state) => state.user.user?.isProfileCompleted)
   const isSplash = router.pathname === '/'
-  const isGuide = router.pathname.startsWith('/guide')
-  const isProtected = !isSplash && !isGuide
+  const isGuide = router.pathname.startsWith('/guide/')
+  const isLoginPage = router.pathname === '/guide'
+  const isProtected = !isSplash && !isLoginPage
 
   useEffect(() => {
     if (isProtected && !isLoggedIn) {
-      router.replace('/')
+      router.replace(isGuide ? '/guide' : '/')
     }
-  }, [isProtected, isLoggedIn, router])
+  }, [isProtected, isLoggedIn, router, isGuide])
 
   useEffect(() => {
     if (!isSplash) return
