@@ -3,10 +3,10 @@ import type { Occasion } from '@/modules/common/types/occasion'
 export type OutfitTab = 'overview' | 'groupByOccasion'
 
 export type OutfitProduct = {
-  id: string
-  name: string
-  imageUrl: string
   category: string
+  name: string
+  brand: string
+  cloudImgUrl: string
 }
 
 export type OutfitSummary = {
@@ -21,10 +21,24 @@ export type OutfitDetail = OutfitSummary & {
 }
 
 export type OutfitItem = {
-  outfitId: string
-  imageUrl: string
-  occasionName: Occasion
-  savedAt: string
+  _id: string
+  outfitImgUrl: string
+  occasion: Occasion
+  selectedItems: OutfitProduct[]
+  createdAt: string
+  updatedAt: string
+}
+
+export type AddOutfitItem = {
+  outfitImgUrl: string
+  occasion: Occasion
+  selectedItems: OutfitProduct[]
+}
+
+export type SummaryList = {
+  occasionId: Occasion
+  count: number
+  recentDates: string[]
 }
 
 export type OutfitDetailItem = OutfitProduct
