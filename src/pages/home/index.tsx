@@ -26,7 +26,7 @@ const HomeOnboardingGate = dynamic(
 
 const Home = () => {
   const router = useRouter()
-  const [isAdjustPromptOpen, setIsAdjustPromptOpen] = useState(true)
+  const [isAdjustPromptOpen, setIsAdjustPromptOpen] = useState(false)
   const [isOnboardingVisible, setIsOnboardingVisible] = useState(false)
   const [isOutfitAdjustDrawerOpen, setIsOutfitAdjustDrawerOpen] = useState(false)
   const [isImageLoading, setIsImageLoading] = useState(false)
@@ -117,8 +117,13 @@ const Home = () => {
   }
 
   useEffect(() => {
-    setHideTimer(2000)
+    const openTimer = setTimeout(() => {
+      setIsAdjustPromptOpen(true)
+      setHideTimer(2000)
+    }, 2000)
+
     return () => {
+      clearTimeout(openTimer)
       clearHideTimer()
     }
   }, [])
