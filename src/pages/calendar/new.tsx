@@ -145,9 +145,8 @@ const CalendarNewPage = () => {
           open={isOccasionDialogOpen}
           selectedOccasionKey={occasionKey}
           onSelect={setOccasionKey}
-          onClose={() => {
+          onCancel={() => {
             clearCalendarFlowDrafts()
-            setIsOccasionDialogOpen(false)
             void router.push('/calendar')
           }}
           onConfirm={() => setIsOccasionDialogOpen(false)}
@@ -155,7 +154,7 @@ const CalendarNewPage = () => {
 
         <CalendarOccasionChangeDialog
           open={isOccasionChangeDialogOpen}
-          onClose={() => {
+          onCancel={() => {
             setPendingOccasionKey(null)
             setIsOccasionChangeDialogOpen(false)
           }}
@@ -182,7 +181,7 @@ const CalendarNewPage = () => {
           open={isSuccessDialogOpen}
           title="新增成功"
           confirmButtonClassName="bg-primary-800 text-white"
-          onClose={() => {
+          onCancel={() => {
             setIsSuccessDialogOpen(false)
             const targetMonth = date ? `${date.slice(0, 4)}年${date.slice(5, 7)}月` : null
             void router.push({

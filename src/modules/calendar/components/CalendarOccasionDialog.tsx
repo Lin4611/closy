@@ -17,17 +17,17 @@ export const CalendarOccasionDialog = ({
   open,
   selectedOccasionKey,
   onSelect,
-  onClose,
+  onCancel,
   onConfirm,
 }: {
   open: boolean
   selectedOccasionKey: Occasion | null
   onSelect: (occasionKey: Occasion) => void
-  onClose: () => void
+  onCancel: () => void
   onConfirm: () => void
 }) => {
   return (
-    <AlertDialog open={open} onOpenChange={onClose}>
+    <AlertDialog open={open}>
       <AlertDialogContent className="w-86 rounded-[20px] bg-white px-5 py-4">
         <AlertDialogHeader className="gap-1 pb-2">
           <AlertDialogTitle className="font-h4 text-black">選擇你要出席的場合</AlertDialogTitle>
@@ -59,7 +59,7 @@ export const CalendarOccasionDialog = ({
           })}
         </div>
         <AlertDialogFooter className="grid grid-cols-2 gap-3 pt-3">
-          <AlertDialogCancel onClick={onClose} variant="outline" className="col-span-1 h-11 rounded-[12px] border-neutral-300 bg-white text-neutral-700">
+          <AlertDialogCancel onClick={onCancel} variant="outline" className="col-span-1 h-11 rounded-[12px] border-neutral-300 bg-white text-neutral-700">
             取消
           </AlertDialogCancel>
           <AlertDialogAction onClick={onConfirm} variant="brand" className="col-span-1 h-11 rounded-[12px]" disabled={!selectedOccasionKey}>
