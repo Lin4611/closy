@@ -87,9 +87,9 @@ const WardrobePage = () => {
   return (
     <AppShell activeTab="wardrobe">
       <div className="flex min-h-[calc(100dvh-80px)] flex-col">
-        <div className="sticky top-0 z-20 shrink-0">
+        <div className="sticky top-0 z-20 shrink-0 bg-neutral-100">
           <WardrobeHeader />
-          <div className="bg-neutral-100 mt-0.75 py-5">
+          <div className="py-5">
             <WardrobeFilterChips
               activeCategory={activeCategory}
               counts={counts}
