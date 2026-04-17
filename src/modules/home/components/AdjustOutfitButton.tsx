@@ -39,7 +39,7 @@ export const AdjustOutfitButton = ({
       {expanded && (
         <span
           className={cn(
-            'font-label-sm ml-1 min-w-0',
+            'font-label-sm animate-in fade-in ml-1 whitespace-nowrap delay-200 duration-300',
             disabled ? 'text-neutral-400' : 'text-neutral-600',
           )}
         >
