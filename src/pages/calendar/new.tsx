@@ -154,7 +154,7 @@ const CalendarNewPage = () => {
 
         <CalendarOccasionChangeDialog
           open={isOccasionChangeDialogOpen}
-          onCancel={() => {
+          onClose={() => {
             setPendingOccasionKey(null)
             setIsOccasionChangeDialogOpen(false)
           }}
@@ -181,7 +181,7 @@ const CalendarNewPage = () => {
           open={isSuccessDialogOpen}
           title="新增成功"
           confirmButtonClassName="bg-primary-800 text-white"
-          onCancel={() => {
+          onClose={() => {
             setIsSuccessDialogOpen(false)
             const targetMonth = date ? `${date.slice(0, 4)}年${date.slice(5, 7)}月` : null
             void router.push({
