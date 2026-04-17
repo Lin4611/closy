@@ -77,11 +77,71 @@ export const isCalendarDateBlocked = ({
   })
 }
 
+
+
+export const isCalendarDateExpiredKey = (date: string) => {
+  return date < getTodayDateKey()
+}
+
+export const isCalendarDateDisabled = ({
+  date,
+  entries,
+  googleEvents,
+  currentEntryId,
+}: {
+  date: string
+  entries: CalendarEntry[]
+  googleEvents: CalendarGoogleEvent[]
+  currentEntryId?: string | null
+}) => {
+  if (isCalendarDateExpiredKey(date)) {
+    return true
+  }
+
+  return isCalendarDateBlocked({
+    date,
+    entries,
+    googleEvents,
+    currentEntryId,
+  })
+}
+
+export const getNearestAvailableCalendarDate = ({
+  entries,
+  googleEvents,
+  currentEntryId,
+  fromDate,
+  maxSearchDays = 730,
+}: {
+  entries: CalendarEntry[]
+  googleEvents: CalendarGoogleEvent[]
+  currentEntryId?: string | null
+  fromDate?: string
+  maxSearchDays?: number
+}) => {
+  const baseDate = fromDate && !isCalendarDateExpiredKey(fromDate) ? new Date(`${fromDate}T00:00:00`) : new Date(`${getTodayDateKey()}T00:00:00`)
+
+  for (let offset = 0; offset <= maxSearchDays; offset += 1) {
+    const candidate = new Date(baseDate)
+    candidate.setDate(baseDate.getDate() + offset)
+    const year = candidate.getFullYear()
+    const month = String(candidate.getMonth() + 1).padStart(2, '0')
+    const day = String(candidate.getDate()).padStart(2, '0')
+    const candidateKey = `${year}-${month}-${day}`
+
+    if (!isCalendarDateDisabled({ date: candidateKey, entries, googleEvents, currentEntryId })) {
+      return candidateKey
+    }
+  }
+
+  return ''
+}
+
 export const sortCalendarEntriesByDateDesc = (entries: CalendarEntry[]) => {
   return [...entries].sort((left, right) => right.date.localeCompare(left.date))
 }
 
-const getTodayDateKey = () => {
+export const getTodayDateKey = () => {
   const now = new Date()
   const year = now.getFullYear()
   const month = String(now.getMonth() + 1).padStart(2, '0')
@@ -91,7 +151,7 @@ const getTodayDateKey = () => {
 }
 
 export const isCalendarEntryExpired = (entry: Pick<CalendarEntry, 'date'>) => {
-  return entry.date < getTodayDateKey()
+  return isCalendarDateExpiredKey(entry.date)
 }
 
 export const sortCalendarEntriesForHome = (entries: CalendarEntry[]) => {

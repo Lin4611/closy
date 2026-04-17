@@ -1,4 +1,4 @@
-import { ConfirmAlertDialog } from '@/modules/common/components/ConfirmAlertDialog'
+import { SuccessAlertDialog } from '@/modules/common/components/SuccessAlertDialog'
 
 type CalendarSuccessDialogProps = {
   open: boolean
@@ -14,9 +14,8 @@ export const CalendarSuccessDialog = ({
   confirmButtonClassName,
 }: CalendarSuccessDialogProps) => {
   return (
-    <ConfirmAlertDialog
+    <SuccessAlertDialog
       open={open}
-      mode="success"
       title={title}
       confirmButtonClassName={confirmButtonClassName}
       onClose={onClose}

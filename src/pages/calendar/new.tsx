@@ -11,7 +11,7 @@ import { useCalendarStore } from '@/modules/calendar/hooks/useCalendarStore'
 import { getCalendarFormDraft, saveCalendarFormDraft, clearCalendarFormDraft, getCalendarSelectedOutfitDraft, clearCalendarSelectedOutfitDraft, clearCalendarFlowDrafts } from '@/modules/calendar/utils/calendarDraftStorage'
 import { buildCalendarSelectOutfitReturnTo, buildCalendarSelectOutfitRoute } from '@/modules/calendar/utils/calendarNavigation'
 import { getSelectableOutfitSummaryById } from '@/modules/calendar/utils/calendarOutfitAdapter'
-import { hasSelectedOutfit, isCalendarDateBlocked, shouldResetSelectedOutfit } from '@/modules/calendar/utils/calendarRules'
+import { getNearestAvailableCalendarDate, hasSelectedOutfit, isCalendarDateBlocked, isCalendarDateDisabled, shouldResetSelectedOutfit } from '@/modules/calendar/utils/calendarRules'
 import { AppShell } from '@/modules/common/components/AppShell'
 import type { Occasion } from '@/modules/common/types/occasion'
 
@@ -20,8 +20,17 @@ const CalendarNewPage = () => {
   const { entries, addEntry } = useCalendarStore()
   const initialDraft = useMemo(() => getCalendarFormDraft(), [])
   const selectedOutfitDraft = useMemo(() => getCalendarSelectedOutfitDraft(), [])
+  const initialDate = useMemo(() => {
+    const draftDate = selectedOutfitDraft?.date || initialDraft?.date || ''
+
+    if (draftDate && !isCalendarDateDisabled({ date: draftDate, entries, googleEvents: mockGoogleEvents })) {
+      return draftDate
+    }
+
+    return getNearestAvailableCalendarDate({ entries, googleEvents: mockGoogleEvents })
+  }, [entries, initialDraft?.date, selectedOutfitDraft?.date])
   const [occasionKey, setOccasionKey] = useState<Occasion | null>(selectedOutfitDraft?.occasionKey ?? initialDraft?.occasionKey ?? null)
-  const [date, setDate] = useState(selectedOutfitDraft?.date || initialDraft?.date || '')
+  const [date, setDate] = useState(initialDate)
   const [selectedOutfitId, setSelectedOutfitId] = useState<string | null>(selectedOutfitDraft?.selectedOutfitId ?? initialDraft?.selectedOutfitId ?? null)
   const [pendingOccasionKey, setPendingOccasionKey] = useState<Occasion | null>(null)
   const [isOccasionDialogOpen, setIsOccasionDialogOpen] = useState(!(selectedOutfitDraft?.occasionKey ?? initialDraft?.occasionKey))
@@ -52,6 +61,23 @@ const CalendarNewPage = () => {
       .map((entry) => entry.date)
   }, [entries])
 
+  const initialDisplayDate = useMemo(() => {
+    if (date && !isCalendarDateDisabled({ date, entries, googleEvents: mockGoogleEvents })) {
+      return date
+    }
+
+    return getNearestAvailableCalendarDate({ entries, googleEvents: mockGoogleEvents })
+  }, [date, entries])
+
+
+  const isDateDisabled = (candidateDate: string) => {
+    return isCalendarDateDisabled({
+      date: candidateDate,
+      entries,
+      googleEvents: mockGoogleEvents,
+    })
+  }
+
   const handleOccasionChange = (nextOccasionKey: Occasion) => {
     if (hasSelectedOutfit({ selectedOutfitId }) && shouldResetSelectedOutfit(occasionKey, nextOccasionKey)) {
       setPendingOccasionKey(nextOccasionKey)
@@ -78,7 +104,7 @@ const CalendarNewPage = () => {
 
   const handleSubmit = () => {
     if (!occasionKey || !date) return
-    if (isCalendarDateBlocked({ date, entries, googleEvents: mockGoogleEvents })) return
+    if (isDateDisabled(date)) return
 
     addEntry({
       date,
@@ -108,6 +134,8 @@ const CalendarNewPage = () => {
           date={date}
           outfit={selectedOutfit}
           disabledDates={disabledDates}
+          initialDisplayDate={initialDisplayDate}
+          isDateDisabled={isDateDisabled}
           onOccasionChange={handleOccasionChange}
           onDateChange={setDate}
           onSelectOutfit={handleSelectOutfit}
@@ -117,7 +145,10 @@ const CalendarNewPage = () => {
           open={isOccasionDialogOpen}
           selectedOccasionKey={occasionKey}
           onSelect={setOccasionKey}
-          onClose={() => setIsOccasionDialogOpen(false)}
+          onCancel={() => {
+            clearCalendarFlowDrafts()
+            void router.push('/calendar')
+          }}
           onConfirm={() => setIsOccasionDialogOpen(false)}
         />
 
