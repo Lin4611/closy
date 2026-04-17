@@ -118,8 +118,10 @@ const Home = () => {
 
   useEffect(() => {
     const openTimer = setTimeout(() => {
-      setIsAdjustPromptOpen(true)
-      setHideTimer(2000)
+      if (!hideTimerRef.current) {
+        setIsAdjustPromptOpen(true)
+        setHideTimer(2000)
+      }
     }, 2000)
 
     return () => {
