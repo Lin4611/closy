@@ -7,6 +7,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
 import { AppShell } from '@/modules/common/components/AppShell'
+import { SuccessAlertDialog } from '@/modules/common/components/SuccessAlertDialog'
 import { deleteClothes } from '@/modules/wardrobe/api/deleteClothes'
 import { getClothesDetail } from '@/modules/wardrobe/api/getClothesDetail'
 import { DeleteClothingDialog } from '@/modules/wardrobe/components/DeleteClothingDialog'
@@ -37,6 +38,7 @@ const WardrobeDetailPage = () => {
   const { deleteItem, getItemById, isReady, syncItemFromServer } = useWardrobeMock()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
+  const [isDeleteSuccessOpen, setIsDeleteSuccessOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isNotFound, setIsNotFound] = useState(false)
@@ -294,14 +296,22 @@ const WardrobeDetailPage = () => {
                 await deleteClothes(item.id)
                 deleteItem(item.id)
                 setIsDeleteOpen(false)
-                showToast.success('已刪除衣物')
-                await router.replace('/wardrobe')
+                setIsDeleteSuccessOpen(true)
               } catch (error) {
                 showToast.error(getDeleteErrorMessage(error))
               } finally {
                 setIsDeleting(false)
               }
             })()
+          }}
+        />
+
+        <SuccessAlertDialog
+          open={isDeleteSuccessOpen}
+          title="已刪除衣物"
+          onClose={() => {
+            setIsDeleteSuccessOpen(false)
+            void router.replace('/wardrobe')
           }}
         />
       </div>

@@ -91,7 +91,7 @@ export const Calendar = ({ month, selected, onMonthChange, onSelect, disabled, c
               disabled={isDisabled}
               onClick={() => onSelect?.(date)}
               className={cn(
-                'mx-auto flex size-8 items-center justify-center rounded-[8px] font-paragraph-sm text-neutral-700 transition-colors',
+                'mx-auto flex size-7 items-center justify-center rounded-[8px] font-paragraph-sm text-neutral-700 transition-colors',
                 isOutsideMonth && 'text-neutral-300',
                 isSelected && 'bg-primary-800 text-white',
                 isDisabled && 'cursor-not-allowed bg-neutral-100 text-neutral-300',

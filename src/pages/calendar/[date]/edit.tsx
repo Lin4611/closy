@@ -11,7 +11,7 @@ import type { CalendarEntry } from '@/modules/calendar/types'
 import { clearCalendarFormDraft, clearCalendarSelectedOutfitDraft, getCalendarSelectedOutfitDraft, saveCalendarFormDraft, clearCalendarFlowDrafts } from '@/modules/calendar/utils/calendarDraftStorage'
 import { buildCalendarSelectOutfitReturnTo, buildCalendarSelectOutfitRoute, parseCalendarEditDateParam } from '@/modules/calendar/utils/calendarNavigation'
 import { getSelectableOutfitSummaryById } from '@/modules/calendar/utils/calendarOutfitAdapter'
-import { canEditCalendarDate, hasSelectedOutfit, isCalendarDateBlocked, shouldResetSelectedOutfit } from '@/modules/calendar/utils/calendarRules'
+import { canEditCalendarDate, getNearestAvailableCalendarDate, hasSelectedOutfit, isCalendarDateBlocked, isCalendarDateDisabled, shouldResetSelectedOutfit } from '@/modules/calendar/utils/calendarRules'
 import { AppShell } from '@/modules/common/components/AppShell'
 import type { Occasion } from '@/modules/common/types/occasion'
 
@@ -58,6 +58,28 @@ const CalendarEditContent = ({ entry }: { entry: CalendarEntry }) => {
     .filter((item) => isCalendarDateBlocked({ date: item.date, entries, googleEvents: mockGoogleEvents, currentEntryId: entry.id }))
     .map((item) => item.date)
 
+  const initialDisplayDate = useMemo(() => {
+    if (date && !isCalendarDateDisabled({ date, entries, googleEvents: mockGoogleEvents, currentEntryId: entry.id })) {
+      return date
+    }
+
+    return getNearestAvailableCalendarDate({
+      entries,
+      googleEvents: mockGoogleEvents,
+      currentEntryId: entry.id,
+    })
+  }, [date, entries, entry.id])
+
+
+  const isDateDisabled = (candidateDate: string) => {
+    return isCalendarDateDisabled({
+      date: candidateDate,
+      entries,
+      googleEvents: mockGoogleEvents,
+      currentEntryId: entry.id,
+    })
+  }
+
   const handleOccasionChange = (nextOccasionKey: Occasion) => {
     if (hasSelectedOutfit({ ...entry, selectedOutfitId }) && shouldResetSelectedOutfit(occasionKey, nextOccasionKey)) {
       setPendingOccasionKey(nextOccasionKey)
@@ -84,7 +106,7 @@ const CalendarEditContent = ({ entry }: { entry: CalendarEntry }) => {
 
   const handleSubmit = () => {
     if (!occasionKey || !date) return
-    if (isCalendarDateBlocked({ date, entries, googleEvents: mockGoogleEvents, currentEntryId: entry.id })) return
+    if (isDateDisabled(date)) return
 
     updateEntry(entry.id, {
       date,
@@ -118,6 +140,8 @@ const CalendarEditContent = ({ entry }: { entry: CalendarEntry }) => {
           outfit={selectedOutfit}
           disabledDate={!canEditCalendarDate(entry)}
           disabledDates={disabledDates}
+          initialDisplayDate={initialDisplayDate}
+          isDateDisabled={isDateDisabled}
           onOccasionChange={handleOccasionChange}
           onDateChange={setDate}
           onSelectOutfit={handleSelectOutfit}
