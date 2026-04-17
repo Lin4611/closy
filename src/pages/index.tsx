@@ -1,33 +1,6 @@
 import Image from 'next/image'
-import { useRouter } from 'next/router'
-import { useEffect } from 'react'
-
-import { useAppSelector } from '@/store/hooks'
 
 const SplashPage = () => {
-  const router = useRouter()
-  const isLoggedIn = useAppSelector((state) => state.user.isLoggedIn)
-  const isProfileCompleted = useAppSelector((state) => state.user.user?.isProfileCompleted)
-
-  useEffect(() => {
-    if (isLoggedIn && isProfileCompleted) {
-      router.prefetch('/home')
-    }
-
-    const timer = setTimeout(() => {
-      if (isLoggedIn) {
-        if (isProfileCompleted) {
-          router.replace('/home')
-        } else {
-          router.replace('/guide/welcome')
-        }
-      } else {
-        router.replace('/guide')
-      }
-    }, 1000)
-    return () => clearTimeout(timer)
-  }, [router, isLoggedIn, isProfileCompleted])
-
   return (
     <main className="flex min-h-screen flex-col items-center gap-20 pt-40 pb-[104px]">
       <section className="flex flex-col items-center gap-5">
