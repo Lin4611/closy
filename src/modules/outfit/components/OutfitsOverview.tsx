@@ -32,7 +32,7 @@ export const OutfitsOverview = ({ outfits, onDelete, tab }: OutfitsOverviewProps
           const footLabel =
             tab === 'overview'
               ? occasionLabelMap[outfit.occasion]
-              : outfit.createdAt.replaceAll('-', '/')
+              : outfit.createdAt.split('T')[0].replaceAll('-', '/')
           return (
             <OutfitCard
               key={outfit._id}

@@ -13,12 +13,16 @@ import { getOutfitList } from '@/modules/outfit/api/outfit'
 import { OutfitEmptyOverView } from '@/modules/outfit/components/OutfitEmptyOverView'
 import { OutfitsOverview } from '@/modules/outfit/components/OutfitsOverview'
 import type { OutfitItem } from '@/modules/outfit/types/outfitTypes'
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
+import { setOutfitList as setOutfitListCache } from '@/store/slices/outfitSlice'
 
 const isValidOccasionId = (value: string) => {
   return occasionMetaMap.some((item) => item.key === value)
 }
 
 const OutfitOccasionDetail = () => {
+  const dispatch = useAppDispatch()
+  const cachedOutfitList = useAppSelector((state) => state.outfit.outfitList)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [dialogMode, setDialogMode] = useState<'confirm' | 'success'>('confirm')
   const [selectedOutfitId, setSelectedOutfitId] = useState<string | null>(null)
@@ -48,8 +52,9 @@ const OutfitOccasionDetail = () => {
     try {
       await deleteOutfit(id)
       setDialogMode('success')
-      const occasion = occasionMetaMap.find((item) => item.key === occasionId)
-      if (occasion) await fetchOutfitList(occasion.key)
+      const list = await getOutfitList(occasionId as Occasion)
+      setOutfitList(list)
+      dispatch(setOutfitListCache(cachedOutfitList.filter((item) => item._id !== id)))
     } catch {
       showToast.error('刪除穿搭失敗')
     } finally {
@@ -61,7 +66,10 @@ const OutfitOccasionDetail = () => {
     if (!router.isReady) return
     const occasion = occasionMetaMap.find((item) => item.key === occasionId)
     if (!occasion) return
-    fetchOutfitList(occasion.key)
+    const load = async () => {
+      await fetchOutfitList(occasion.key)
+    }
+    load()
   }, [router.isReady, occasionId])
 
   if (typeof occasionId !== 'string') {
@@ -74,9 +82,9 @@ const OutfitOccasionDetail = () => {
     setIsDialogOpen(true)
   }
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (!selectedOutfitId) return
-    delOutfit(selectedOutfitId)
+    await delOutfit(selectedOutfitId)
   }
 
   const handleCloseDialog = () => {

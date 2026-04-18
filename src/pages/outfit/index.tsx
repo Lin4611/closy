@@ -7,37 +7,28 @@ import { deleteOutfit } from '@/modules/outfit/api/delOutfit'
 import { getOccasionList } from '@/modules/outfit/api/occasionList'
 import { getOutfitList } from '@/modules/outfit/api/outfit'
 import { OutfitsContentSection } from '@/modules/outfit/components/OutfitsContentSection'
-import type { OutfitItem, SummaryList } from '@/modules/outfit/types/outfitTypes'
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
+import { setOccasionsList, setOutfitList } from '@/store/slices/outfitSlice'
 
 const Outfit = () => {
+  const dispatch = useAppDispatch()
+  const { outfitList, occasionsList } = useAppSelector((state) => state.outfit)
+
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [dialogMode, setDialogMode] = useState<'confirm' | 'success'>('confirm')
   const [selectedOutfitId, setSelectedOutfitId] = useState<string | null>(null)
-  const [outfitList, setOutfitList] = useState<OutfitItem[]>([])
-  const [occasionsList, setOccasionsList] = useState<SummaryList[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const fetchOccasionList = async () => {
+  const fetchAll = async () => {
     setIsLoading(true)
     try {
-      const summaryList = await getOccasionList()
-      setOccasionsList(summaryList)
+      const [list, summaryList] = await Promise.all([getOutfitList(), getOccasionList()])
+      dispatch(setOutfitList(list))
+      dispatch(setOccasionsList(summaryList))
     } catch {
-      showToast.error('取得場合清單失敗')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const fetchOutfitList = async () => {
-    setIsLoading(true)
-    try {
-      const list = await getOutfitList()
-      setOutfitList(list)
-    } catch {
-      showToast.error('取得穿搭失敗')
+      showToast.error('取得資料失敗')
     } finally {
       setIsLoading(false)
     }
@@ -48,7 +39,9 @@ const Outfit = () => {
     try {
       await deleteOutfit(id)
       setDialogMode('success')
-      await fetchOutfitList()
+      const [list, summaryList] = await Promise.all([getOutfitList(), getOccasionList()])
+      dispatch(setOutfitList(list))
+      dispatch(setOccasionsList(summaryList))
     } catch {
       showToast.error('刪除穿搭失敗')
     } finally {
@@ -57,8 +50,10 @@ const Outfit = () => {
   }
 
   useEffect(() => {
-    fetchOutfitList()
-    fetchOccasionList()
+    const load = async () => {
+      await fetchAll()
+    }
+    load()
   }, [])
 
   const handleClickDelete = (outfitId: string) => {
@@ -67,9 +62,9 @@ const Outfit = () => {
     setIsDialogOpen(true)
   }
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (!selectedOutfitId) return
-    delOutfit(selectedOutfitId)
+    await delOutfit(selectedOutfitId)
   }
 
   const handleCloseDialog = () => {
