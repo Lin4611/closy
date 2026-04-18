@@ -36,7 +36,7 @@ export type RemoveBackgroundResponseData = {
 }
 
 export type AnalyzeClothesRequest = {
-  imageUrl: string
+  cloudinaryImageUrl: string
   imageHash: string
 }
 
