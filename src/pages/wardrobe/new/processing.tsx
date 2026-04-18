@@ -9,7 +9,10 @@ import { removeBackground } from '@/modules/wardrobe/api/removeBackground'
 import { RecognitionLoading } from '@/modules/wardrobe/components/RecognitionLoading'
 import { useWardrobeCreationFlow } from '@/modules/wardrobe/hooks/useWardrobeCreationFlow'
 import { mapAnalyzeResponseToWardrobeReviewDraft } from '@/modules/wardrobe/utils/apiMappers'
-import { getCreationFlowSourceRoute, resolveCreationFlowEntryScope } from '@/modules/wardrobe/utils/creationFlowNavigation'
+import {
+  getCreationFlowSourceRoute,
+  resolveCreationFlowEntryScope,
+} from '@/modules/wardrobe/utils/creationFlowNavigation'
 
 const FAILURE_TIP_MESSAGE = '建議更換較清楚衣物圖片'
 
@@ -110,7 +113,7 @@ const WardrobeProcessingPage = () => {
         setStatusText('正在辨識中...')
 
         const analyzeResult = await analyzeClothes({
-          imageUrl: removeBackgroundResult.cloudinaryImageUrl,
+          cloudinaryImageUrl: removeBackgroundResult.cloudinaryImageUrl,
           imageHash: removeBackgroundResult.imageHash,
         })
 
@@ -164,7 +167,9 @@ const WardrobeProcessingPage = () => {
 
   if (isFailure) {
     const context = getContext()
-    const retryHref = context?.entryType ? '/wardrobe/new/preview' : getCreationFlowSourceRoute(null, entryScope)
+    const retryHref = context?.entryType
+      ? '/wardrobe/new/preview'
+      : getCreationFlowSourceRoute(null, entryScope)
     const retryLabel = context?.entryType ? '回到圖片確認' : '重新選擇新增方式'
 
     return (
@@ -173,7 +178,9 @@ const WardrobeProcessingPage = () => {
           <header className="px-4 pt-14 pb-3">
             <div className="rounded-[12px] bg-[#FDF0F0] px-3 py-2">
               <div className="flex items-center gap-2">
-                <span className="rounded-full bg-[#D9534F] px-2 py-1 font-label-xs text-white">小提醒</span>
+                <span className="font-label-xs rounded-full bg-[#D9534F] px-2 py-1 text-white">
+                  小提醒
+                </span>
                 <span className="font-paragraph-sm text-neutral-700">{FAILURE_TIP_MESSAGE}</span>
               </div>
             </div>
@@ -190,7 +197,7 @@ const WardrobeProcessingPage = () => {
                 onClick={() => {
                   void router.replace(retryHref)
                 }}
-                className="mt-6 rounded-full bg-primary-900 px-5 py-3 font-label-md text-white"
+                className="bg-primary-900 font-label-md mt-6 rounded-full px-5 py-3 text-white"
               >
                 {retryLabel}
               </button>
