@@ -2,11 +2,11 @@ import Image from 'next/image'
 
 type OutfitsOccasionCardProps = {
   occasionId: string
-  occasionName: string
-  description: string
+  occasionName?: string
+  description?: string
   outfitCount: number
   onSelectOccasion?: (occasionId: string) => void
-  imageUrl: string
+  imageUrl?: string
   currentDates?: string[]
 }
 
@@ -26,7 +26,7 @@ export const OutfitsOccasionCard = ({
       onClick={() => onSelectOccasion?.(occasionId)}
     >
       <div className="flex h-[80px] w-[80px] items-center justify-center rounded-[12px] bg-white">
-        <Image src={imageUrl} alt="outfit" width={80} height={80} />
+        {imageUrl && <Image src={imageUrl} alt="outfit" width={80} height={80} />}
       </div>
       <div className="flex flex-col items-start gap-1">
         <h4 className="font-label-md text-neutral-800">

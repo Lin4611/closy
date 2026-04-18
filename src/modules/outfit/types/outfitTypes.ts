@@ -39,6 +39,9 @@ export type SummaryList = {
   occasionId: Occasion
   count: number
   recentDates: string[]
+} & {
+  description: string
+  imageUrl: string
 }
 
 export type OutfitDetailItem = OutfitProduct
