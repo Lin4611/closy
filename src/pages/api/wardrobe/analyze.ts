@@ -2,7 +2,10 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 
 import { ApiError, apiClient } from '@/lib/api/client'
 import type { ApiResponse } from '@/lib/api/types'
-import type { AnalyzeClothesRequest, AnalyzeClothesResponseData } from '@/modules/wardrobe/api/types'
+import type {
+  AnalyzeClothesRequest,
+  AnalyzeClothesResponseData,
+} from '@/modules/wardrobe/api/types'
 
 type ErrorResponse = {
   message: string
@@ -36,8 +39,8 @@ const isAnalyzeClothesRequest = (value: unknown): value is AnalyzeClothesRequest
   return (
     typeof value === 'object' &&
     value !== null &&
-    'imageUrl' in value &&
-    typeof (value as { imageUrl?: unknown }).imageUrl === 'string' &&
+    'cloudinaryImageUrl' in value &&
+    typeof (value as { cloudinaryImageUrl?: unknown }).cloudinaryImageUrl === 'string' &&
     'imageHash' in value &&
     typeof (value as { imageHash?: unknown }).imageHash === 'string'
   )
@@ -45,7 +48,7 @@ const isAnalyzeClothesRequest = (value: unknown): value is AnalyzeClothesRequest
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<ApiResponse<AnalyzeClothesResponseData> | ErrorResponse>
+  res: NextApiResponse<ApiResponse<AnalyzeClothesResponseData> | ErrorResponse>,
 ) {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method Not Allowed' })
@@ -62,7 +65,10 @@ export default async function handler(
   }
 
   try {
-    const response = await apiClient<ApiResponse<AnalyzeClothesResponseData>, AnalyzeClothesRequest>({
+    const response = await apiClient<
+      ApiResponse<AnalyzeClothesResponseData>,
+      AnalyzeClothesRequest
+    >({
       baseUrl: getApiBaseUrl(),
       endpoint: '/process/analyze-clothes',
       method: 'POST',
