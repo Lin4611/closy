@@ -1,16 +1,36 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
+import { showToast } from '@/components/ui/sonner'
 import { AppShell } from '@/modules/common/components/AppShell'
 import { ConfirmAlertDialog } from '@/modules/common/components/ConfirmAlertDialog'
+import { getOutfitList } from '@/modules/outfit/api/outfit'
 import { OutfitsContentSection } from '@/modules/outfit/components/OutfitsContentSection'
-import { mockOutfits } from '@/modules/outfit/data/mockOutfits'
+import type { OutfitItem } from '@/modules/outfit/types/outfitTypes'
 
 const Outfit = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [dialogMode, setDialogMode] = useState<'confirm' | 'success'>('confirm')
   const [selectedOutfitId, setSelectedOutfitId] = useState<string | null>(null)
+  const [outfitList, setOutfitList] = useState<OutfitItem[]>([])
+  const [isLoading, setIsLoading] = useState(false)
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const fetchOutfitList = async () => {
+    setIsLoading(true)
+    try {
+      const list = await getOutfitList()
+      setOutfitList(list)
+    } catch {
+      showToast.error('取得穿搭失敗')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchOutfitList()
+  }, [])
 
   const handleClickDelete = (outfitId: string) => {
     setSelectedOutfitId(outfitId)
@@ -41,7 +61,7 @@ const Outfit = () => {
           <h1 className="font-h1">我的穿搭</h1>
           <p className="font-paragraph-sm text-neutral-500">回顧已收藏的穿搭</p>
         </div>
-        <OutfitsContentSection outfits={mockOutfits} onDelete={handleClickDelete} />
+        <OutfitsContentSection outfits={outfitList} onDelete={handleClickDelete} />
       </div>
       <ConfirmAlertDialog
         open={isDialogOpen}

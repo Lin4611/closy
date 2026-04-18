@@ -4,10 +4,10 @@ import { useState } from 'react'
 import { OutfitsOccasionList } from './OutfitsOccasionList'
 import { OutfitsOverview } from './OutfitsOverview'
 import { OutfitsTabs } from './OutfitsTabs'
-import { type OutfitSummary, type OutfitTab } from '../types/outfitTypes'
+import { type OutfitItem, type OutfitTab } from '../types/outfitTypes'
 
 type OutfitsContentSectionProps = {
-  outfits: OutfitSummary[]
+  outfits: OutfitItem[]
   onDelete: (outfitId: string) => void
 }
 
