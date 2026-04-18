@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { showToast } from '@/components/ui/sonner'
 import { AppShell } from '@/modules/common/components/AppShell'
 import { ConfirmAlertDialog } from '@/modules/common/components/ConfirmAlertDialog'
+import { deleteOutfit } from '@/modules/outfit/api/delOutfit'
 import { getOccasionList } from '@/modules/outfit/api/occasionList'
 import { getOutfitList } from '@/modules/outfit/api/outfit'
 import { OutfitsContentSection } from '@/modules/outfit/components/OutfitsContentSection'
@@ -42,6 +43,19 @@ const Outfit = () => {
     }
   }
 
+  const delOutfit = async (id: string) => {
+    setIsLoading(true)
+    try {
+      await deleteOutfit(id)
+      setDialogMode('success')
+      await fetchOutfitList()
+    } catch {
+      showToast.error('刪除穿搭失敗')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   useEffect(() => {
     fetchOutfitList()
     fetchOccasionList()
@@ -55,9 +69,7 @@ const Outfit = () => {
 
   const handleConfirmDelete = () => {
     if (!selectedOutfitId) return
-
-    console.log('delete', selectedOutfitId)
-    setDialogMode('success')
+    delOutfit(selectedOutfitId)
   }
 
   const handleCloseDialog = () => {
