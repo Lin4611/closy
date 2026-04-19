@@ -13,8 +13,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       body: JSON.stringify({ id_token }),
     })
 
-    const setCookie = response.headers.get('set-cookie')
-    if (setCookie) res.setHeader('Set-Cookie', setCookie)
+    const setCookies = response.headers.getSetCookie()
+    if (setCookies.length > 0) res.setHeader('Set-Cookie', setCookies)
 
     const data = await response.json()
     return res.status(response.status).json(data)
