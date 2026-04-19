@@ -1,10 +1,13 @@
 import { ChevronLeft } from 'lucide-react'
+import type { GetServerSideProps, InferGetServerSidePropsType } from 'next'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
+import { fetchWardrobeClothesDetail } from '@/lib/api/wardrobe/shared'
+import { mapGetClothesDetailResponseToWardrobeItem } from '@/modules/wardrobe/api/mappers'
 import { updateClothes } from '@/modules/wardrobe/api/updateClothes'
 import { WardrobeReviewForm } from '@/modules/wardrobe/components/WardrobeReviewForm'
 import { useWardrobeMock } from '@/modules/wardrobe/hooks/useWardrobeMock'
@@ -32,6 +35,55 @@ const getSaveErrorMessage = (error: unknown) => {
   }
 
   return '編輯衣物失敗，請稍後再試'
+}
+
+export const getServerSideProps: GetServerSideProps<{ initialItem: WardrobeItem }> = async ({ params, req }) => {
+  const accessToken = req.cookies.accessToken
+  const id = typeof params?.id === 'string' ? params.id : null
+
+  if (!accessToken) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    }
+  }
+
+  if (!id) {
+    return {
+      notFound: true,
+    }
+  }
+
+  try {
+    const response = await fetchWardrobeClothesDetail(accessToken, id)
+
+    return {
+      props: {
+        initialItem: mapGetClothesDetailResponseToWardrobeItem(response.data),
+      },
+    }
+  } catch (error) {
+    if (error instanceof ApiError) {
+      if (error.statusCode === 401) {
+        return {
+          redirect: {
+            destination: '/',
+            permanent: false,
+          },
+        }
+      }
+
+      if (error.statusCode === 404) {
+        return {
+          notFound: true,
+        }
+      }
+    }
+
+    throw error
+  }
 }
 
 type WardrobeEditContentProps = {
@@ -94,41 +146,26 @@ const WardrobeEditContent = ({ item }: WardrobeEditContentProps) => {
   )
 }
 
-const WardrobeEditPage = () => {
-  const router = useRouter()
-  const { id } = router.query
-  const { getItemById, isReady } = useWardrobeMock()
+const WardrobeEditPage = ({ initialItem }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+  const { getItemById, isReady, syncItemFromServer } = useWardrobeMock()
+  const hasHydratedFromServerRef = useRef(false)
+
+  useEffect(() => {
+    if (!isReady || hasHydratedFromServerRef.current) {
+      return
+    }
+
+    syncItemFromServer(initialItem)
+    hasHydratedFromServerRef.current = true
+  }, [initialItem, isReady, syncItemFromServer])
 
   const item = useMemo(() => {
-    if (typeof id !== 'string') return null
-    return getItemById(id)
-  }, [getItemById, id])
+    if (!isReady) {
+      return initialItem
+    }
 
-  if (!router.isReady || !isReady || typeof id !== 'string') {
-    return (
-      <div className="px-4 py-10">
-        <Link href="/wardrobe" className="font-label-sm text-neutral-500">
-          <ChevronLeft className="text-neutral-700" size={24} strokeWidth={2} />
-        </Link>
-        <div className="mt-10 rounded-[24px] bg-white p-6 text-center">
-          <p className="font-label-md text-neutral-900">載入中...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (!item) {
-    return (
-      <div className="px-4 py-10">
-        <Link href="/wardrobe" className="font-label-sm text-neutral-500">
-          <ChevronLeft className="text-neutral-700" size={24} strokeWidth={2} />
-        </Link>
-        <div className="mt-10 rounded-[24px] bg-white p-6 text-center">
-          <p className="font-label-md text-neutral-900">找不到可編輯的衣物</p>
-        </div>
-      </div>
-    )
-  }
+    return getItemById(initialItem.id) ?? initialItem
+  }, [getItemById, initialItem, isReady])
 
   return <WardrobeEditContent key={item.id} item={item} />
 }
