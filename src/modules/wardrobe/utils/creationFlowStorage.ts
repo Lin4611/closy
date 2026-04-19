@@ -2,6 +2,7 @@ import {
   WARDROBE_CREATION_FLOW_STORAGE_KEY,
   WARDROBE_PENDING_RECOGNITION_SOURCE_STORAGE_KEY,
   WARDROBE_PROCESSING_STAGE_STORAGE_KEY,
+  WARDROBE_RECOGNITION_DRAFT_STORAGE_KEY,
   WARDROBE_REVIEW_DRAFT_STORAGE_KEY,
 } from '@/modules/wardrobe/constants/storage'
 import type {
@@ -353,6 +354,13 @@ export const getWardrobeProcessingStage = (): WardrobeProcessingStage | null => 
 export const clearWardrobeProcessingStage = () => {
   if (!isClient()) return
   window.sessionStorage.removeItem(WARDROBE_PROCESSING_STAGE_STORAGE_KEY)
+}
+
+
+export const clearLegacyWardrobeRecognitionDraft = () => {
+  if (!isClient()) return
+
+  window.localStorage.removeItem(WARDROBE_RECOGNITION_DRAFT_STORAGE_KEY)
 }
 
 export const clearPendingRecognitionState = () => {
