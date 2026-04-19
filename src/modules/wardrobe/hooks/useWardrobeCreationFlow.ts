@@ -10,6 +10,7 @@ import type {
   WardrobeReviewDraft,
 } from '@/modules/wardrobe/types'
 import {
+  clearLegacyWardrobeRecognitionDraft,
   clearPendingRecognitionSource,
   clearPendingRecognitionState,
   clearWardrobeCreationFlowContext,
@@ -273,6 +274,16 @@ export const useWardrobeCreationFlow = () => {
     clearRecognitionEntry()
   }, [])
 
+
+  const completeCreateSuccess = useCallback(() => {
+    currentSourceFile = null
+    currentPendingSourceFile = null
+    clearAllPreviewUrls()
+    clearWardrobeCreationFlowState()
+    clearLegacyWardrobeRecognitionDraft()
+    clearRecognitionEntry()
+  }, [])
+
   return useMemo(
     () => ({
       initializeFlow,
@@ -295,10 +306,12 @@ export const useWardrobeCreationFlow = () => {
       clearStage,
       clearContext,
       clearFlow,
+      completeCreateSuccess,
     }),
     [
       clearContext,
       clearFlow,
+      completeCreateSuccess,
       clearPendingSource,
       clearReview,
       clearSourceFile,

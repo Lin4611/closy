@@ -11,7 +11,7 @@ import { getOnboardingAddFlow, setOnboardingAddFlow } from '@/modules/guide/util
 import { createClothes } from '@/modules/wardrobe/api/createClothes'
 import { WardrobeReviewForm } from '@/modules/wardrobe/components/WardrobeReviewForm'
 import { useWardrobeCreationFlow } from '@/modules/wardrobe/hooks/useWardrobeCreationFlow'
-import { useWardrobeMock } from '@/modules/wardrobe/hooks/useWardrobeMock'
+import { useWardrobeLocalStore } from '@/modules/wardrobe/hooks/useWardrobeLocalStore'
 import type { WardrobeReviewDraft } from '@/modules/wardrobe/types'
 import { mapWardrobeReviewDraftToCreateClothesRequest } from '@/modules/wardrobe/utils/apiMappers'
 
@@ -55,8 +55,8 @@ const getNextOnboardingRoute = (savedCategory: WardrobeReviewDraft['category']) 
 
 const WardrobeReviewPage = () => {
   const router = useRouter()
-  const { syncCreatedItemFromServer, clearRecognitionDraft } = useWardrobeMock()
-  const { getContext, getReviewDraft, saveReviewDraft, clearFlow } = useWardrobeCreationFlow()
+  const { syncCreatedItemFromServer } = useWardrobeLocalStore()
+  const { getContext, getReviewDraft, saveReviewDraft, completeCreateSuccess } = useWardrobeCreationFlow()
 
   const [draft, setDraft] = useState<WardrobeReviewDraft | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -114,8 +114,7 @@ const WardrobeReviewPage = () => {
       const createdItem = await createClothes(payload)
 
       syncCreatedItemFromServer(createdItem)
-      clearRecognitionDraft()
-      clearFlow()
+      completeCreateSuccess()
 
       setSuccessRedirectTo(getNextOnboardingRoute(createdItem.category))
       setIsSuccessDialogOpen(true)

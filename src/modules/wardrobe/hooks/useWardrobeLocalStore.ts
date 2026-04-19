@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 
-import { mockRecognitionDraft, mockWardrobeItems } from '../data/mockWardrobeItems'
+import { mockWardrobeItems } from '../data/mockWardrobeItems'
 import type { WardrobeDraftItem, WardrobeItem } from '../types'
 import { mapDraftToWardrobeItem } from '../utils/mapDraftToWardrobeItem'
 
 const WARDROBE_STORAGE_KEY = 'closy:wardrobe-items'
-const RECOGNITION_DRAFT_STORAGE_KEY = 'closy:wardrobe-recognition-draft'
 const WARDROBE_ITEMS_UPDATED_EVENT = 'closy:wardrobe-items-updated'
 
 const mockItemMap = new Map(mockWardrobeItems.map((item) => [item.id, item] as const))
@@ -36,22 +35,6 @@ const safeParseItems = (value: string | null): WardrobeItem[] => {
     return parsed.map(normalizeItem)
   } catch {
     return mockWardrobeItems
-  }
-}
-
-const safeParseDraft = (value: string | null): WardrobeDraftItem | null => {
-  if (!value) return null
-
-  try {
-    const parsed = JSON.parse(value) as WardrobeDraftItem
-
-    return {
-      ...mockRecognitionDraft,
-      ...parsed,
-      imageUrl: parsed.imageUrl ?? mockRecognitionDraft.imageUrl,
-    }
-  } catch {
-    return null
   }
 }
 
@@ -207,22 +190,6 @@ export const useWardrobeLocalStore = () => {
   const getItemById = useCallback((id: string) => {
     return items.find((item) => item.id === id) ?? null
   }, [items])
-
-  const saveRecognitionDraft = useCallback((draft: WardrobeDraftItem) => {
-    if (typeof window === 'undefined') return
-    window.localStorage.setItem(RECOGNITION_DRAFT_STORAGE_KEY, JSON.stringify(draft))
-  }, [])
-
-  const getRecognitionDraft = useCallback(() => {
-    if (typeof window === 'undefined') return null
-    return safeParseDraft(window.localStorage.getItem(RECOGNITION_DRAFT_STORAGE_KEY))
-  }, [])
-
-  const clearRecognitionDraft = useCallback(() => {
-    if (typeof window === 'undefined') return
-    window.localStorage.removeItem(RECOGNITION_DRAFT_STORAGE_KEY)
-  }, [])
-
   const resetWardrobe = useCallback(() => {
     writeStoredItems(mockWardrobeItems)
   }, [])
@@ -241,25 +208,19 @@ export const useWardrobeLocalStore = () => {
       updateItem,
       deleteItem,
       getItemById,
-      saveRecognitionDraft,
-      getRecognitionDraft,
-      clearRecognitionDraft,
       resetWardrobe,
     }),
     [
       addItem,
       appendItem,
-      clearRecognitionDraft,
       deleteItem,
       getItemById,
-      getRecognitionDraft,
       hydrateItemsFromServer,
       isReady,
       items,
       itemsRevision,
       replaceItems,
       resetWardrobe,
-      saveRecognitionDraft,
       syncCreatedItemFromServer,
       syncItemFromServer,
       updateItem,
