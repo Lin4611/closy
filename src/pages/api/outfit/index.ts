@@ -31,6 +31,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(error.statusCode).json({ message: error.message })
     }
 
-    return res.status(500).json({ message: `取得${occasion}穿搭失敗` })
+    const errorMessage = occasion ? `取得${occasion}穿搭失敗` : '取得穿搭列表失敗'
+    return res.status(500).json({ message: errorMessage })
   }
 }
