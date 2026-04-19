@@ -11,12 +11,14 @@ type HomeOutfitPreviewProps = {
   disable?: boolean
   isLoading?: boolean
   onDislikeClick?: () => void
+  onLikeClick?: () => void
 }
 
 export const HomeOutfitPreview = ({
   src,
   alt,
   onDislikeClick,
+  onLikeClick,
   isLoading,
   disable,
 }: HomeOutfitPreviewProps) => {
@@ -51,7 +53,7 @@ export const HomeOutfitPreview = ({
         <CircleIconButton
           kind="like"
           icon={Heart}
-          onClick={() => {}}
+          onClick={onLikeClick}
           ariaLabel="喜歡這套穿搭"
           disabled={disable}
         />
