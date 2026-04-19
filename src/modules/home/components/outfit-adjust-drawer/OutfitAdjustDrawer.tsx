@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
 
 import { Drawer, DrawerContent } from '@/components/ui/drawer'
+import { getAdjustQuota } from '@/modules/home/api/adjustQuota'
+import { streamOutfitAdjust } from '@/modules/home/api/adjustStream'
+import type { ClothingItem } from '@/modules/home/types/dayRecommendationTypes'
 import { useAppSelector } from '@/store/hooks'
 
 import { MessageComposer } from './MessageComposer'
@@ -8,17 +11,20 @@ import { OutfitAdjustChat } from './OutfitAdjustChat'
 import { OutfitAdjustLoadingView } from './OutfitAdjustLoadingView'
 import { OutfitAdjustResultView } from './OutfitAdjustResultView'
 import { QuickAdjustOptions } from './QuickAdjustOptions'
-import type { OutfitAdjustChatMessage } from '../../types/outfitAdjustChat'
+import type { AdjustStreamResult, OutfitAdjustChatMessage } from '../../types/outfitAdjustChat'
 
 type OutfitAdjustDrawerProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
   dismissible?: boolean
-  context?: string
   outfitImageUrl: string
-  outfitId: string
+  selectedItems: ClothingItem[]
+  day: string
+  onConfirmAdjust: (result: AdjustStreamResult) => void
 }
+
 type DrawerMode = 'initial' | 'chat' | 'loading' | 'result'
+
 type OutfitAdjustCountStorage = {
   date: string
   remainingCount: number
@@ -32,7 +38,6 @@ const getTodayStorageDate = () => {
   const year = now.getFullYear()
   const month = String(now.getMonth() + 1).padStart(2, '0')
   const day = String(now.getDate()).padStart(2, '0')
-
   return `${year}-${month}-${day}`
 }
 
@@ -55,14 +60,16 @@ export const OutfitAdjustDrawer = ({
   onOpenChange,
   dismissible = true,
   outfitImageUrl,
-  outfitId,
+  selectedItems,
+  day,
+  onConfirmAdjust,
 }: OutfitAdjustDrawerProps) => {
   const [message, setMessage] = useState('')
   const [messages, setMessages] = useState<OutfitAdjustChatMessage[]>([])
-
   const [mode, setMode] = useState<DrawerMode>('initial')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [count, setCount] = useState<number | null>(null)
+  const [result, setResult] = useState<AdjustStreamResult | null>(null)
 
   const name = useAppSelector((state) => state.user.user?.name)
   const isComposerDisabled = isSubmitting || count === null || count <= 0
@@ -70,6 +77,13 @@ export const OutfitAdjustDrawer = ({
   useEffect(() => {
     setCount(getInitialCount())
   }, [])
+
+  useEffect(() => {
+    if (!open) return
+    getAdjustQuota()
+      .then((quota) => setCount(quota.remaining))
+      .catch(() => {})
+  }, [open])
 
   useEffect(() => {
     if (count === null) return
@@ -85,11 +99,11 @@ export const OutfitAdjustDrawer = ({
     setMessages([])
     setMode('initial')
     setIsSubmitting(false)
+    setResult(null)
   }
 
   const submitPrompt = async (text: string) => {
     const trimmed = text.trim()
-
     if (!trimmed) return
     if (count === null || count <= 0) return
     if (isSubmitting) return
@@ -101,64 +115,67 @@ export const OutfitAdjustDrawer = ({
       status: 'idle',
     }
 
-    const loadingMessage: OutfitAdjustChatMessage = {
-      id: `assistant-${Date.now()}`,
-      text: '好的，我將為您調整今天的穿搭',
+    const step1MessageId = `assistant-step1-${Date.now()}`
+    const step1Message: OutfitAdjustChatMessage = {
+      id: step1MessageId,
+      text: '',
       role: 'assistant',
-      status: 'idle',
+      status: 'loading',
     }
 
     setMode('chat')
     setIsSubmitting(true)
-
-    setMessages((prev) => [...prev, userMessage, loadingMessage])
+    setMessages((prev) => [...prev, userMessage, step1Message])
     setMessage('')
-    handleUpdateCount()
+    setCount((prev) => (prev ?? 0) - 1)
 
     try {
-      // 之後 API ready 時放這裡
-      // const response = await submitOutfitAdjust(...)
-      // const aiText = response.message
-
-      const aiText = '好的，我將為您調整今天的穿搭'
-
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === loadingMessage.id
-            ? {
-              ...msg,
-              text: aiText,
-              status: 'idle',
-            }
-            : msg,
-        ),
+      await streamOutfitAdjust(
+        { prompt: trimmed, originalImageUrl: outfitImageUrl, day, selectedItems },
+        {
+          onStep1: (text) => {
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === step1MessageId ? { ...msg, text, status: 'idle' } : msg,
+              ),
+            )
+          },
+          onStep2: (text) => {
+            setMessages((prev) => [
+              ...prev,
+              {
+                id: `assistant-step2-${Date.now()}`,
+                text,
+                role: 'assistant',
+                status: 'idle',
+              },
+            ])
+            setMode('loading')
+          },
+          onCompleted: (data) => {
+            setResult(data)
+            setMode('result')
+          },
+          onError: (message) => {
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === step1MessageId ? { ...msg, text: message, status: 'error' } : msg,
+              ),
+            )
+          },
+        },
       )
-      await new Promise((resolve) => setTimeout(resolve, 2000))
-      setMode('loading')
-      await new Promise((resolve) => setTimeout(resolve, 2000))
-      setMode('result')
-
-      // 模擬打完後跳轉
-    } catch (error) {
+    } catch {
       setMessages((prev) =>
         prev.map((msg) =>
-          msg.id === loadingMessage.id
-            ? {
-              ...msg,
-              text: '調整失敗，請稍後再試',
-              status: 'error',
-            }
+          msg.id === step1MessageId
+            ? { ...msg, text: '調整失敗，請稍後再試', status: 'error' }
             : msg,
         ),
       )
     } finally {
       setIsSubmitting(false)
     }
-  }
-
-  const handleUpdateCount = () => {
-    if (count === null || count <= 0) return
-    setCount((prev) => (prev ?? 0) - 1)
   }
 
   const handleQuickOptionClick = (option: string) => {
@@ -174,11 +191,20 @@ export const OutfitAdjustDrawer = ({
   }
 
   const handleOpenChange = (nextOpen: boolean) => {
-    if (!nextOpen) {
-      resetDrawerState()
-    }
-
+    if (!nextOpen) resetDrawerState()
     onOpenChange(nextOpen)
+  }
+
+  const handleConfirm = () => {
+    if (!result) return
+    onConfirmAdjust(result)
+    onOpenChange(false)
+    resetDrawerState()
+  }
+
+  const handleRevert = () => {
+    onOpenChange(false)
+    resetDrawerState()
   }
 
   return (
@@ -197,8 +223,14 @@ export const OutfitAdjustDrawer = ({
         )}
         {mode === 'chat' && <OutfitAdjustChat messages={messages} />}
         {mode === 'loading' && <OutfitAdjustLoadingView />}
-        {mode === 'result' && <OutfitAdjustResultView />}
-        {mode !== 'loading' && (
+        {mode === 'result' && result && (
+          <OutfitAdjustResultView
+            result={result}
+            onConfirm={handleConfirm}
+            onRevert={handleRevert}
+          />
+        )}
+        {mode !== 'loading' && mode !== 'result' && (
           <div className="flex flex-col items-center gap-4">
             <MessageComposer
               value={message}
