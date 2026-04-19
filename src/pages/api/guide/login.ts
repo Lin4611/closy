@@ -1,10 +1,4 @@
-import { serialize } from 'cookie'
 import type { NextApiRequest, NextApiResponse } from 'next'
-
-import { ApiError } from '@/lib/api/client'
-import { apiClient } from '@/lib/api/client'
-import type { ApiResponse } from '@/lib/api/types'
-import type { GoogleLoginData } from '@/modules/guide/types/auth'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).end()
@@ -13,30 +7,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!id_token) return res.status(400).json({ message: '缺少 id_token' })
 
   try {
-    const response = await apiClient<ApiResponse<GoogleLoginData>>({
-      baseUrl: process.env.API_BASE_URL,
-      endpoint: '/auth/google',
+    const response = await fetch(`${process.env.API_BASE_URL}/auth/google`, {
       method: 'POST',
-      body: { id_token },
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id_token }),
     })
 
-    const token = response.data.token
+    const setCookies = response.headers.getSetCookie()
+    if (setCookies.length > 0) res.setHeader('Set-Cookie', setCookies)
 
-    res.setHeader(
-      'Set-Cookie',
-      serialize('accessToken', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-        maxAge: 60 * 60 * 24 * 7,
-      }),
-    )
-    return res.status(200).json(response)
-  } catch (error) {
-    if (error instanceof ApiError) {
-      return res.status(error.statusCode).json({ message: error.message })
-    }
+    const data = await response.json()
+    return res.status(response.status).json(data)
+  } catch {
     return res.status(500).json({ message: 'Google 登入失敗' })
   }
 }
