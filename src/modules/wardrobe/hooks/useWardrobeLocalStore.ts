@@ -67,6 +67,21 @@ const getStoredItemsSnapshot = (): WardrobeItem[] => {
   return cachedItemsSnapshot
 }
 
+
+const getWritableStoredItemsBase = (): WardrobeItem[] => {
+  if (typeof window === 'undefined') {
+    return []
+  }
+
+  const storageValue = window.localStorage.getItem(WARDROBE_STORAGE_KEY)
+
+  if (!storageValue) {
+    return []
+  }
+
+  return safeParseItems(storageValue)
+}
+
 const notifyWardrobeItemsChanged = () => {
   if (typeof window === 'undefined') return
 
@@ -137,14 +152,29 @@ export const useWardrobeLocalStore = () => {
 
   const syncItemFromServer = useCallback((item: WardrobeItem) => {
     const normalizedItem = normalizeItem(item)
-    const nextItems = getStoredItemsSnapshot().filter((storedItem) => storedItem.id !== normalizedItem.id)
+    const currentItems = getWritableStoredItemsBase()
+    const existingIndex = currentItems.findIndex((storedItem) => storedItem.id === normalizedItem.id)
 
-    writeStoredItems([normalizedItem, ...nextItems])
+    if (existingIndex === -1) {
+      writeStoredItems([normalizedItem, ...currentItems])
+      return normalizedItem
+    }
+
+    const nextItems = [...currentItems]
+    nextItems[existingIndex] = normalizedItem
+    writeStoredItems(nextItems)
 
     return normalizedItem
   }, [])
 
-  const syncCreatedItemFromServer = useCallback((item: WardrobeItem) => syncItemFromServer(item), [syncItemFromServer])
+  const syncCreatedItemFromServer = useCallback((item: WardrobeItem) => {
+    const normalizedItem = normalizeItem(item)
+    const currentItems = getWritableStoredItemsBase().filter((storedItem) => storedItem.id !== normalizedItem.id)
+
+    writeStoredItems([normalizedItem, ...currentItems])
+
+    return normalizedItem
+  }, [])
 
   const hydrateItemsFromServer = useCallback((serverItems: WardrobeItem[]) => {
     writeStoredItems(serverItems)
