@@ -9,16 +9,6 @@ export type OutfitProduct = {
   cloudImgUrl: string
 }
 
-export type OutfitSummary = {
-  id: string
-  imageUrl: string
-  occasionKey: Occasion
-  savedAt: string
-}
-
-export type OutfitDetail = OutfitSummary & {
-  items: OutfitProduct[]
-}
 
 export type OutfitItem = {
   _id: string

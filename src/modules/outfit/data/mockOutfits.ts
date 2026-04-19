@@ -1,6 +1,24 @@
-import type { OutfitDetail, OutfitSummary } from '../types/outfitTypes'
+import type { Occasion } from '@/modules/common/types/occasion'
 
-export const mockOutfitDetails: OutfitDetail[] = [
+type MockOutfitProduct = {
+  id: string
+  name: string
+  imageUrl: string
+  category: string
+}
+
+type MockOutfitSummary = {
+  id: string
+  imageUrl: string
+  occasionKey: Occasion
+  savedAt: string
+}
+
+type MockOutfitDetail = MockOutfitSummary & {
+  items: MockOutfitProduct[]
+}
+
+export const mockOutfitDetails: MockOutfitDetail[] = [
   {
     id: '1',
     imageUrl: '/outfit/mock-1.webp',
@@ -123,7 +141,7 @@ export const mockOutfitDetails: OutfitDetail[] = [
   },
 ]
 
-export const mockOutfits: OutfitSummary[] = mockOutfitDetails.map(
+export const mockOutfits: MockOutfitSummary[] = mockOutfitDetails.map(
   ({ id, imageUrl, occasionKey, savedAt }) => ({
     id,
     imageUrl,
