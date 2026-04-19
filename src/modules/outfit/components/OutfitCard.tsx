@@ -16,7 +16,7 @@ export const OutfitCard = ({ footLabel, onDelete, modelImage, outfitId }: Outfit
     <div className="relative">
       <Link href={`/outfit/${outfitId}`} className="block">
         <div className="flex h-[224px] w-[164px] items-center justify-center rounded-[24px] bg-white py-3">
-          <Image src={modelImage} alt="outfit" width={54} height={200} />
+          <Image src={modelImage} alt="outfit" width={54} height={200} className="h-50 w-[54px]" />
         </div>
         <div className="pointer-events-none absolute bottom-7 left-1/2 -translate-x-1/2 rounded-[20px] bg-[#E5EFFF] px-3 py-1">
           <p className="font-label-sm text-primary-800 whitespace-nowrap">#{footLabel}</p>

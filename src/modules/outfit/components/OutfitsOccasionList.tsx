@@ -1,16 +1,10 @@
-import { OutfitsOccasionCard } from './OutfitsOccasionCard'
+import { occasionMetaMap } from '@/modules/common/types/occasion'
 
-type OutfitOccasionItem = {
-  occasionId: string
-  occasionName: string
-  description: string
-  outfitCount: number
-  imageUrl: string
-  currentDates?: string[]
-}
+import { OutfitsOccasionCard } from './OutfitsOccasionCard'
+import { type SummaryList } from '../types/outfitTypes'
 
 type MyOutfitsOccasionListProps = {
-  occasions: OutfitOccasionItem[]
+  occasions: SummaryList[]
   onSelectOccasion?: (occasionId: string) => void
 }
 
@@ -20,18 +14,21 @@ export const OutfitsOccasionList = ({
 }: MyOutfitsOccasionListProps) => {
   return (
     <div className="flex flex-col gap-3 px-5">
-      {occasions.map((occasion) => (
-        <OutfitsOccasionCard
-          key={occasion.occasionId}
-          occasionId={occasion.occasionId}
-          occasionName={occasion.occasionName}
-          description={occasion.description}
-          outfitCount={occasion.outfitCount}
-          imageUrl={occasion.imageUrl}
-          onSelectOccasion={onSelectOccasion}
-          currentDates={occasion.currentDates}
-        />
-      ))}
+      {occasions.map((occasion) => {
+        const meta = occasionMetaMap.find((m) => m.key === occasion.occasionId)
+        return (
+          <OutfitsOccasionCard
+            key={occasion.occasionId}
+            occasionId={occasion.occasionId}
+            occasionName={meta?.name}
+            description={meta?.description}
+            outfitCount={occasion.count}
+            imageUrl={meta?.imageUrl}
+            onSelectOccasion={onSelectOccasion}
+            currentDates={occasion.recentDates}
+          />
+        )
+      })}
     </div>
   )
 }
