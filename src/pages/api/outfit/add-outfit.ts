@@ -14,6 +14,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(401).json({ message: '尚未登入' })
   }
 
+  if (!outfitImgUrl || !occasion || !selectedItems) {
+    return res.status(400).json({ message: '缺少必要欄位' })
+  }
+
   try {
     const response = await apiClient<ApiResponse<null>, AddOutfitItem>({
       baseUrl: process.env.API_BASE_URL,

@@ -67,14 +67,17 @@ const OutfitDetailPage = () => {
       await fetchFallback()
     }
     load()
-  }, [router.isReady, outfitId])
+  }, [router.isReady, outfitId, outfitList])
 
   if (typeof outfitId !== 'string') return null
 
   const header = (
     <header className="sticky top-0 z-10 bg-white px-4 py-4.5">
       <div className="relative flex items-center justify-center">
-        <Link href={backHref} className={cn('absolute left-0 flex size-10 items-center justify-center')}>
+        <Link
+          href={backHref}
+          className={cn('absolute left-0 flex size-10 items-center justify-center')}
+        >
           <ChevronLeft className="text-neutral-700" size={24} strokeWidth={2} />
         </Link>
         <h1 className="font-label-xxl">穿搭詳情</h1>
@@ -127,7 +130,10 @@ const OutfitDetailPage = () => {
             <h2 className="font-label-xxl">搭配單品</h2>
             <div className="hide-scrollbar flex items-start gap-3 overflow-x-auto">
               {outfit.selectedItems.map((item, index) => (
-                <div key={`${item.cloudImgUrl}-${index}`} className="flex min-w-22.5 flex-col items-center gap-2">
+                <div
+                  key={`${item.cloudImgUrl}-${index}`}
+                  className="flex min-w-22.5 flex-col items-center gap-2"
+                >
                   <div className="flex h-22.5 w-22.5 items-center justify-center rounded-[20px] border border-neutral-300">
                     <Image
                       src={item.cloudImgUrl}
