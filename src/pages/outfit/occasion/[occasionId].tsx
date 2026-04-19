@@ -9,12 +9,14 @@ import { ConfirmAlertDialog } from '@/modules/common/components/ConfirmAlertDial
 import { occasionMetaMap } from '@/modules/common/types/occasion'
 import type { Occasion } from '@/modules/common/types/occasion'
 import { deleteOutfit } from '@/modules/outfit/api/delOutfit'
+import { getOccasionList } from '@/modules/outfit/api/occasionList'
 import { getOutfitList } from '@/modules/outfit/api/outfit'
+import { OutfitGridSkeleton } from '@/modules/outfit/components/OutfitCardSkeleton'
 import { OutfitEmptyOverView } from '@/modules/outfit/components/OutfitEmptyOverView'
 import { OutfitsOverview } from '@/modules/outfit/components/OutfitsOverview'
 import type { OutfitItem } from '@/modules/outfit/types/outfitTypes'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
-import { setOutfitList as setOutfitListCache } from '@/store/slices/outfitSlice'
+import { setOccasionsList, setOutfitList as setOutfitListCache } from '@/store/slices/outfitSlice'
 
 const isValidOccasionId = (value: string) => {
   return occasionMetaMap.some((item) => item.key === value)
@@ -52,9 +54,13 @@ const OutfitOccasionDetail = () => {
     try {
       await deleteOutfit(id)
       setDialogMode('success')
-      const list = await getOutfitList(occasionId as Occasion)
+      const [list, summaryList] = await Promise.all([
+        getOutfitList(occasionId as Occasion),
+        getOccasionList(),
+      ])
       setOutfitList(list)
       dispatch(setOutfitListCache(cachedOutfitList.filter((item) => item._id !== id)))
+      dispatch(setOccasionsList(summaryList))
     } catch {
       showToast.error('刪除穿搭失敗')
     } finally {
@@ -138,7 +144,9 @@ const OutfitOccasionDetail = () => {
         </header>
 
         <div className="flex min-h-0 flex-1 flex-col py-4">
-          {outfitList.length > 0 ? (
+          {isLoading ? (
+            <OutfitGridSkeleton />
+          ) : outfitList.length > 0 ? (
             <OutfitsOverview
               outfits={outfitList}
               onDelete={handleClickDelete}

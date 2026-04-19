@@ -36,7 +36,9 @@ const OutfitDetailPage = () => {
   const outfitList = useAppSelector((state) => state.outfit.outfitList)
 
   const [outfit, setOutfit] = useState<OutfitItem | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isFetching, setIsFetching] = useState(false)
+
+  const isLoading = !router.isReady || isFetching
 
   useEffect(() => {
     if (!router.isReady || typeof outfitId !== 'string') return
@@ -44,11 +46,11 @@ const OutfitDetailPage = () => {
     const cached = outfitList.find((item) => item._id === outfitId)
     if (cached) {
       setOutfit(cached)
-      setIsLoading(false)
       return
     }
 
     const fetchFallback = async () => {
+      setIsFetching(true)
       try {
         const list = await getOutfitList()
         const found = list.find((item) => item._id === outfitId) ?? null
@@ -57,7 +59,7 @@ const OutfitDetailPage = () => {
       } catch {
         setOutfit(null)
       } finally {
-        setIsLoading(false)
+        setIsFetching(false)
       }
     }
 
