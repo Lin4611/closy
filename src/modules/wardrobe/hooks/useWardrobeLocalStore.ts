@@ -55,16 +55,16 @@ const safeParseDraft = (value: string | null): WardrobeDraftItem | null => {
   }
 }
 
-const areWardrobeItemsEqual = (left: WardrobeItem | null, right: WardrobeItem) => {
-  if (!left) {
-    return false
+const getWardrobeItemSignature = (item: WardrobeItem | null) => {
+  if (!item) {
+    return ''
   }
 
-  return JSON.stringify(left) === JSON.stringify(right)
+  return `${item.id}:${item.updatedAt}`
 }
 
-const areWardrobeItemsListsEqual = (left: WardrobeItem[], right: WardrobeItem[]) => {
-  return JSON.stringify(left) === JSON.stringify(right)
+const getWardrobeItemsSignature = (items: WardrobeItem[]) => {
+  return items.map((item) => getWardrobeItemSignature(item)).join('|')
 }
 
 const getStoredItemsSnapshot = (): WardrobeItem[] => {
@@ -97,7 +97,7 @@ const writeStoredItems = (items: WardrobeItem[]) => {
   const nextStorageValue = JSON.stringify(normalizedItems)
   const currentStorageValue = window.localStorage.getItem(WARDROBE_STORAGE_KEY)
 
-  if (nextStorageValue == currentStorageValue) {
+  if (nextStorageValue === currentStorageValue) {
     cachedItemsStorageValue = currentStorageValue
     cachedItemsSnapshot = normalizedItems
     return
@@ -134,6 +134,19 @@ const subscribeWardrobeItems = (onStoreChange: () => void) => {
   }
 }
 
+const useWardrobeServerTakeover = (hydrateFromServer: () => void) => {
+  const hasHydratedFromServerRef = useRef(false)
+
+  useEffect(() => {
+    if (hasHydratedFromServerRef.current) {
+      return
+    }
+
+    hasHydratedFromServerRef.current = true
+    hydrateFromServer()
+  }, [hydrateFromServer])
+}
+
 export const useWardrobeLocalStore = () => {
   const items = useSyncExternalStore(subscribeWardrobeItems, getStoredItemsSnapshot, () => mockWardrobeItems)
   const isReady = typeof window !== 'undefined'
@@ -150,14 +163,14 @@ export const useWardrobeLocalStore = () => {
 
   const syncCreatedItemFromServer = useCallback((item: WardrobeItem) => syncItemFromServer(item), [syncItemFromServer])
 
-  const hydrateItemsFromServer = useCallback((items: WardrobeItem[]) => {
-    writeStoredItems(items)
+  const hydrateItemsFromServer = useCallback((serverItems: WardrobeItem[]) => {
+    writeStoredItems(serverItems)
 
-    return items.map(normalizeItem)
+    return serverItems.map(normalizeItem)
   }, [])
 
   const appendItem = useCallback((item: WardrobeItem) => syncCreatedItemFromServer(item), [syncCreatedItemFromServer])
-  const replaceItems = useCallback((items: WardrobeItem[]) => hydrateItemsFromServer(items), [hydrateItemsFromServer])
+  const replaceItems = useCallback((serverItems: WardrobeItem[]) => hydrateItemsFromServer(serverItems), [hydrateItemsFromServer])
 
   const addItem = useCallback(
     (draft: WardrobeDraftItem) => {
@@ -256,41 +269,45 @@ export const useWardrobeLocalStore = () => {
 
 export const useWardrobeServerItems = (initialItems: WardrobeItem[]) => {
   const { hydrateItemsFromServer, isReady, items, itemsRevision } = useWardrobeLocalStore()
-  const hasHydratedFromServerRef = useRef(false)
   const [initialItemsRevision] = useState(itemsRevision)
+  const initialItemsSignature = useMemo(() => getWardrobeItemsSignature(initialItems), [initialItems])
+  const currentItemsSignature = useMemo(() => getWardrobeItemsSignature(items), [items])
 
-  useEffect(() => {
-    if (!isReady || hasHydratedFromServerRef.current) {
-      return
-    }
+  useWardrobeServerTakeover(
+    useCallback(() => {
+      if (!isReady) {
+        return
+      }
 
-    hasHydratedFromServerRef.current = true
-    hydrateItemsFromServer(initialItems)
-  }, [hydrateItemsFromServer, initialItems, isReady])
+      hydrateItemsFromServer(initialItems)
+    }, [hydrateItemsFromServer, initialItems, isReady]),
+  )
 
   const hasClientItemsTakenOver =
-    itemsRevision !== initialItemsRevision || areWardrobeItemsListsEqual(items, initialItems)
+    itemsRevision !== initialItemsRevision || currentItemsSignature === initialItemsSignature
 
   return !isReady || !hasClientItemsTakenOver ? initialItems : items
 }
 
 export const useWardrobeServerItem = (initialItem: WardrobeItem) => {
   const { getItemById, isReady, itemsRevision, syncItemFromServer } = useWardrobeLocalStore()
-  const hasHydratedFromServerRef = useRef(false)
   const [initialItemsRevision] = useState(itemsRevision)
+  const initialItemSignature = useMemo(() => getWardrobeItemSignature(initialItem), [initialItem])
 
-  useEffect(() => {
-    if (!isReady || hasHydratedFromServerRef.current) {
-      return
-    }
+  useWardrobeServerTakeover(
+    useCallback(() => {
+      if (!isReady) {
+        return
+      }
 
-    hasHydratedFromServerRef.current = true
-    syncItemFromServer(initialItem)
-  }, [initialItem, isReady, syncItemFromServer])
+      syncItemFromServer(initialItem)
+    }, [initialItem, isReady, syncItemFromServer]),
+  )
 
   const cachedItem = useMemo(() => getItemById(initialItem.id), [getItemById, initialItem.id])
+  const cachedItemSignature = useMemo(() => getWardrobeItemSignature(cachedItem), [cachedItem])
   const hasClientItemTakenOver =
-    itemsRevision !== initialItemsRevision || areWardrobeItemsEqual(cachedItem, initialItem)
+    itemsRevision !== initialItemsRevision || cachedItemSignature === initialItemSignature
 
   return !isReady || !hasClientItemTakenOver ? initialItem : cachedItem ?? initialItem
 }
