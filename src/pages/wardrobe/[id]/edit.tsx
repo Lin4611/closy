@@ -2,7 +2,7 @@ import { ChevronLeft } from 'lucide-react'
 import type { GetServerSideProps, InferGetServerSidePropsType } from 'next'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useState } from 'react'
 
 import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
@@ -10,7 +10,7 @@ import { fetchWardrobeClothesDetail } from '@/lib/api/wardrobe/shared'
 import { mapGetClothesDetailResponseToWardrobeItem } from '@/modules/wardrobe/api/mappers'
 import { updateClothes } from '@/modules/wardrobe/api/updateClothes'
 import { WardrobeReviewForm } from '@/modules/wardrobe/components/WardrobeReviewForm'
-import { useWardrobeMock } from '@/modules/wardrobe/hooks/useWardrobeMock'
+import { useWardrobeLocalStore, useWardrobeServerItem } from '@/modules/wardrobe/hooks/useWardrobeLocalStore'
 import type { WardrobeItem, WardrobeReviewDraft } from '@/modules/wardrobe/types'
 import { mapWardrobeReviewDraftToUpdateClothesRequest } from '@/modules/wardrobe/utils/apiMappers'
 
@@ -86,22 +86,13 @@ export const getServerSideProps: GetServerSideProps<{ initialItem: WardrobeItem 
   }
 }
 
-
-const areWardrobeItemsEqual = (left: WardrobeItem | null, right: WardrobeItem) => {
-  if (!left) {
-    return false
-  }
-
-  return JSON.stringify(left) === JSON.stringify(right)
-}
-
 type WardrobeEditContentProps = {
   item: WardrobeItem
 }
 
 const WardrobeEditContent = ({ item }: WardrobeEditContentProps) => {
   const router = useRouter()
-  const { syncItemFromServer } = useWardrobeMock()
+  const { syncItemFromServer } = useWardrobeLocalStore()
   const [draft, setDraft] = useState<WardrobeReviewDraft>(() => createDraftFromItem(item))
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -156,22 +147,7 @@ const WardrobeEditContent = ({ item }: WardrobeEditContentProps) => {
 }
 
 const WardrobeEditPage = ({ initialItem }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
-  const { getItemById, isReady, itemsRevision, syncItemFromServer } = useWardrobeMock()
-  const hasHydratedFromServerRef = useRef(false)
-  const [initialItemsRevision] = useState(itemsRevision)
-
-  useEffect(() => {
-    if (!isReady || hasHydratedFromServerRef.current) {
-      return
-    }
-
-    hasHydratedFromServerRef.current = true
-    syncItemFromServer(initialItem)
-  }, [initialItem, isReady, syncItemFromServer])
-
-  const cachedItem = useMemo(() => getItemById(initialItem.id), [getItemById, initialItem.id])
-  const hasClientItemTakenOver = itemsRevision !== initialItemsRevision || areWardrobeItemsEqual(cachedItem, initialItem)
-  const item = !isReady || !hasClientItemTakenOver ? initialItem : cachedItem ?? initialItem
+  const item = useWardrobeServerItem(initialItem)
 
   return <WardrobeEditContent key={item.id} item={item} />
 }

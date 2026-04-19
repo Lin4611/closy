@@ -3,7 +3,7 @@ import type { GetServerSideProps, InferGetServerSidePropsType } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
@@ -19,7 +19,7 @@ import { WardrobeItemMenu } from '@/modules/wardrobe/components/WardrobeItemMenu
 import { wardrobeCategoryOptions } from '@/modules/wardrobe/constants/categoryOptions'
 import { wardrobeOccasionOptions } from '@/modules/wardrobe/constants/occasionOptions'
 import { wardrobeSeasonOptions } from '@/modules/wardrobe/constants/seasonOptions'
-import { useWardrobeMock } from '@/modules/wardrobe/hooks/useWardrobeMock'
+import { useWardrobeLocalStore, useWardrobeServerItem } from '@/modules/wardrobe/hooks/useWardrobeLocalStore'
 import type { WardrobeItem } from '@/modules/wardrobe/types'
 
 const getDeleteErrorMessage = (error: unknown) => {
@@ -83,24 +83,14 @@ export const getServerSideProps: GetServerSideProps<{ initialItem: WardrobeItem 
   }
 }
 
-
-const areWardrobeItemsEqual = (left: WardrobeItem | null, right: WardrobeItem) => {
-  if (!left) {
-    return false
-  }
-
-  return JSON.stringify(left) === JSON.stringify(right)
-}
-
-const WardrobeDetailPage = ({ initialItem }: InferGetServerSidePropsType<typeof getServerSideProps>) => {  const router = useRouter()
-  const { deleteItem, getItemById, isReady, itemsRevision, syncItemFromServer } = useWardrobeMock()
+const WardrobeDetailPage = ({ initialItem }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+  const router = useRouter()
+  const { deleteItem } = useWardrobeLocalStore()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
   const [isDeleteSuccessOpen, setIsDeleteSuccessOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const menuRef = useRef<HTMLDivElement | null>(null)
-  const hasHydratedFromServerRef = useRef(false)
-  const [initialItemsRevision] = useState(itemsRevision)
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -113,18 +103,7 @@ const WardrobeDetailPage = ({ initialItem }: InferGetServerSidePropsType<typeof 
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  useEffect(() => {
-    if (!isReady || hasHydratedFromServerRef.current) {
-      return
-    }
-
-    hasHydratedFromServerRef.current = true
-    syncItemFromServer(initialItem)
-  }, [initialItem, isReady, syncItemFromServer])
-
-  const cachedItem = useMemo(() => getItemById(initialItem.id), [getItemById, initialItem.id])
-  const hasClientItemTakenOver = itemsRevision !== initialItemsRevision || areWardrobeItemsEqual(cachedItem, initialItem)
-  const item = !isReady || !hasClientItemTakenOver ? initialItem : cachedItem ?? initialItem
+  const item = useWardrobeServerItem(initialItem)
 
   return (
     <AppShell activeTab="wardrobe">

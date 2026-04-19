@@ -1,5 +1,5 @@
 import type { GetServerSideProps, InferGetServerSidePropsType } from 'next'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
@@ -13,7 +13,7 @@ import { WardrobeEmptyState } from '@/modules/wardrobe/components/WardrobeEmptyS
 import { WardrobeFilterChips } from '@/modules/wardrobe/components/WardrobeFilterChips'
 import { WardrobeGrid } from '@/modules/wardrobe/components/WardrobeGrid'
 import { WardrobeHeader } from '@/modules/wardrobe/components/WardrobeHeader'
-import { useWardrobeMock } from '@/modules/wardrobe/hooks/useWardrobeMock'
+import { useWardrobeLocalStore, useWardrobeServerItems } from '@/modules/wardrobe/hooks/useWardrobeLocalStore'
 import type { WardrobeItem } from '@/modules/wardrobe/types'
 import type { WardrobeCategoryKey } from '@/modules/wardrobe/types'
 
@@ -29,12 +29,8 @@ const getDeleteErrorMessage = (error: unknown) => {
   return '刪除衣物失敗，請稍後再試'
 }
 
-
-const areWardrobeItemsListsEqual = (left: WardrobeItem[], right: WardrobeItem[]) => {
-  return JSON.stringify(left) === JSON.stringify(right)
-}
-
-export const getServerSideProps: GetServerSideProps<{ initialItems: WardrobeItem[] }> = async ({ req }) => {  const accessToken = req.cookies.accessToken
+export const getServerSideProps: GetServerSideProps<{ initialItems: WardrobeItem[] }> = async ({ req }) => {
+  const accessToken = req.cookies.accessToken
 
   if (!accessToken) {
     return {
@@ -68,22 +64,9 @@ export const getServerSideProps: GetServerSideProps<{ initialItems: WardrobeItem
 }
 
 const WardrobePage = ({ initialItems }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
-  const { deleteItem, hydrateItemsFromServer, isReady, items, itemsRevision } = useWardrobeMock()
-  const hasHydratedFromServerRef = useRef(false)
-  const [initialItemsRevision] = useState(itemsRevision)
+  const { deleteItem } = useWardrobeLocalStore()
   const [activeCategory, setActiveCategory] = useState<WardrobeCategoryKey>('all')
-
-  useEffect(() => {
-    if (!isReady || hasHydratedFromServerRef.current) {
-      return
-    }
-
-    hasHydratedFromServerRef.current = true
-    hydrateItemsFromServer(initialItems)
-  }, [hydrateItemsFromServer, initialItems, isReady])
-
-  const hasClientItemsTakenOver = itemsRevision !== initialItemsRevision || areWardrobeItemsListsEqual(items, initialItems)
-  const displayItems = !isReady || !hasClientItemsTakenOver ? initialItems : items
+  const displayItems = useWardrobeServerItems(initialItems)
 
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
