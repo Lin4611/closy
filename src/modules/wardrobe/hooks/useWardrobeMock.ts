@@ -12,6 +12,7 @@ const mockItemMap = new Map(mockWardrobeItems.map((item) => [item.id, item] as c
 
 let cachedItemsSnapshot: WardrobeItem[] = mockWardrobeItems
 let cachedItemsStorageValue: string | null | undefined = undefined
+let cachedItemsRevision = 0
 
 const normalizeItem = (item: WardrobeItem): WardrobeItem => {
   const fallbackItem = mockItemMap.get(item.id)
@@ -82,9 +83,17 @@ const writeStoredItems = (items: WardrobeItem[]) => {
 
   const normalizedItems = items.map(normalizeItem)
   const nextStorageValue = JSON.stringify(normalizedItems)
+  const currentStorageValue = window.localStorage.getItem(WARDROBE_STORAGE_KEY)
+
+  if (nextStorageValue == currentStorageValue) {
+    cachedItemsStorageValue = currentStorageValue
+    cachedItemsSnapshot = normalizedItems
+    return
+  }
 
   cachedItemsStorageValue = nextStorageValue
   cachedItemsSnapshot = normalizedItems
+  cachedItemsRevision += 1
 
   window.localStorage.setItem(WARDROBE_STORAGE_KEY, nextStorageValue)
   notifyWardrobeItemsChanged()
@@ -120,6 +129,7 @@ export const useWardrobeMock = () => {
     () => mockWardrobeItems
   )
   const isReady = typeof window !== 'undefined'
+  const itemsRevision = cachedItemsRevision
 
   const syncItemFromServer = useCallback((item: WardrobeItem) => {
     const normalizedItem = normalizeItem(item)
@@ -217,6 +227,7 @@ export const useWardrobeMock = () => {
     () => ({
       isReady,
       items,
+      itemsRevision,
       syncItemFromServer,
       syncCreatedItemFromServer,
       hydrateItemsFromServer,
@@ -242,6 +253,7 @@ export const useWardrobeMock = () => {
       getRecognitionDraft,
       isReady,
       items,
+      itemsRevision,
       resetWardrobe,
       saveRecognitionDraft,
       syncItemFromServer,

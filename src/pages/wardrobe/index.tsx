@@ -29,8 +29,12 @@ const getDeleteErrorMessage = (error: unknown) => {
   return '刪除衣物失敗，請稍後再試'
 }
 
-export const getServerSideProps: GetServerSideProps<{ initialItems: WardrobeItem[] }> = async ({ req }) => {
-  const accessToken = req.cookies.accessToken
+
+const areWardrobeItemsListsEqual = (left: WardrobeItem[], right: WardrobeItem[]) => {
+  return JSON.stringify(left) === JSON.stringify(right)
+}
+
+export const getServerSideProps: GetServerSideProps<{ initialItems: WardrobeItem[] }> = async ({ req }) => {  const accessToken = req.cookies.accessToken
 
   if (!accessToken) {
     return {
@@ -64,22 +68,22 @@ export const getServerSideProps: GetServerSideProps<{ initialItems: WardrobeItem
 }
 
 const WardrobePage = ({ initialItems }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
-  const { deleteItem, hydrateItemsFromServer, isReady, items } = useWardrobeMock()
+  const { deleteItem, hydrateItemsFromServer, isReady, items, itemsRevision } = useWardrobeMock()
   const hasHydratedFromServerRef = useRef(false)
+  const [initialItemsRevision] = useState(itemsRevision)
   const [activeCategory, setActiveCategory] = useState<WardrobeCategoryKey>('all')
-  const [hasSyncedSsrItems, setHasSyncedSsrItems] = useState(false)
 
   useEffect(() => {
     if (!isReady || hasHydratedFromServerRef.current) {
       return
     }
 
-    hydrateItemsFromServer(initialItems)
     hasHydratedFromServerRef.current = true
-    setHasSyncedSsrItems(true)
+    hydrateItemsFromServer(initialItems)
   }, [hydrateItemsFromServer, initialItems, isReady])
 
-  const displayItems = hasSyncedSsrItems ? items : initialItems
+  const hasClientItemsTakenOver = itemsRevision !== initialItemsRevision || areWardrobeItemsListsEqual(items, initialItems)
+  const displayItems = !isReady || !hasClientItemsTakenOver ? initialItems : items
 
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)

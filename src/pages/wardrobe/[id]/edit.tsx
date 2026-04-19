@@ -86,6 +86,15 @@ export const getServerSideProps: GetServerSideProps<{ initialItem: WardrobeItem 
   }
 }
 
+
+const areWardrobeItemsEqual = (left: WardrobeItem | null, right: WardrobeItem) => {
+  if (!left) {
+    return false
+  }
+
+  return JSON.stringify(left) === JSON.stringify(right)
+}
+
 type WardrobeEditContentProps = {
   item: WardrobeItem
 }
@@ -147,25 +156,22 @@ const WardrobeEditContent = ({ item }: WardrobeEditContentProps) => {
 }
 
 const WardrobeEditPage = ({ initialItem }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
-  const { getItemById, isReady, syncItemFromServer } = useWardrobeMock()
+  const { getItemById, isReady, itemsRevision, syncItemFromServer } = useWardrobeMock()
   const hasHydratedFromServerRef = useRef(false)
+  const [initialItemsRevision] = useState(itemsRevision)
 
   useEffect(() => {
     if (!isReady || hasHydratedFromServerRef.current) {
       return
     }
 
-    syncItemFromServer(initialItem)
     hasHydratedFromServerRef.current = true
+    syncItemFromServer(initialItem)
   }, [initialItem, isReady, syncItemFromServer])
 
-  const item = useMemo(() => {
-    if (!isReady) {
-      return initialItem
-    }
-
-    return getItemById(initialItem.id) ?? initialItem
-  }, [getItemById, initialItem, isReady])
+  const cachedItem = useMemo(() => getItemById(initialItem.id), [getItemById, initialItem.id])
+  const hasClientItemTakenOver = itemsRevision !== initialItemsRevision || areWardrobeItemsEqual(cachedItem, initialItem)
+  const item = !isReady || !hasClientItemTakenOver ? initialItem : cachedItem ?? initialItem
 
   return <WardrobeEditContent key={item.id} item={item} />
 }

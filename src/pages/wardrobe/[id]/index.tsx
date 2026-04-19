@@ -83,16 +83,24 @@ export const getServerSideProps: GetServerSideProps<{ initialItem: WardrobeItem 
   }
 }
 
-const WardrobeDetailPage = ({ initialItem }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
-  const router = useRouter()
-  const { deleteItem, getItemById, isReady, syncItemFromServer } = useWardrobeMock()
+
+const areWardrobeItemsEqual = (left: WardrobeItem | null, right: WardrobeItem) => {
+  if (!left) {
+    return false
+  }
+
+  return JSON.stringify(left) === JSON.stringify(right)
+}
+
+const WardrobeDetailPage = ({ initialItem }: InferGetServerSidePropsType<typeof getServerSideProps>) => {  const router = useRouter()
+  const { deleteItem, getItemById, isReady, itemsRevision, syncItemFromServer } = useWardrobeMock()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
   const [isDeleteSuccessOpen, setIsDeleteSuccessOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
-  const [hasSyncedSsrItem, setHasSyncedSsrItem] = useState(false)
   const menuRef = useRef<HTMLDivElement | null>(null)
   const hasHydratedFromServerRef = useRef(false)
+  const [initialItemsRevision] = useState(itemsRevision)
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -110,13 +118,13 @@ const WardrobeDetailPage = ({ initialItem }: InferGetServerSidePropsType<typeof 
       return
     }
 
-    syncItemFromServer(initialItem)
     hasHydratedFromServerRef.current = true
-    setHasSyncedSsrItem(true)
+    syncItemFromServer(initialItem)
   }, [initialItem, isReady, syncItemFromServer])
 
   const cachedItem = useMemo(() => getItemById(initialItem.id), [getItemById, initialItem.id])
-  const item = hasSyncedSsrItem ? cachedItem ?? initialItem : initialItem
+  const hasClientItemTakenOver = itemsRevision !== initialItemsRevision || areWardrobeItemsEqual(cachedItem, initialItem)
+  const item = !isReady || !hasClientItemTakenOver ? initialItem : cachedItem ?? initialItem
 
   return (
     <AppShell activeTab="wardrobe">
