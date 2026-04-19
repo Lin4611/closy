@@ -1,9 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 
-import { apiClient } from '@/lib/api/client'
 import type { ApiResponse } from '@/lib/api/types'
 import type { ErrorResponse } from '@/lib/api/wardrobe/shared'
-import { fetchWardrobeClothesList, getApiBaseUrl, getApiErrorResponse, isCreateClothesRequest } from '@/lib/api/wardrobe/shared'
+import { createWardrobeClothes, fetchWardrobeClothesList, getApiErrorResponse, isCreateClothesRequest } from '@/lib/api/wardrobe/shared'
 import type { CreateClothesRequest, CreateClothesResponseData, GetClothesListResponseData } from '@/modules/wardrobe/api/types'
 
 type WardrobeClothesResponse = ApiResponse<CreateClothesResponseData> | ApiResponse<GetClothesListResponseData>
@@ -33,15 +32,7 @@ export default async function handler(
       return res.status(response.statusCode).json(response)
     }
 
-    const response = await apiClient<ApiResponse<CreateClothesResponseData>, CreateClothesRequest>({
-      baseUrl: getApiBaseUrl(),
-      endpoint: '/clothes',
-      method: 'POST',
-      body: req.body,
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    })
+    const response = await createWardrobeClothes(accessToken, req.body)
 
     return res.status(response.statusCode).json(response)
   } catch (error) {

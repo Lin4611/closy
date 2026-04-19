@@ -1,14 +1,14 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 
-import { apiClient } from '@/lib/api/client'
 import type { ApiResponse } from '@/lib/api/types'
 import type { ErrorResponse } from '@/lib/api/wardrobe/shared'
 import {
+  deleteWardrobeClothes,
   fetchWardrobeClothesDetail,
-  getApiBaseUrl,
   getApiErrorResponse,
   getRouteIdParam,
   isUpdateClothesRequest,
+  updateWardrobeClothes,
 } from '@/lib/api/wardrobe/shared'
 import type {
   DeleteClothesResponseData,
@@ -54,27 +54,12 @@ export default async function handler(
     }
 
     if (req.method === 'PATCH') {
-      const response = await apiClient<ApiResponse<UpdateClothesResponseData>, UpdateClothesRequest>({
-        baseUrl: getApiBaseUrl(),
-        endpoint: `/clothes/${id}`,
-        method: 'PATCH',
-        body: req.body,
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      })
+      const response = await updateWardrobeClothes(accessToken, id, req.body)
 
       return res.status(response.statusCode).json(response)
     }
 
-    const response = await apiClient<ApiResponse<DeleteClothesResponseData>>({
-      baseUrl: getApiBaseUrl(),
-      endpoint: `/clothes/${id}`,
-      method: 'DELETE',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    })
+    const response = await deleteWardrobeClothes(accessToken, id)
 
     return res.status(response.statusCode).json(response)
   } catch (error) {

@@ -6,8 +6,7 @@ import { useState } from 'react'
 
 import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
-import { fetchWardrobeClothesDetail } from '@/lib/api/wardrobe/shared'
-import { mapGetClothesDetailResponseToWardrobeItem } from '@/modules/wardrobe/api/mappers'
+import { fetchWardrobeServerItem } from '@/lib/api/wardrobe/shared'
 import { updateClothes } from '@/modules/wardrobe/api/updateClothes'
 import { WardrobeReviewForm } from '@/modules/wardrobe/components/WardrobeReviewForm'
 import { useWardrobeLocalStore, useWardrobeServerItem } from '@/modules/wardrobe/hooks/useWardrobeLocalStore'
@@ -57,11 +56,11 @@ export const getServerSideProps: GetServerSideProps<{ initialItem: WardrobeItem 
   }
 
   try {
-    const response = await fetchWardrobeClothesDetail(accessToken, id)
+    const initialItem = await fetchWardrobeServerItem(accessToken, id)
 
     return {
       props: {
-        initialItem: mapGetClothesDetailResponseToWardrobeItem(response.data),
+        initialItem,
       },
     }
   } catch (error) {

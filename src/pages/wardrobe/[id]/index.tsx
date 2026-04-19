@@ -7,11 +7,10 @@ import { useEffect, useRef, useState } from 'react'
 
 import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
-import { fetchWardrobeClothesDetail } from '@/lib/api/wardrobe/shared'
+import { fetchWardrobeServerItem } from '@/lib/api/wardrobe/shared'
 import { AppShell } from '@/modules/common/components/AppShell'
 import { SuccessAlertDialog } from '@/modules/common/components/SuccessAlertDialog'
 import { deleteClothes } from '@/modules/wardrobe/api/deleteClothes'
-import { mapGetClothesDetailResponseToWardrobeItem } from '@/modules/wardrobe/api/mappers'
 import { DeleteClothingDialog } from '@/modules/wardrobe/components/DeleteClothingDialog'
 import { WardrobeColorPalette } from '@/modules/wardrobe/components/WardrobeColorPalette'
 import { WardrobeDetailSection } from '@/modules/wardrobe/components/WardrobeDetailSection'
@@ -54,11 +53,11 @@ export const getServerSideProps: GetServerSideProps<{ initialItem: WardrobeItem 
   }
 
   try {
-    const response = await fetchWardrobeClothesDetail(accessToken, id)
+    const initialItem = await fetchWardrobeServerItem(accessToken, id)
 
     return {
       props: {
-        initialItem: mapGetClothesDetailResponseToWardrobeItem(response.data),
+        initialItem,
       },
     }
   } catch (error) {

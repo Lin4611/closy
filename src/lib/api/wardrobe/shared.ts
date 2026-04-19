@@ -1,15 +1,25 @@
 import { apiClient, ApiError } from '@/lib/api/client'
 import type { ApiResponse } from '@/lib/api/types'
+import {
+  mapCreateClothesResponseToWardrobeItem,
+  mapGetClothesDetailResponseToWardrobeItem,
+  mapGetClothesListResponseToWardrobeItems,
+  mapUpdateClothesResponseToWardrobeItem,
+} from '@/modules/wardrobe/api/mappers'
 import type {
   ClothesApiCategory,
   ClothesApiColor,
   ClothesApiOccasion,
   ClothesApiSeason,
   CreateClothesRequest,
+  CreateClothesResponseData,
+  DeleteClothesResponseData,
   GetClothesDetailResponseData,
   GetClothesListResponseData,
   UpdateClothesRequest,
+  UpdateClothesResponseData,
 } from '@/modules/wardrobe/api/types'
+import type { WardrobeItem } from '@/modules/wardrobe/types'
 
 export type ErrorResponse = {
   message: string
@@ -92,6 +102,66 @@ export const fetchWardrobeClothesDetail = async (accessToken: string, id: string
       Authorization: `Bearer ${accessToken}`,
     },
   })
+}
+
+
+export const createWardrobeClothes = async (accessToken: string, body: CreateClothesRequest) => {
+  return apiClient<ApiResponse<CreateClothesResponseData>, CreateClothesRequest>({
+    baseUrl: getApiBaseUrl(),
+    endpoint: '/clothes',
+    method: 'POST',
+    body,
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  })
+}
+
+export const updateWardrobeClothes = async (accessToken: string, id: string, body: UpdateClothesRequest) => {
+  return apiClient<ApiResponse<UpdateClothesResponseData>, UpdateClothesRequest>({
+    baseUrl: getApiBaseUrl(),
+    endpoint: `/clothes/${id}`,
+    method: 'PATCH',
+    body,
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  })
+}
+
+export const deleteWardrobeClothes = async (accessToken: string, id: string) => {
+  return apiClient<ApiResponse<DeleteClothesResponseData>>({
+    baseUrl: getApiBaseUrl(),
+    endpoint: `/clothes/${id}`,
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  })
+}
+
+export const fetchWardrobeServerItems = async (accessToken: string): Promise<WardrobeItem[]> => {
+  const response = await fetchWardrobeClothesList(accessToken)
+
+  return mapGetClothesListResponseToWardrobeItems(response.data)
+}
+
+export const fetchWardrobeServerItem = async (accessToken: string, id: string): Promise<WardrobeItem> => {
+  const response = await fetchWardrobeClothesDetail(accessToken, id)
+
+  return mapGetClothesDetailResponseToWardrobeItem(response.data)
+}
+
+export const createWardrobeServerItem = async (accessToken: string, body: CreateClothesRequest): Promise<WardrobeItem> => {
+  const response = await createWardrobeClothes(accessToken, body)
+
+  return mapCreateClothesResponseToWardrobeItem(response.data)
+}
+
+export const updateWardrobeServerItem = async (accessToken: string, id: string, body: UpdateClothesRequest): Promise<WardrobeItem> => {
+  const response = await updateWardrobeClothes(accessToken, id, body)
+
+  return mapUpdateClothesResponseToWardrobeItem(response.data)
 }
 
 export const isStringArray = (value: unknown): value is string[] => {

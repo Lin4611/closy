@@ -3,11 +3,10 @@ import { useMemo, useState } from 'react'
 
 import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
-import { fetchWardrobeClothesList } from '@/lib/api/wardrobe/shared'
+import { fetchWardrobeServerItems } from '@/lib/api/wardrobe/shared'
 import { AppShell } from '@/modules/common/components/AppShell'
 import { SuccessAlertDialog } from '@/modules/common/components/SuccessAlertDialog'
 import { deleteClothes } from '@/modules/wardrobe/api/deleteClothes'
-import { mapGetClothesListResponseToWardrobeItems } from '@/modules/wardrobe/api/mappers'
 import { DeleteClothingDialog } from '@/modules/wardrobe/components/DeleteClothingDialog'
 import { WardrobeEmptyState } from '@/modules/wardrobe/components/WardrobeEmptyState'
 import { WardrobeFilterChips } from '@/modules/wardrobe/components/WardrobeFilterChips'
@@ -42,11 +41,11 @@ export const getServerSideProps: GetServerSideProps<{ initialItems: WardrobeItem
   }
 
   try {
-    const response = await fetchWardrobeClothesList(accessToken)
+    const initialItems = await fetchWardrobeServerItems(accessToken)
 
     return {
       props: {
-        initialItems: mapGetClothesListResponseToWardrobeItems(response.data),
+        initialItems,
       },
     }
   } catch (error) {
