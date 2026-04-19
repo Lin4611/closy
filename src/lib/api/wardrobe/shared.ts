@@ -1,10 +1,12 @@
-import { ApiError } from '@/lib/api/client'
+import { apiClient, ApiError } from '@/lib/api/client'
+import type { ApiResponse } from '@/lib/api/types'
 import type {
   ClothesApiCategory,
   ClothesApiColor,
   ClothesApiOccasion,
   ClothesApiSeason,
   CreateClothesRequest,
+  GetClothesListResponseData,
   UpdateClothesRequest,
 } from '@/modules/wardrobe/api/types'
 
@@ -65,6 +67,18 @@ export const getApiErrorResponse = (error: unknown, fallbackMessage: string) => 
     statusCode: 500,
     message: fallbackMessage,
   }
+}
+
+
+export const fetchWardrobeClothesList = async (accessToken: string) => {
+  return apiClient<ApiResponse<GetClothesListResponseData>>({
+    baseUrl: getApiBaseUrl(),
+    endpoint: '/clothes',
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  })
 }
 
 export const isStringArray = (value: unknown): value is string[] => {
