@@ -2,15 +2,20 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 
 import { apiClient } from '@/lib/api/client'
 import type { ApiResponse } from '@/lib/api/types'
+import type { ErrorResponse } from '@/lib/api/wardrobe/shared'
+import {
+  fetchWardrobeClothesDetail,
+  getApiBaseUrl,
+  getApiErrorResponse,
+  getRouteIdParam,
+  isUpdateClothesRequest,
+} from '@/lib/api/wardrobe/shared'
 import type {
   DeleteClothesResponseData,
   GetClothesDetailResponseData,
   UpdateClothesRequest,
   UpdateClothesResponseData,
 } from '@/modules/wardrobe/api/types'
-
-import type { ErrorResponse } from '../../../../lib/api/wardrobe/shared'
-import { getApiBaseUrl, getApiErrorResponse, getRouteIdParam, isUpdateClothesRequest } from '../../../../lib/api/wardrobe/shared'
 
 type WardrobeClothesDetailResponse =
   | ApiResponse<GetClothesDetailResponseData>
@@ -43,14 +48,7 @@ export default async function handler(
 
   try {
     if (req.method === 'GET') {
-      const response = await apiClient<ApiResponse<GetClothesDetailResponseData>>({
-        baseUrl: getApiBaseUrl(),
-        endpoint: `/clothes/${id}`,
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      })
+      const response = await fetchWardrobeClothesDetail(accessToken, id)
 
       return res.status(response.statusCode).json(response)
     }

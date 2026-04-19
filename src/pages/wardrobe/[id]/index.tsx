@@ -1,4 +1,5 @@
 import { ChevronLeft, EllipsisVertical, Package } from 'lucide-react'
+import type { GetServerSideProps, InferGetServerSidePropsType } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -6,10 +7,11 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
+import { fetchWardrobeClothesDetail } from '@/lib/api/wardrobe/shared'
 import { AppShell } from '@/modules/common/components/AppShell'
 import { SuccessAlertDialog } from '@/modules/common/components/SuccessAlertDialog'
 import { deleteClothes } from '@/modules/wardrobe/api/deleteClothes'
-import { getClothesDetail } from '@/modules/wardrobe/api/getClothesDetail'
+import { mapGetClothesDetailResponseToWardrobeItem } from '@/modules/wardrobe/api/mappers'
 import { DeleteClothingDialog } from '@/modules/wardrobe/components/DeleteClothingDialog'
 import { WardrobeColorPalette } from '@/modules/wardrobe/components/WardrobeColorPalette'
 import { WardrobeDetailSection } from '@/modules/wardrobe/components/WardrobeDetailSection'
@@ -32,19 +34,65 @@ const getDeleteErrorMessage = (error: unknown) => {
   return '刪除衣物失敗，請稍後再試'
 }
 
-const WardrobeDetailPage = () => {
+export const getServerSideProps: GetServerSideProps<{ initialItem: WardrobeItem }> = async ({ params, req }) => {
+  const accessToken = req.cookies.accessToken
+  const id = typeof params?.id === 'string' ? params.id : null
+
+  if (!accessToken) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    }
+  }
+
+  if (!id) {
+    return {
+      notFound: true,
+    }
+  }
+
+  try {
+    const response = await fetchWardrobeClothesDetail(accessToken, id)
+
+    return {
+      props: {
+        initialItem: mapGetClothesDetailResponseToWardrobeItem(response.data),
+      },
+    }
+  } catch (error) {
+    if (error instanceof ApiError) {
+      if (error.statusCode === 401) {
+        return {
+          redirect: {
+            destination: '/',
+            permanent: false,
+          },
+        }
+      }
+
+      if (error.statusCode === 404) {
+        return {
+          notFound: true,
+        }
+      }
+    }
+
+    throw error
+  }
+}
+
+const WardrobeDetailPage = ({ initialItem }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const router = useRouter()
-  const { id } = router.query
   const { deleteItem, getItemById, isReady, syncItemFromServer } = useWardrobeMock()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
   const [isDeleteSuccessOpen, setIsDeleteSuccessOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [isNotFound, setIsNotFound] = useState(false)
-  const [item, setItem] = useState<WardrobeItem | null>(null)
+  const [hasSyncedSsrItem, setHasSyncedSsrItem] = useState(false)
   const menuRef = useRef<HTMLDivElement | null>(null)
-  const hydratedDetailIdRef = useRef<string | null>(null)
+  const hasHydratedFromServerRef = useRef(false)
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -57,109 +105,18 @@ const WardrobeDetailPage = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const cachedItem = useMemo(() => {
-    if (typeof id !== 'string') return null
-    return getItemById(id)
-  }, [getItemById, id])
-
   useEffect(() => {
-    if (!isReady || typeof id !== 'string') {
+    if (!isReady || hasHydratedFromServerRef.current) {
       return
     }
 
-    if (hydratedDetailIdRef.current === id) {
-      return
-    }
+    syncItemFromServer(initialItem)
+    hasHydratedFromServerRef.current = true
+    setHasSyncedSsrItem(true)
+  }, [initialItem, isReady, syncItemFromServer])
 
-    hydratedDetailIdRef.current = id
-
-    let isActive = true
-
-    setItem(cachedItem)
-    setIsLoading(true)
-    setIsNotFound(false)
-
-    const loadWardrobeItem = async () => {
-      try {
-        const serverItem = await getClothesDetail(id)
-
-        if (!isActive) {
-          return
-        }
-
-        const syncedItem = syncItemFromServer(serverItem)
-        setItem(syncedItem)
-        setIsNotFound(false)
-      } catch (error) {
-        if (!isActive) {
-          return
-        }
-
-        if (error instanceof ApiError && error.statusCode === 404) {
-          deleteItem(id)
-          setItem(null)
-          setIsNotFound(true)
-          return
-        }
-
-        if (!cachedItem) {
-          setItem(null)
-        }
-
-        showToast.error('取得衣物資訊失敗')
-      } finally {
-        if (isActive) {
-          setIsLoading(false)
-        }
-      }
-    }
-
-    void loadWardrobeItem()
-
-    return () => {
-      isActive = false
-    }
-  }, [cachedItem, deleteItem, id, isReady, syncItemFromServer])
-
-  useEffect(() => {
-    if (typeof id !== 'string' || !cachedItem) {
-      return
-    }
-
-    setItem((currentItem) => {
-      if (!currentItem || currentItem.id !== cachedItem.id) {
-        return currentItem
-      }
-
-      return currentItem === cachedItem ? currentItem : cachedItem
-    })
-  }, [cachedItem, id])
-
-  if (!isReady || typeof id !== 'string' || (isLoading && !item)) {
-    return (
-      <div className="px-4 py-10">
-        <Link href="/wardrobe" className="font-label-sm text-neutral-500">
-          ← 返回我的衣櫃
-        </Link>
-        <div className="mt-10 rounded-[24px] bg-white p-6 text-center">
-          <p className="font-label-md text-neutral-900">載入中...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (isNotFound || !item) {
-    return (
-      <div className="px-4 py-10">
-        <Link href="/wardrobe" className="font-label-sm text-neutral-500">
-          ← 返回我的衣櫃
-        </Link>
-        <div className="mt-10 rounded-[24px] bg-white p-6 text-center">
-          <p className="font-label-md text-neutral-900">找不到這件衣物</p>
-        </div>
-      </div>
-    )
-  }
+  const cachedItem = useMemo(() => getItemById(initialItem.id), [getItemById, initialItem.id])
+  const item = hasSyncedSsrItem ? cachedItem ?? initialItem : initialItem
 
   return (
     <AppShell activeTab="wardrobe">

@@ -6,6 +6,7 @@ import type {
   ClothesApiOccasion,
   ClothesApiSeason,
   CreateClothesRequest,
+  GetClothesDetailResponseData,
   GetClothesListResponseData,
   UpdateClothesRequest,
 } from '@/modules/wardrobe/api/types'
@@ -74,6 +75,18 @@ export const fetchWardrobeClothesList = async (accessToken: string) => {
   return apiClient<ApiResponse<GetClothesListResponseData>>({
     baseUrl: getApiBaseUrl(),
     endpoint: '/clothes',
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  })
+}
+
+
+export const fetchWardrobeClothesDetail = async (accessToken: string, id: string) => {
+  return apiClient<ApiResponse<GetClothesDetailResponseData>>({
+    baseUrl: getApiBaseUrl(),
+    endpoint: `/clothes/${id}`,
     method: 'GET',
     headers: {
       Authorization: `Bearer ${accessToken}`,
