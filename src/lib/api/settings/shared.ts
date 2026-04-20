@@ -2,7 +2,7 @@ import type { GetServerSidePropsContext, GetServerSidePropsResult } from 'next'
 
 import { ApiError, apiClient } from '@/lib/api/client'
 import type { ApiResponse } from '@/lib/api/types'
-import { occasionLabelMap, type Occasion } from '@/modules/common/types/occasion'
+import { defaultOccasion, occasionLabelMap, type Occasion } from '@/modules/common/types/occasion'
 import type { UserInfo } from '@/modules/common/types/userInfoTypes'
 import { colorsLabelMap, type Colors } from '@/modules/settings/types/colorsTypes'
 import { stylesLabelMap, type Styles } from '@/modules/settings/types/stylesTypes'
@@ -22,8 +22,6 @@ export type SettingsProfileBaseline = SettingsServerProfile
 const settingsColorKeys = Object.keys(colorsLabelMap) as Colors[]
 const settingsStyleKeys = Object.keys(stylesLabelMap) as Styles[]
 const settingsOccasionKeys = Object.keys(occasionLabelMap) as Occasion[]
-const defaultSettingsOccasion: Occasion = 'socialGathering'
-
 const isSettingsColor = (value: string): value is Colors => {
   return settingsColorKeys.includes(value as Colors)
 }
@@ -41,7 +39,7 @@ const normalizeSettingsProfile = (profile: UserInfo): SettingsServerProfile => {
   const styles = profile.preferences.styles.filter(isSettingsStyle)
   const occasions = isSettingsOccasion(profile.preferences.occasions)
     ? profile.preferences.occasions
-    : defaultSettingsOccasion
+    : defaultOccasion
 
   return {
     ...profile,
