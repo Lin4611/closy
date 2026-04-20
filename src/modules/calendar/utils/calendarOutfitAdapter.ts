@@ -1,4 +1,5 @@
 import type {
+  CalendarEntryOutfitDisplayModel,
   CalendarOutfitCollectionStatus,
   CalendarResolvedOutfit,
   CalendarSelectedOutfitPreviewModel,
@@ -65,9 +66,9 @@ export const resolveSelectableOutfitById = ({
 }): CalendarResolvedOutfit => {
   if (!outfitId) {
     return {
-      status: collectionStatus === 'error' ? 'error' : collectionStatus === 'loading' ? 'loading' : 'idle',
+      status: 'idle',
       outfit: null,
-      errorMessage,
+      errorMessage: null,
     }
   }
 
@@ -186,4 +187,49 @@ export const getSelectableOutfitSummaries = (occasionKey?: Occasion | null) => {
 
 export const getSelectableOutfitSummaryById = (outfitId: string) => {
   return selectableOutfitSummaries.find((outfit) => outfit.id === outfitId) ?? null
+}
+
+
+export const mapResolvedOutfitToEntryDisplayModel = ({
+  resolvedOutfit,
+}: {
+  resolvedOutfit: CalendarResolvedOutfit
+}): CalendarEntryOutfitDisplayModel => {
+  if (resolvedOutfit.status === 'ready' && resolvedOutfit.outfit) {
+    return {
+      status: 'resolved',
+      imageUrl: resolvedOutfit.outfit.imageUrl,
+      message: null,
+    }
+  }
+
+  if (resolvedOutfit.status === 'loading') {
+    return {
+      status: 'loading',
+      imageUrl: null,
+      message: '穿搭載入中',
+    }
+  }
+
+  if (resolvedOutfit.status === 'error') {
+    return {
+      status: 'error',
+      imageUrl: null,
+      message: resolvedOutfit.errorMessage ?? '穿搭載入失敗',
+    }
+  }
+
+  if (resolvedOutfit.status === 'missing') {
+    return {
+      status: 'missing',
+      imageUrl: null,
+      message: '這套穿搭已不存在',
+    }
+  }
+
+  return {
+    status: 'none',
+    imageUrl: null,
+    message: null,
+  }
 }

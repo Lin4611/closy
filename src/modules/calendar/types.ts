@@ -74,6 +74,15 @@ export type SelectableOutfitSummary = {
   itemNames: string[]
 }
 
+
+export type CalendarEntryOutfitDisplayStatus = 'none' | 'loading' | 'resolved' | 'missing' | 'error'
+
+export type CalendarEntryOutfitDisplayModel = {
+  status: CalendarEntryOutfitDisplayStatus
+  imageUrl: string | null
+  message: string | null
+}
+
 export type CalendarSelectedOutfitPreviewStatus = 'resolved' | 'loading' | 'missing' | 'error'
 
 export type CalendarSelectedOutfitPreviewModel = SelectableOutfitSummary & {
