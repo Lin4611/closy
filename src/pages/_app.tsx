@@ -17,7 +17,20 @@ const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ''
 
 const isGuideRoute = (pathname: string) => pathname === '/guide' || pathname.startsWith('/guide/')
 const isWardrobeServerFirstRoute = (pathname: string) => {
-  return pathname === '/wardrobe' || pathname === '/wardrobe/[id]' || pathname === '/wardrobe/[id]/edit'
+  return (
+    pathname === '/wardrobe' ||
+    pathname === '/wardrobe/[id]' ||
+    pathname === '/wardrobe/[id]/edit'
+  )
+}
+
+const isSettingsServerFirstRoute = (pathname: string) => {
+  return (
+    pathname === '/settings' ||
+    pathname === '/settings/colors' ||
+    pathname === '/settings/styles' ||
+    pathname === '/settings/occasion'
+  )
 }
 
 type AppRouteKind = 'server-first-protected' | 'client-first-protected' | 'public'
@@ -27,7 +40,10 @@ const getAppRouteKind = (pathname: string): AppRouteKind => {
     return 'public'
   }
 
-  if (isWardrobeServerFirstRoute(pathname)) {
+  if (
+    isWardrobeServerFirstRoute(pathname) ||
+    isSettingsServerFirstRoute(pathname)
+  ) {
     return 'server-first-protected'
   }
 

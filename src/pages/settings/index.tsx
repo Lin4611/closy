@@ -1,50 +1,46 @@
+import type { GetServerSideProps, InferGetServerSidePropsType } from 'next'
 import { useRouter } from 'next/router'
-import { useState } from 'react'
-import { useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { showToast } from '@/components/ui/sonner'
-import { ApiError } from '@/lib/api/client'
 import { apiClient } from '@/lib/api/client'
-import { getUserInfo } from '@/modules/common/api/userInfo'
+import {
+  buildSettingsSummary,
+  getSettingsProtectedBaselineServerSideResult,
+  type SettingsProfileBaseline,
+} from '@/lib/api/settings/shared'
 import { AppShell } from '@/modules/common/components/AppShell'
-import { occasionLabelMap } from '@/modules/common/types/occasion'
 import { GoogleCalendarSettingCard } from '@/modules/settings/components/GoogleCalendarSettingCard'
 import { SettingSection } from '@/modules/settings/components/SettingSection'
-import { colorsLabelMap } from '@/modules/settings/types/colorsTypes'
-import { stylesLabelMap } from '@/modules/settings/types/stylesTypes'
-import { useAppDispatch, useAppSelector } from '@/store/hooks'
+import { useSettingsProfileHydration } from '@/modules/settings/hooks/useSettingsProfileHydration'
+import { useAppDispatch } from '@/store/hooks'
 import { clearDayCache } from '@/store/slices/homeSlice'
 import { clearOutfitCache } from '@/store/slices/outfitSlice'
-import { clearUser, mergeUserProfile } from '@/store/slices/userSlice'
+import { clearUser } from '@/store/slices/userSlice'
 
-const Setting = () => {
+export const getServerSideProps: GetServerSideProps<{
+  profileBaseline: SettingsProfileBaseline
+}> = async (context) => {
+  return getSettingsProtectedBaselineServerSideResult(context)
+}
+
+const Setting = ({ profileBaseline }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const router = useRouter()
+  const summary = useMemo(() => buildSettingsSummary(profileBaseline), [profileBaseline])
 
   const [isSynced, setIsSynced] = useState(false)
   const [isSyncing, setIsSyncing] = useState(false)
   const dispatch = useAppDispatch()
 
-  const user = useAppSelector((state) => state.user.user)
+  useSettingsProfileHydration(profileBaseline)
+
   useEffect(() => {
     if (router.query.status === 'unchanged') {
       showToast.info('偏好設定未變更', 1500)
       router.replace('/settings', undefined, { shallow: true })
     }
-  }, [router.query.status])
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const data = await getUserInfo()
-        dispatch(mergeUserProfile(data))
-      } catch (e) {
-        if (e instanceof ApiError && e.statusCode === 401) {
-          router.push('/')
-        }
-      }
-    }
-    fetchProfile()
-  }, [])
+  }, [router, router.query.status])
 
   const handleSyncChange = async (checked: boolean) => {
     if (!checked) {
@@ -84,19 +80,9 @@ const Setting = () => {
         </div>
         <div className="flex flex-1 flex-col gap-5 px-4 py-6">
           <SettingSection
-            defaultOccasion={
-              user?.preferences?.occasions ? occasionLabelMap[user.preferences.occasions] : ''
-            }
-            defaultStyle={
-              user?.preferences?.styles?.length
-                ? user.preferences.styles.map((style) => stylesLabelMap[style])
-                : ['未設定']
-            }
-            defaultColor={
-              user?.preferences?.colors?.length
-                ? user.preferences.colors.map((color) => colorsLabelMap[color])
-                : ['未設定']
-            }
+            defaultOccasion={summary.occasion}
+            defaultStyle={summary.styles}
+            defaultColor={summary.colors}
           />
           <GoogleCalendarSettingCard
             isSynced={isSynced}
