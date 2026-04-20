@@ -9,12 +9,22 @@ type OutfitCardProps = {
   onDelete: () => void
   modelImage: string
   outfitId: string
+  returnTo?: string
 }
 
-export const OutfitCard = ({ footLabel, onDelete, modelImage, outfitId }: OutfitCardProps) => {
+export const OutfitCard = ({
+  footLabel,
+  onDelete,
+  modelImage,
+  outfitId,
+  returnTo,
+}: OutfitCardProps) => {
   return (
     <div className="relative">
-      <Link href={`/outfit/${outfitId}`} className="block">
+      <Link
+        href={`/outfit/${outfitId}${returnTo ? `?returnTo=${encodeURIComponent(returnTo)}` : ''}`}
+        className="block"
+      >
         <div className="flex h-[224px] w-[164px] items-center justify-center rounded-[24px] bg-white py-3">
           <Image src={modelImage} alt="outfit" width={54} height={200} className="h-50 w-[54px]" />
         </div>
