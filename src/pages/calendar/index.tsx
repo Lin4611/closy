@@ -10,10 +10,11 @@ import { CalendarHeader } from '@/modules/calendar/components/CalendarHeader'
 import { CalendarMonthBar } from '@/modules/calendar/components/CalendarMonthBar'
 import { CalendarSuccessDialog } from '@/modules/calendar/components/CalendarSuccessDialog'
 import { mockGoogleEvents } from '@/modules/calendar/data/mockGoogleEvents'
+import { useCalendarOutfits } from '@/modules/calendar/hooks/useCalendarOutfits'
 import { useCalendarStore } from '@/modules/calendar/hooks/useCalendarStore'
 import type { CalendarEntry } from '@/modules/calendar/types'
 import { buildOutfitDetailReturnTo, getCalendarEditRoute } from '@/modules/calendar/utils/calendarNavigation'
-import { getSelectableOutfitSummaryById } from '@/modules/calendar/utils/calendarOutfitAdapter'
+import { mapResolvedOutfitToEntryDisplayModel } from '@/modules/calendar/utils/calendarOutfitAdapter'
 import { sortCalendarEntriesForHome } from '@/modules/calendar/utils/calendarRules'
 import { AppShell } from '@/modules/common/components/AppShell'
 
@@ -28,6 +29,7 @@ const getCurrentMonthLabel = () => {
 const CalendarPage = () => {
   const router = useRouter()
   const { entries, deleteEntry } = useCalendarStore()
+  const { getOutfitStateById } = useCalendarOutfits(undefined, { source: 'api' })
   const [isSynced, setIsSynced] = useState(false)
   const [deletingEntry, setDeletingEntry] = useState<CalendarEntry | null>(null)
   const [isDeleteSuccessOpen, setIsDeleteSuccessOpen] = useState(false)
@@ -95,25 +97,26 @@ const CalendarPage = () => {
             <CalendarEmptyState />
           ) : (
             visibleEntries.map((entry) => {
-              const selectedOutfit = entry.selectedOutfitId
-                ? getSelectableOutfitSummaryById(entry.selectedOutfitId)
-                : null
+              const outfitDisplay = mapResolvedOutfitToEntryDisplayModel({
+                resolvedOutfit: getOutfitStateById(entry.selectedOutfitId),
+              })
+              const canPreviewOutfit = outfitDisplay.status === 'resolved' && Boolean(entry.selectedOutfitId)
 
               return (
                 <CalendarEntryCard
                   key={entry.id}
                   entry={entry}
                   googleEvents={mockGoogleEvents}
-                  selectedOutfit={selectedOutfit}
+                  outfitDisplay={outfitDisplay}
                   onPreviewOutfit={
-                    entry.selectedOutfitId
+                    canPreviewOutfit
                       ? () =>
-                        void router.push(
-                          buildOutfitDetailReturnTo({
-                            outfitId: entry.selectedOutfitId as string,
-                            returnTo: '/calendar',
-                          })
-                        )
+                          void router.push(
+                            buildOutfitDetailReturnTo({
+                              outfitId: entry.selectedOutfitId as string,
+                              returnTo: '/calendar',
+                            })
+                          )
                       : undefined
                   }
                   onEdit={() => void router.push(getCalendarEditRoute(entry.date))}

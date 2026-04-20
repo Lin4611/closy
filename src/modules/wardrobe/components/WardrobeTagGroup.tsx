@@ -12,6 +12,7 @@ type WardrobeTagGroupProps<T extends string> = {
   selectedKeys: T[]
   onChange: (next: T[]) => void
   multiple?: boolean
+  allowEmptySingleSelection?: boolean
   renderSuffix?: (option: TagOption<T>) => ReactNode
 }
 
@@ -20,12 +21,20 @@ export const WardrobeTagGroup = <T extends string>({
   selectedKeys,
   onChange,
   multiple = true,
+  allowEmptySingleSelection = false,
   renderSuffix,
 }: WardrobeTagGroupProps<T>) => {
   const handleClick = (key: T) => {
     if (multiple) {
       const hasKey = selectedKeys.includes(key)
       onChange(hasKey ? selectedKeys.filter((item) => item !== key) : [...selectedKeys, key])
+      return
+    }
+
+    const hasKey = selectedKeys.includes(key)
+
+    if (hasKey && allowEmptySingleSelection) {
+      onChange([])
       return
     }
 
@@ -45,8 +54,8 @@ export const WardrobeTagGroup = <T extends string>({
             className={cn(
               'inline-flex items-center gap-1 rounded-full border px-3 py-1 font-label-xs transition-colors',
               selected
-                ? 'border-primary-900 bg-primary-900 text-white'
-                : 'border-neutral-300 bg-neutral-100 text-neutral-400'
+                ? 'border-primary-800 bg-primary-800 text-white'
+                : 'border-neutral-500 bg-neutral-100 text-neutral-500'
             )}
           >
             {option.label}

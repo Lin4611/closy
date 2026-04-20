@@ -7,11 +7,23 @@ import { WardrobeTagGroup } from './WardrobeTagGroup'
 import { wardrobeCategoryOptions } from '../constants/categoryOptions'
 import { wardrobeOccasionOptions } from '../constants/occasionOptions'
 import { wardrobeSeasonOptions } from '../constants/seasonOptions'
-import type { WardrobeReviewDraft } from '../types'
+import type { WardrobeBrandOption, WardrobeReviewDraft } from '../types'
+
+type WardrobeReviewFormBrandFieldProps = {
+  options: WardrobeBrandOption[]
+  pendingValue: string
+  isAdding: boolean
+  onPendingValueChange: (next: string) => void
+  onAddStart: () => void
+  onAddCancel: () => void
+  onAddConfirm: () => void
+  addInputPlaceholder?: string
+}
 
 type WardrobeReviewFormProps = {
   value: WardrobeReviewDraft
   onChange: (next: WardrobeReviewDraft) => void
+  brandField?: WardrobeReviewFormBrandFieldProps
 }
 
 const categoryPreviewEmoji = {
@@ -29,7 +41,7 @@ const formCategoryOptions = wardrobeCategoryOptions.filter(
   } => option.key !== 'all'
 )
 
-export const WardrobeReviewForm = ({ value, onChange }: WardrobeReviewFormProps) => {
+export const WardrobeReviewForm = ({ value, onChange, brandField }: WardrobeReviewFormProps) => {
   const name = value.name ?? ''
   const brand = value.brand ?? ''
 
@@ -37,8 +49,8 @@ export const WardrobeReviewForm = ({ value, onChange }: WardrobeReviewFormProps)
     onChange({ ...value, name: event.target.value })
   }
 
-  const handleBrandChange = (event: ChangeEvent<HTMLInputElement>) => {
-    onChange({ ...value, brand: event.target.value })
+  const handleBrandSelectionChange = (next: string[]) => {
+    onChange({ ...value, brand: next[0] ?? '' })
   }
 
   return (
@@ -68,7 +80,7 @@ export const WardrobeReviewForm = ({ value, onChange }: WardrobeReviewFormProps)
             value={name}
             onChange={handleNameChange}
             placeholder="請輸入衣物名稱"
-            className="h-9 w-full rounded-full border border-neutral-300 bg-neutral-100 px-4 font-paragraph-sm text-neutral-900 outline-none focus:border-primary-900"
+            className="h-9 w-full rounded-full border border-neutral-300 bg-white px-4 font-paragraph-sm text-neutral-800 outline-none focus:border-primary-900"
           />
         </label>
 
@@ -115,16 +127,64 @@ export const WardrobeReviewForm = ({ value, onChange }: WardrobeReviewFormProps)
           />
         </WardrobeDetailSection>
 
-        <label className="block space-y-1.5">
-          <span className="font-label-md text-neutral-900">品牌</span>
-          <input
-            value={brand}
-            onChange={handleBrandChange}
-            placeholder="可選填品牌名稱"
-            className="h-9 w-full rounded-full border border-neutral-300 bg-neutral-100 px-4 font-paragraph-sm text-neutral-900 outline-none focus:border-primary-900"
-            aria-label="品牌"
-          />
-        </label>
+        {brandField ? (
+          <WardrobeDetailSection title="品牌">
+            <div className="space-y-2">
+              {brandField.options.length > 0 ? (
+                <WardrobeTagGroup
+                  multiple={false}
+                  allowEmptySingleSelection
+                  options={brandField.options.map((option) => ({
+                    key: option.value,
+                    label: option.label,
+                  }))}
+                  selectedKeys={brand ? [brand] : []}
+                  onChange={handleBrandSelectionChange}
+                />
+              ) : null}
+
+              {brandField.isAdding ? (
+                <div className="flex items-center gap-2">
+                  <input
+                    value={brandField.pendingValue}
+                    onChange={(event) => brandField.onPendingValueChange(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') {
+                        event.preventDefault()
+                        brandField.onAddConfirm()
+                      }
+                    }}
+                    placeholder={brandField.addInputPlaceholder ?? '輸入品牌名稱'}
+                    className="h-9 flex-1 rounded-full border border-neutral-500 bg-neutral-100 px-4 font-paragraph-sm text-neutral-900 outline-none focus:border-primary-900"
+                    aria-label="新增品牌"
+                  />
+                  <button
+                    type="button"
+                    onClick={brandField.onAddConfirm}
+                    className="rounded-full border border-primary-900 px-3 py-1 font-label-xs text-primary-900"
+                  >
+                    確認
+                  </button>
+                  <button
+                    type="button"
+                    onClick={brandField.onAddCancel}
+                    className="rounded-full border border-neutral-300 px-3 py-1 font-label-xs text-neutral-700"
+                  >
+                    取消
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={brandField.onAddStart}
+                  className="inline-flex rounded-full border border-neutral-500 bg-neutral-100 px-3 py-1 font-label-xs text-neutral-500"
+                >
+                  新增品牌 +
+                </button>
+              )}
+            </div>
+          </WardrobeDetailSection>
+        ) : null}
       </section>
     </form>
   )

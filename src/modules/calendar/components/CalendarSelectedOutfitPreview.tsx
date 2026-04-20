@@ -1,15 +1,19 @@
-import { Plus } from 'lucide-react'
+import { LoaderCircle, Plus } from 'lucide-react'
 import Image from 'next/image'
 
 import { Button } from '@/components/ui/button'
-import type { SelectableOutfitSummary } from '@/modules/calendar/types'
+import type { CalendarSelectedOutfitPreviewModel, SelectableOutfitSummary } from '@/modules/calendar/types'
 
 type CalendarSelectedOutfitPreviewProps = {
-  outfit: SelectableOutfitSummary | null
+  outfit: CalendarSelectedOutfitPreviewModel | SelectableOutfitSummary | null
   onClick: () => void
 }
 
 export const CalendarSelectedOutfitPreview = ({ outfit, onClick }: CalendarSelectedOutfitPreviewProps) => {
+  const previewStatus = outfit && 'previewStatus' in outfit ? outfit.previewStatus : 'resolved'
+  const previewMessage = outfit && 'previewMessage' in outfit ? outfit.previewMessage : null
+  const shouldShowPlaceholder = Boolean(outfit && previewStatus !== 'resolved')
+
   return (
     <div className="relative mx-auto flex w-full max-w-85.75 min-h-83 flex-col items-center pb-2 pt-2">
       {outfit ? (
@@ -24,8 +28,14 @@ export const CalendarSelectedOutfitPreview = ({ outfit, onClick }: CalendarSelec
         </Button>
       ) : null}
 
-      {outfit ? (
+      {outfit && !shouldShowPlaceholder ? (
         <Image src={outfit.imageUrl} alt="已選穿搭" width={144} height={256} className="h-80 w-36 object-contain" />
+      ) : outfit && shouldShowPlaceholder ? (
+        <div className="flex min-h-83 max-w-66.25 w-full flex-col items-center justify-center rounded-[20px] border border-neutral-200 bg-white px-6 text-center shadow-[0_1px_3px_rgba(0,0,0,0.12)]">
+          {previewStatus === 'loading' ? <LoaderCircle className="mb-3 size-6 animate-spin text-primary-700" strokeWidth={1.75} /> : null}
+          <p className="font-label-lg text-neutral-800">{previewStatus === 'loading' ? '載入中' : previewStatus === 'error' ? '載入失敗' : '穿搭不存在'}</p>
+          {previewMessage ? <p className="mt-2 font-paragraph-sm text-neutral-500">{previewMessage}</p> : null}
+        </div>
       ) : (
         <div className="flex min-h-83 max-w-66.25 w-full items-center justify-center rounded-[20px] border border-neutral-200 shadow-[0_1px_3px_rgba(0,0,0,0.12)] bg-white">
           <Button type="button" variant="outline" size="lg" className="rounded-full border border-black bg-white text-neutral-800 font-h4" onClick={onClick}>

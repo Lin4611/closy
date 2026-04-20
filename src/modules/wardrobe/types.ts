@@ -27,6 +27,11 @@ export type WardrobeColorKey =
   | 'fresh_blue'
   | 'elegant_purple'
 
+export type WardrobeBrandOption = {
+  value: string
+  label: string
+}
+
 export type WardrobeCategoryOption = {
   key: WardrobeCategoryKey
   label: string
@@ -62,6 +67,8 @@ export type WardrobeItem = {
   createdAt: string
   updatedAt: string
 }
+
+export type WardrobeStoredItem = WardrobeItem
 
 export type WardrobeDraftItem = {
   name: string
