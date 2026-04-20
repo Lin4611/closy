@@ -1,3 +1,4 @@
+import { Plus } from 'lucide-react'
 import Image from 'next/image'
 import type { ChangeEvent } from 'react'
 
@@ -177,9 +178,9 @@ export const WardrobeReviewForm = ({ value, onChange, brandField }: WardrobeRevi
                 <button
                   type="button"
                   onClick={brandField.onAddStart}
-                  className="inline-flex rounded-full border border-neutral-500 bg-neutral-100 px-3 py-1 font-label-xs text-neutral-500"
+                  className="inline-flex items-center rounded-full border border-neutral-500 bg-neutral-100 px-3 py-1 font-label-sm text-primary-800"
                 >
-                  新增品牌 +
+                  新增品牌 <Plus className="size-4" strokeWidth={2} />
                 </button>
               )}
             </div>
