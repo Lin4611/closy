@@ -1,4 +1,4 @@
-import { LoaderCircle, Plus } from 'lucide-react'
+import { LoaderCircle, Pen, Plus } from 'lucide-react'
 import Image from 'next/image'
 
 import { Button } from '@/components/ui/button'
@@ -24,6 +24,7 @@ export const CalendarSelectedOutfitPreview = ({ outfit, onClick }: CalendarSelec
           className="absolute right-0 top-0 rounded-full bg-primary-200 h-11 p-3 text-primary-700 shadow-[0_4px_4px_rgba(#18181B0D)] font-label-sm"
           onClick={onClick}
         >
+          <Pen className="size-6" strokeWidth={2} />
           重選穿搭
         </Button>
       ) : null}
