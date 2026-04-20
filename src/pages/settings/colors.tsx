@@ -1,21 +1,37 @@
+import type { GetServerSideProps, InferGetServerSidePropsType } from 'next'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
 
 import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
+import {
+  getSettingsProtectedBaselineServerSideResult,
+  type SettingsProfileBaseline,
+} from '@/lib/api/settings/shared'
 import { ConfirmAlertDialog } from '@/modules/common/components/ConfirmAlertDialog'
 import { PrimaryButton } from '@/modules/common/components/PrimaryButton'
 import { updateColors } from '@/modules/settings/api/colors'
 import { ColorCard } from '@/modules/settings/components/ColorCard'
 import { SettingsHeader } from '@/modules/settings/components/SettingsHeader'
+import { useSettingsProfileHydration } from '@/modules/settings/hooks/useSettingsProfileHydration'
 import { colorsMetaMap } from '@/modules/settings/types/colorsTypes'
 import type { Colors } from '@/modules/settings/types/colorsTypes'
-import { useAppDispatch, useAppSelector } from '@/store/hooks'
+import { useAppDispatch } from '@/store/hooks'
 import { updateUserColors } from '@/store/slices/userSlice'
 
-const SettingColors = () => {
-  const savedColors = useAppSelector((state) => state.user.user?.preferences.colors ?? [])
-  const [colorPreference, setColorPreference] = useState<Colors[]>(savedColors)
+const hasSameSelections = (current: Colors[], baseline: Colors[]) => {
+  return current.length === baseline.length && current.every((selectedColor) => baseline.includes(selectedColor))
+}
+
+export const getServerSideProps: GetServerSideProps<{
+  profileBaseline: SettingsProfileBaseline
+}> = async (context) => {
+  return getSettingsProtectedBaselineServerSideResult(context)
+}
+
+const SettingColors = ({ profileBaseline }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+  const initialColors = profileBaseline.preferences.colors
+  const [colorPreference, setColorPreference] = useState<Colors[]>(initialColors)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
@@ -23,20 +39,19 @@ const SettingColors = () => {
 
   const router = useRouter()
 
-  const handleColorChange = async (value: string[]) => {
-    if (
-      isSubmitting ||
-      (value.length === savedColors.length && value.every((v, i) => v === savedColors[i]))
-    ) {
+  useSettingsProfileHydration(profileBaseline)
+
+  const handleColorChange = async (value: Colors[]) => {
+    if (isSubmitting || hasSameSelections(value, initialColors)) {
       router.push('/settings?status=unchanged')
       return
     }
 
     try {
       setIsSubmitting(true)
-      await updateColors(value as Colors[])
+      await updateColors(value)
       setIsDialogOpen(true)
-      dispatch(updateUserColors(value as Colors[]))
+      dispatch(updateUserColors(value))
     } catch (error) {
       if (error instanceof ApiError) {
         showToast.error(error.message)
@@ -64,7 +79,7 @@ const SettingColors = () => {
               onClick={() =>
                 setColorPreference((prev) =>
                   prev.includes(color.colorKey)
-                    ? prev.filter((s) => s !== color.colorKey)
+                    ? prev.filter((selectedColor) => selectedColor !== color.colorKey)
                     : [...prev, color.colorKey],
                 )
               }
@@ -72,11 +87,7 @@ const SettingColors = () => {
           ))}
         </div>
         <div className="mt-auto flex justify-center pt-6">
-          <PrimaryButton
-            content="確定"
-            onClick={() => handleColorChange(colorPreference)}
-            className="w-40"
-          />
+          <PrimaryButton content="確定" onClick={() => handleColorChange(colorPreference)} className="w-40" />
         </div>
       </div>
       <ConfirmAlertDialog

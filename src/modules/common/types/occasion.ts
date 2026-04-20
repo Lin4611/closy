@@ -1,5 +1,7 @@
 export type Occasion = 'socialGathering' | 'campusCasual' | 'businessCasual' | 'professional'
 
+export const defaultOccasion: Occasion = 'socialGathering'
+
 export const occasionLabelMap: Record<Occasion, string> = {
   socialGathering: '社交聚會',
   campusCasual: '校園休閒',
