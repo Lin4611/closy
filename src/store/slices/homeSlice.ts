@@ -1,7 +1,7 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 
 import type { Occasion } from '@/modules/common/types/occasion'
-import type { DayRecommendation } from '@/modules/home/types/dayRecommendationTypes'
+import type { ClothingItem, DayRecommendation } from '@/modules/home/types/dayRecommendationTypes'
 
 type DayCache = {
   dayRecommendation: DayRecommendation
@@ -47,6 +47,22 @@ const homeSlice = createSlice({
         dayState.occasion = action.payload.occasion
       }
     },
+    updateDayAdjustResult: (
+      state,
+      action: PayloadAction<{
+        day: 'today' | 'tomorrow'
+        outfitImgUrl: string
+        selectedItems: ClothingItem[]
+        reasoning: string
+      }>,
+    ) => {
+      const dayState = state[action.payload.day]
+      if (dayState) {
+        dayState.outfitImgUrl = action.payload.outfitImgUrl
+        dayState.dayRecommendation.recommendation.selectedItems = action.payload.selectedItems
+        dayState.dayRecommendation.recommendation.reasoning = action.payload.reasoning
+      }
+    },
     clearDayCache: (state) => {
       state.today = null
       state.tomorrow = null
@@ -54,5 +70,6 @@ const homeSlice = createSlice({
   },
 })
 
-export const { setDayCache, clearDayCache, updateDayImageUrl } = homeSlice.actions
+export const { setDayCache, clearDayCache, updateDayImageUrl, updateDayAdjustResult } =
+  homeSlice.actions
 export default homeSlice.reducer

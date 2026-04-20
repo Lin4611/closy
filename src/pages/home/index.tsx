@@ -14,8 +14,9 @@ import { HomeInsightsSection } from '@/modules/home/components/HomeInsightsSecti
 import { HomeOutfitPreview } from '@/modules/home/components/HomeOutfitPreview'
 import { HomePreviewTopBar } from '@/modules/home/components/HomePreviewTopBar'
 import { OutfitAdjustDrawer } from '@/modules/home/components/outfit-adjust-drawer/OutfitAdjustDrawer'
+import type { AdjustStreamResult } from '@/modules/home/types/outfitAdjustChat'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
-import { clearDayCache, setDayCache, updateDayImageUrl } from '@/store/slices/homeSlice'
+import { clearDayCache, setDayCache, updateDayAdjustResult, updateDayImageUrl } from '@/store/slices/homeSlice'
 
 const HomeOnboardingGate = dynamic(
   () =>
@@ -150,7 +151,31 @@ const Home = () => {
   const handleDislikeClick = () => {
     showAdjustPrompt(3000)
   }
+
   const currentData = homeState[activeDay]
+
+  const handleConfirmAdjust = async (result: AdjustStreamResult) => {
+    const occasion = currentData?.dayRecommendation.recommendation.occasion
+    if (!occasion) return
+
+    dispatch(updateDayAdjustResult({
+      day: activeDay,
+      outfitImgUrl: result.adjustedImageUrl,
+      selectedItems: result.selectedItems,
+      reasoning: result.text,
+    }))
+
+    try {
+      await addOutfit({
+        outfitImgUrl: result.adjustedImageUrl,
+        selectedItems: result.selectedItems,
+        occasion,
+      })
+      showToast.success('已加入收藏')
+    } catch (e) {
+      if (e instanceof ApiError) showToast.error(e.message)
+    }
+  }
 
   return (
     <>
@@ -182,8 +207,10 @@ const Home = () => {
         <OutfitAdjustDrawer
           open={isOutfitAdjustDrawerOpen}
           onOpenChange={setIsOutfitAdjustDrawerOpen}
-          outfitImageUrl="/home/model_man.webp"
-          outfitId="1"
+          outfitImageUrl={currentData?.outfitImgUrl ?? ''}
+          selectedItems={currentData?.dayRecommendation.recommendation.selectedItems ?? []}
+          day={activeDay}
+          onConfirmAdjust={handleConfirmAdjust}
         />
       </AppShell>
       <HomeOnboardingGate onVisibilityChange={setIsOnboardingVisible} />
