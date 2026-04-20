@@ -18,7 +18,9 @@ export const AddClothingDrawer = ({
   return (
     <Drawer open={open} onOpenChange={onOpenChange} dismissible={dismissible}>
       <DrawerContent className="mx-auto h-75 w-full max-w-93.75 rounded-t-[40px] border-none bg-[#FFFEFE] px-6 shadow-[0_1px_16px_rgba(0,0,0,0.1)]">
-        <DrawerTitle className="font-h3 text-center text-neutral-900">選擇新增方式</DrawerTitle>
+        <DrawerTitle className="font-h3 pt-5 text-center text-neutral-900">
+          選擇新增方式
+        </DrawerTitle>
 
         <div className="flex flex-col gap-5 pt-10">
           <button
