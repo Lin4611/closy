@@ -7,8 +7,9 @@ type OutfitsOverviewProps = {
   outfits: OutfitItem[]
   onDelete: (outfitId: string) => void
   tab: OutfitTab
+  returnTo?: string
 }
-export const OutfitsOverview = ({ outfits, onDelete, tab }: OutfitsOverviewProps) => {
+export const OutfitsOverview = ({ outfits, onDelete, tab, returnTo }: OutfitsOverviewProps) => {
   const sortedOutfits = [...outfits].sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   )
@@ -40,6 +41,7 @@ export const OutfitsOverview = ({ outfits, onDelete, tab }: OutfitsOverviewProps
               modelImage={outfit.outfitImgUrl}
               footLabel={footLabel}
               onDelete={() => onDelete(outfit._id)}
+              returnTo={returnTo}
             />
           )
         })}
