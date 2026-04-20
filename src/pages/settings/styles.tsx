@@ -19,6 +19,10 @@ import { stylesMetaMap } from '@/modules/settings/types/stylesTypes'
 import { useAppDispatch } from '@/store/hooks'
 import { updateUserStyles } from '@/store/slices/userSlice'
 
+const hasSameSelections = (current: Styles[], baseline: Styles[]) => {
+  return current.length === baseline.length && current.every((selectedStyle) => baseline.includes(selectedStyle))
+}
+
 export const getServerSideProps: GetServerSideProps<{
   profileBaseline: SettingsProfileBaseline
 }> = async (context) => {
@@ -38,10 +42,7 @@ const SettingsStyles = ({ profileBaseline }: InferGetServerSidePropsType<typeof 
   useSettingsProfileHydration(profileBaseline)
 
   const handleStyleChange = async (value: Styles[]) => {
-    if (
-      isSubmitting ||
-      (value.length === initialStyles.length && value.every((selectedStyle, index) => selectedStyle === initialStyles[index]))
-    ) {
+    if (isSubmitting || hasSameSelections(value, initialStyles)) {
       router.push('/settings?status=unchanged')
       return
     }
