@@ -78,11 +78,7 @@ const OutfitDetailPage = () => {
           href={backHref}
           onClick={(e) => {
             e.preventDefault()
-            if (window.history.length > 1) {
-              router.back()
-            } else {
-              void router.push(backHref)
-            }
+            void router.push(backHref)
           }}
           className={cn('absolute left-0 flex size-10 items-center justify-center')}
         >
