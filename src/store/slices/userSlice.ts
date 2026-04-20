@@ -47,15 +47,11 @@ const userSlice = createSlice({
       state.user.isProfileCompleted = true
     },
     mergeUserProfile: (state, action: PayloadAction<UserInfo>) => {
-      if (!state.user) return
       state.user = {
-        ...(state.user ?? {
-          userId: '',
-          name: '',
-          email: '',
-          avatar: '',
-          isProfileCompleted: false,
-        }),
+        userId: state.user?.userId ?? '',
+        email: state.user?.email ?? '',
+        isProfileCompleted: state.user?.isProfileCompleted ?? true,
+        name: action.payload.name,
         avatar: action.payload.picture,
         gender: action.payload.gender,
         preferences: {
@@ -65,6 +61,7 @@ const userSlice = createSlice({
         },
         location: action.payload.location,
       }
+      state.isLoggedIn = true
     },
   },
 })
