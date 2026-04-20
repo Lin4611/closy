@@ -71,6 +71,7 @@ export const OutfitAdjustDrawer = ({
   const [count, setCount] = useState<number | null>(null)
   const [result, setResult] = useState<AdjustStreamResult | null>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
+  const step2TimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const name = useAppSelector((state) => state.user.user?.name)
   const isComposerDisabled = isSubmitting || count === null || count <= 0
@@ -96,6 +97,10 @@ export const OutfitAdjustDrawer = ({
   }, [count])
 
   const resetDrawerState = () => {
+    if (step2TimerRef.current) {
+      clearTimeout(step2TimerRef.current)
+      step2TimerRef.current = null
+    }
     setMessage('')
     setMessages([])
     setMode('initial')
@@ -154,9 +159,13 @@ export const OutfitAdjustDrawer = ({
                 status: 'idle',
               },
             ])
-            setMode('loading')
+            step2TimerRef.current = setTimeout(() => setMode('loading'), 1000)
           },
           onCompleted: (data) => {
+            if (step2TimerRef.current) {
+              clearTimeout(step2TimerRef.current)
+              step2TimerRef.current = null
+            }
             setResult(data)
             setMode('result')
           },
