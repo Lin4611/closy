@@ -158,19 +158,18 @@ const Home = () => {
     const occasion = currentData?.dayRecommendation.recommendation.occasion
     if (!occasion) return
 
-    dispatch(updateDayAdjustResult({
-      day: activeDay,
-      outfitImgUrl: result.adjustedImageUrl,
-      selectedItems: result.selectedItems,
-      reasoning: result.text,
-    }))
-
     try {
       await addOutfit({
         outfitImgUrl: result.adjustedImageUrl,
         selectedItems: result.selectedItems,
         occasion,
       })
+      dispatch(updateDayAdjustResult({
+        day: activeDay,
+        outfitImgUrl: result.adjustedImageUrl,
+        selectedItems: result.selectedItems,
+        reasoning: result.text,
+      }))
       showToast.success('已加入收藏')
     } catch (e) {
       if (e instanceof ApiError) showToast.error(e.message)
