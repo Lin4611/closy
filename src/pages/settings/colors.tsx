@@ -1,8 +1,10 @@
+import type { GetServerSideProps, InferGetServerSidePropsType } from 'next'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
 
 import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
+import { getSettingsProtectedServerSideResult } from '@/lib/api/settings/shared'
 import { ConfirmAlertDialog } from '@/modules/common/components/ConfirmAlertDialog'
 import { PrimaryButton } from '@/modules/common/components/PrimaryButton'
 import { updateColors } from '@/modules/settings/api/colors'
@@ -10,12 +12,17 @@ import { ColorCard } from '@/modules/settings/components/ColorCard'
 import { SettingsHeader } from '@/modules/settings/components/SettingsHeader'
 import { colorsMetaMap } from '@/modules/settings/types/colorsTypes'
 import type { Colors } from '@/modules/settings/types/colorsTypes'
-import { useAppDispatch, useAppSelector } from '@/store/hooks'
+import { useAppDispatch } from '@/store/hooks'
 import { updateUserColors } from '@/store/slices/userSlice'
 
-const SettingColors = () => {
-  const savedColors = useAppSelector((state) => state.user.user?.preferences.colors ?? [])
-  const [colorPreference, setColorPreference] = useState<Colors[]>(savedColors)
+export const getServerSideProps: GetServerSideProps<{ initialColors: Colors[] }> = async (context) => {
+  return getSettingsProtectedServerSideResult(context, (profile) => ({
+    initialColors: profile.preferences.colors,
+  }))
+}
+
+const SettingColors = ({ initialColors }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+  const [colorPreference, setColorPreference] = useState<Colors[]>(initialColors)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
@@ -23,10 +30,10 @@ const SettingColors = () => {
 
   const router = useRouter()
 
-  const handleColorChange = async (value: string[]) => {
+  const handleColorChange = async (value: Colors[]) => {
     if (
       isSubmitting ||
-      (value.length === savedColors.length && value.every((v, i) => v === savedColors[i]))
+      (value.length === initialColors.length && value.every((selectedColor, index) => selectedColor === initialColors[index]))
     ) {
       router.push('/settings?status=unchanged')
       return
@@ -34,9 +41,9 @@ const SettingColors = () => {
 
     try {
       setIsSubmitting(true)
-      await updateColors(value as Colors[])
+      await updateColors(value)
       setIsDialogOpen(true)
-      dispatch(updateUserColors(value as Colors[]))
+      dispatch(updateUserColors(value))
     } catch (error) {
       if (error instanceof ApiError) {
         showToast.error(error.message)
@@ -64,7 +71,7 @@ const SettingColors = () => {
               onClick={() =>
                 setColorPreference((prev) =>
                   prev.includes(color.colorKey)
-                    ? prev.filter((s) => s !== color.colorKey)
+                    ? prev.filter((selectedColor) => selectedColor !== color.colorKey)
                     : [...prev, color.colorKey],
                 )
               }
@@ -72,11 +79,7 @@ const SettingColors = () => {
           ))}
         </div>
         <div className="mt-auto flex justify-center pt-6">
-          <PrimaryButton
-            content="確定"
-            onClick={() => handleColorChange(colorPreference)}
-            className="w-40"
-          />
+          <PrimaryButton content="確定" onClick={() => handleColorChange(colorPreference)} className="w-40" />
         </div>
       </div>
       <ConfirmAlertDialog
