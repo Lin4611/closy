@@ -7,11 +7,25 @@ import type { Occasion } from '@/modules/common/types/occasion'
 import { mockOutfitDetails } from '@/modules/outfit/data/mockOutfits'
 import type { OutfitItem } from '@/modules/outfit/types/outfitTypes'
 
+const formatSavedAt = (value: string) => {
+  const date = new Date(value)
+
+  if (Number.isNaN(date.getTime())) {
+    return value
+  }
+
+  const year = date.getFullYear()
+  const month = `${date.getMonth() + 1}`.padStart(2, '0')
+  const day = `${date.getDate()}`.padStart(2, '0')
+
+  return `${year}/${month}/${day}`
+}
+
 export const mapOutfitItemToSelectableOutfitSummary = (outfit: OutfitItem): SelectableOutfitSummary => ({
   id: outfit._id,
   imageUrl: outfit.outfitImgUrl,
   occasionKey: outfit.occasion,
-  savedAt: outfit.createdAt,
+  savedAt: formatSavedAt(outfit.createdAt),
   itemNames: outfit.selectedItems.map((item) => item.name),
 })
 

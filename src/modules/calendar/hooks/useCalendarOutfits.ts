@@ -10,8 +10,8 @@ import {
   buildSelectableOutfitSummaryMap,
   filterSelectableOutfitSummariesByOccasion,
   getSelectableOutfitSummaries,
-  resolveSelectableOutfitById,
   mapOutfitItemsToSelectableOutfitSummaries,
+  resolveSelectableOutfitById,
 } from '@/modules/calendar/utils/calendarOutfitAdapter'
 import type { Occasion } from '@/modules/common/types/occasion'
 import { getOutfitList } from '@/modules/outfit/api/outfit'
@@ -22,8 +22,9 @@ type UseCalendarOutfitsOptions = {
 
 type ApiOutfitState = {
   outfits: SelectableOutfitSummary[]
-  status: CalendarOutfitCollectionStatus
+  status: Exclude<CalendarOutfitCollectionStatus, 'loading'>
   errorMessage: string | null
+  requestKey: string | null
 }
 
 const getErrorMessage = (error: unknown) => {
@@ -34,16 +35,24 @@ const getErrorMessage = (error: unknown) => {
   return '無法取得穿搭資料'
 }
 
+const getRequestKey = (occasionKey?: Occasion | null, refreshKey = 0) => {
+  return `${occasionKey ?? 'all'}:${refreshKey}`
+}
+
 export const useCalendarOutfits = (
   occasionKey?: Occasion | null,
   options?: UseCalendarOutfitsOptions,
 ) => {
   const source = options?.source ?? 'mock'
+  const [refreshKey, setRefreshKey] = useState(0)
   const [apiState, setApiState] = useState<ApiOutfitState>({
     outfits: [],
     status: 'idle',
     errorMessage: null,
+    requestKey: null,
   })
+
+  const currentRequestKey = useMemo(() => getRequestKey(occasionKey, refreshKey), [occasionKey, refreshKey])
 
   useEffect(() => {
     if (source !== 'api') {
@@ -64,6 +73,7 @@ export const useCalendarOutfits = (
           outfits,
           status: outfits.length > 0 ? 'ready' : 'empty',
           errorMessage: null,
+          requestKey: currentRequestKey,
         })
       })
       .catch((error) => {
@@ -75,32 +85,36 @@ export const useCalendarOutfits = (
           outfits: [],
           status: 'error',
           errorMessage: getErrorMessage(error),
+          requestKey: currentRequestKey,
         })
       })
 
     return () => {
       isActive = false
     }
-  }, [occasionKey, source])
+  }, [occasionKey, currentRequestKey, source])
 
   const mockOutfits = useMemo(() => getSelectableOutfitSummaries(occasionKey), [occasionKey])
 
-  const derivedApiStatus = useMemo<CalendarOutfitCollectionStatus>(() => {
+  const status = useMemo<CalendarOutfitCollectionStatus>(() => {
     if (source !== 'api') {
       return mockOutfits.length > 0 ? 'ready' : 'empty'
     }
 
-    if (apiState.status === 'idle') {
+    if (apiState.requestKey !== currentRequestKey) {
       return 'loading'
     }
 
     return apiState.status
-  }, [apiState.status, mockOutfits.length, source])
+  }, [apiState.requestKey, apiState.status, currentRequestKey, mockOutfits.length, source])
 
   const outfits = source === 'api' ? apiState.outfits : mockOutfits
-  const status = derivedApiStatus
   const errorMessage = source === 'api' ? apiState.errorMessage : null
-  const outfitsById = useMemo(() => buildSelectableOutfitSummaryMap(outfits), [outfits])
+  const filteredOutfits = useMemo(
+    () => filterSelectableOutfitSummariesByOccasion(outfits, occasionKey),
+    [occasionKey, outfits],
+  )
+  const outfitsById = useMemo(() => buildSelectableOutfitSummaryMap(filteredOutfits), [filteredOutfits])
 
   const getOutfitById = (outfitId: string) => {
     return outfitsById[outfitId] ?? null
@@ -115,9 +129,17 @@ export const useCalendarOutfits = (
     })
   }
 
+  const reload = () => {
+    if (source !== 'api') {
+      return
+    }
+
+    setRefreshKey((currentKey) => currentKey + 1)
+  }
+
   return {
     source,
-    outfits: filterSelectableOutfitSummariesByOccasion(outfits, occasionKey),
+    outfits: filteredOutfits,
     status,
     isEmpty: status === 'empty',
     isLoading: status === 'loading',
@@ -126,5 +148,6 @@ export const useCalendarOutfits = (
     errorMessage,
     getOutfitById,
     getOutfitStateById,
+    reload,
   }
 }
