@@ -1,6 +1,7 @@
 import type {
   CalendarOutfitCollectionStatus,
   CalendarResolvedOutfit,
+  CalendarSelectedOutfitPreviewModel,
   SelectableOutfitSummary,
 } from '@/modules/calendar/types'
 import type { Occasion } from '@/modules/common/types/occasion'
@@ -101,6 +102,74 @@ export const resolveSelectableOutfitById = ({
     outfit,
     errorMessage: null,
   }
+}
+
+
+const createPreviewPlaceholder = ({
+  outfitId,
+  occasionKey,
+  status,
+  message,
+}: {
+  outfitId: string
+  occasionKey?: Occasion | null
+  status: Exclude<CalendarSelectedOutfitPreviewModel['previewStatus'], 'resolved'>
+  message: string | null
+}): CalendarSelectedOutfitPreviewModel => ({
+  id: `calendar-preview-${status}-${outfitId}`,
+  imageUrl: '',
+  occasionKey: occasionKey ?? 'socialGathering',
+  savedAt: '',
+  itemNames: [],
+  previewStatus: status,
+  previewMessage: message,
+})
+
+export const mapResolvedOutfitToPreviewModel = ({
+  resolvedOutfit,
+  outfitId,
+  occasionKey,
+}: {
+  resolvedOutfit: CalendarResolvedOutfit
+  outfitId: string | null | undefined
+  occasionKey?: Occasion | null
+}): CalendarSelectedOutfitPreviewModel | null => {
+  if (!outfitId) {
+    return null
+  }
+
+  if (resolvedOutfit.status === 'ready' && resolvedOutfit.outfit) {
+    return {
+      ...resolvedOutfit.outfit,
+      previewStatus: 'resolved',
+      previewMessage: null,
+    }
+  }
+
+  if (resolvedOutfit.status === 'loading') {
+    return createPreviewPlaceholder({
+      outfitId,
+      occasionKey,
+      status: 'loading',
+      message: '正在載入穿搭預覽',
+    })
+  }
+
+  if (resolvedOutfit.status === 'error') {
+    return createPreviewPlaceholder({
+      outfitId,
+      occasionKey,
+      status: 'error',
+      message: resolvedOutfit.errorMessage ?? '目前無法取得穿搭資料',
+    })
+  }
+
+  return createPreviewPlaceholder({
+    outfitId,
+    occasionKey,
+    status: 'missing',
+    message: '這套穿搭已不存在，請重新選擇',
+  })
 }
 
 export const selectableOutfitSummaries: SelectableOutfitSummary[] = mockOutfitDetails.map((outfit) => ({

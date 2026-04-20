@@ -74,6 +74,13 @@ export type SelectableOutfitSummary = {
   itemNames: string[]
 }
 
+export type CalendarSelectedOutfitPreviewStatus = 'resolved' | 'loading' | 'missing' | 'error'
+
+export type CalendarSelectedOutfitPreviewModel = SelectableOutfitSummary & {
+  previewStatus: CalendarSelectedOutfitPreviewStatus
+  previewMessage: string | null
+}
+
 export type CalendarOutfitDataSource = 'mock' | 'api'
 
 export type CalendarOutfitCollectionStatus = 'idle' | 'loading' | 'ready' | 'empty' | 'error'
