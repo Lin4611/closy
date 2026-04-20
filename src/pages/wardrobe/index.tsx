@@ -65,7 +65,7 @@ export const getServerSideProps: GetServerSideProps<{ initialItems: WardrobeItem
 const WardrobePage = ({ initialItems }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const { deleteItem } = useWardrobeLocalStore()
   const [activeCategory, setActiveCategory] = useState<WardrobeCategoryKey>('all')
-  const displayItems = useWardrobeServerItems(initialItems)
+  const displayItems: WardrobeItem[] = useWardrobeServerItems(initialItems)
 
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -73,7 +73,7 @@ const WardrobePage = ({ initialItems }: InferGetServerSidePropsType<typeof getSe
 
   const counts = useMemo(() => {
     return displayItems.reduce(
-      (acc, item) => {
+      (acc: Partial<Record<WardrobeCategoryKey, number>>, item: WardrobeItem) => {
         acc.all = (acc.all ?? 0) + 1
         acc[item.category] = (acc[item.category] ?? 0) + 1
         return acc
@@ -84,7 +84,7 @@ const WardrobePage = ({ initialItems }: InferGetServerSidePropsType<typeof getSe
 
   const filteredItems = useMemo(() => {
     if (activeCategory === 'all') return displayItems
-    return displayItems.filter((item) => item.category === activeCategory)
+    return displayItems.filter((item: WardrobeItem) => item.category === activeCategory)
   }, [activeCategory, displayItems])
 
   const isWardrobeEmpty = filteredItems.length === 0

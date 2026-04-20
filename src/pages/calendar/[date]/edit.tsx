@@ -6,11 +6,12 @@ import { CalendarHeader } from '@/modules/calendar/components/CalendarHeader'
 import { CalendarOccasionChangeDialog } from '@/modules/calendar/components/CalendarOccasionChangeDialog'
 import { CalendarSuccessDialog } from '@/modules/calendar/components/CalendarSuccessDialog'
 import { mockGoogleEvents } from '@/modules/calendar/data/mockGoogleEvents'
+import { useCalendarOutfits } from '@/modules/calendar/hooks/useCalendarOutfits'
 import { useCalendarStore } from '@/modules/calendar/hooks/useCalendarStore'
 import type { CalendarEntry } from '@/modules/calendar/types'
 import { clearCalendarFormDraft, clearCalendarSelectedOutfitDraft, getCalendarSelectedOutfitDraft, saveCalendarFormDraft, clearCalendarFlowDrafts } from '@/modules/calendar/utils/calendarDraftStorage'
 import { buildCalendarSelectOutfitReturnTo, buildCalendarSelectOutfitRoute, parseCalendarEditDateParam } from '@/modules/calendar/utils/calendarNavigation'
-import { getSelectableOutfitSummaryById } from '@/modules/calendar/utils/calendarOutfitAdapter'
+import { mapResolvedOutfitToPreviewModel } from '@/modules/calendar/utils/calendarOutfitAdapter'
 import { canEditCalendarDate, getNearestAvailableCalendarDate, hasSelectedOutfit, isCalendarDateBlocked, isCalendarDateDisabled, shouldResetSelectedOutfit } from '@/modules/calendar/utils/calendarRules'
 import { AppShell } from '@/modules/common/components/AppShell'
 import type { Occasion } from '@/modules/common/types/occasion'
@@ -53,7 +54,12 @@ const CalendarEditContent = ({ entry }: { entry: CalendarEntry }) => {
     })
   }, [date, entry.date, entry.id, occasionKey, selectedOutfitId])
 
-  const selectedOutfit = selectedOutfitId ? getSelectableOutfitSummaryById(selectedOutfitId) : null
+  const { getOutfitStateById } = useCalendarOutfits(occasionKey, { source: 'api' })
+  const selectedOutfit = mapResolvedOutfitToPreviewModel({
+    resolvedOutfit: getOutfitStateById(selectedOutfitId),
+    outfitId: selectedOutfitId,
+    occasionKey,
+  })
   const disabledDates = entries
     .filter((item) => isCalendarDateBlocked({ date: item.date, entries, googleEvents: mockGoogleEvents, currentEntryId: entry.id }))
     .map((item) => item.date)

@@ -175,20 +175,20 @@ const WardrobeProcessingPage = () => {
     return (
       <>
         <div className="flex min-h-screen flex-col bg-neutral-100">
-          <header className="px-4 pt-14 pb-3">
-            <div className="rounded-[12px] bg-[#FDF0F0] px-3 py-2">
-              <div className="flex items-center gap-2">
-                <span className="font-label-xs rounded-full bg-[#D9534F] px-2 py-1 text-white">
+          <header className="px-4 pt-10">
+            <div className="rounded-[12px] bg-danger-100 px-4 py-2.5">
+              <div className="flex items-center gap-3">
+                <span className="font-label-sm rounded-full bg-danger-300 px-2 py-0.5 text-white">
                   小提醒
                 </span>
-                <span className="font-paragraph-sm text-neutral-700">{FAILURE_TIP_MESSAGE}</span>
+                <span className="font-label-sm text-neutral-600">{FAILURE_TIP_MESSAGE}</span>
               </div>
             </div>
           </header>
 
           <main className="flex flex-1 flex-col items-center justify-center px-6 pb-48 text-center">
             <div className="space-y-2">
-              <p className="font-label-xxl text-neutral-900">辨識失敗</p>
+              <p className="font-h2 text-neutral-700">辨識失敗</p>
             </div>
 
             {!shouldUseFailureSheet ? (

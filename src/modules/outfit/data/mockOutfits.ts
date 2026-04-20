@@ -23,7 +23,7 @@ export const mockOutfitDetails: MockOutfitDetail[] = [
     id: '1',
     imageUrl: '/outfit/mock-1.webp',
     occasionKey: 'campusCasual',
-    savedAt: '2026-04-01',
+    savedAt: '2026/04/01',
     items: [
       {
         id: 'top-1',
@@ -43,7 +43,7 @@ export const mockOutfitDetails: MockOutfitDetail[] = [
     id: '2',
     imageUrl: '/outfit/mock-2.webp',
     occasionKey: 'socialGathering',
-    savedAt: '2026-04-02',
+    savedAt: '2026/04/02',
     items: [
       {
         id: 'top-2',
@@ -63,7 +63,7 @@ export const mockOutfitDetails: MockOutfitDetail[] = [
     id: '3',
     imageUrl: '/outfit/mock-1.webp',
     occasionKey: 'businessCasual',
-    savedAt: '2026-04-03',
+    savedAt: '2026/04/03',
     items: [
       {
         id: 'top-3',
@@ -83,7 +83,7 @@ export const mockOutfitDetails: MockOutfitDetail[] = [
     id: '4',
     imageUrl: '/outfit/mock-2.webp',
     occasionKey: 'professional',
-    savedAt: '2026-04-04',
+    savedAt: '2026/04/04',
     items: [
       {
         id: 'top-4',
@@ -103,7 +103,7 @@ export const mockOutfitDetails: MockOutfitDetail[] = [
     id: '5',
     imageUrl: '/outfit/mock-2.webp',
     occasionKey: 'professional',
-    savedAt: '2026-04-23',
+    savedAt: '2026/04/23',
     items: [
       {
         id: 'top-5',
@@ -123,7 +123,7 @@ export const mockOutfitDetails: MockOutfitDetail[] = [
     id: '6',
     imageUrl: '/outfit/mock-2.webp',
     occasionKey: 'professional',
-    savedAt: '2026-04-22',
+    savedAt: '2026/04/22',
     items: [
       {
         id: 'top-6',
