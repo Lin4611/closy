@@ -2,7 +2,7 @@ import { ChevronLeft } from 'lucide-react'
 import type { GetServerSideProps, InferGetServerSidePropsType } from 'next'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useState } from 'react'
+import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
 
 import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
@@ -12,6 +12,14 @@ import { WardrobeReviewForm } from '@/modules/wardrobe/components/WardrobeReview
 import { useWardrobeLocalStore, useWardrobeServerItem } from '@/modules/wardrobe/hooks/useWardrobeLocalStore'
 import type { WardrobeItem, WardrobeReviewDraft } from '@/modules/wardrobe/types'
 import { mapWardrobeReviewDraftToUpdateClothesRequest } from '@/modules/wardrobe/utils/apiMappers'
+import {
+  getWardrobeBrandOptionsServerSnapshot,
+  getWardrobeBrandOptionsSnapshot,
+  mapWardrobeBrandValuesToOptions,
+  persistWardrobeBrandOption,
+  sanitizeWardrobeBrandValue,
+  subscribeWardrobeBrandOptions,
+} from '@/modules/wardrobe/utils/brandOptionsStorage'
 
 const createDraftFromItem = (item: WardrobeItem): WardrobeReviewDraft => ({
   name: item.name,
@@ -94,8 +102,46 @@ const WardrobeEditContent = ({ item }: WardrobeEditContentProps) => {
   const { syncItemFromServer } = useWardrobeLocalStore()
   const [draft, setDraft] = useState<WardrobeReviewDraft>(() => createDraftFromItem(item))
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isAddingBrand, setIsAddingBrand] = useState(false)
+  const [pendingBrandValue, setPendingBrandValue] = useState('')
+  const storedBrandOptions = useSyncExternalStore(
+    subscribeWardrobeBrandOptions,
+    getWardrobeBrandOptionsSnapshot,
+    getWardrobeBrandOptionsServerSnapshot
+  )
 
   const isDisabled = !draft.name.trim() || !draft.colorKey || isSubmitting
+
+  const brandOptions = useMemo(() => {
+    if (!draft.brand) {
+      return mapWardrobeBrandValuesToOptions(storedBrandOptions)
+    }
+
+    return mapWardrobeBrandValuesToOptions([...storedBrandOptions, draft.brand])
+  }, [draft.brand, storedBrandOptions])
+
+  const handleBrandAddStart = useCallback(() => {
+    setIsAddingBrand(true)
+    setPendingBrandValue('')
+  }, [])
+
+  const handleBrandAddCancel = useCallback(() => {
+    setIsAddingBrand(false)
+    setPendingBrandValue('')
+  }, [])
+
+  const handleBrandAddConfirm = useCallback(() => {
+    const normalizedBrandValue = sanitizeWardrobeBrandValue(pendingBrandValue)
+
+    if (!normalizedBrandValue) {
+      return
+    }
+
+    persistWardrobeBrandOption(normalizedBrandValue)
+    setDraft((currentDraft) => ({ ...currentDraft, brand: normalizedBrandValue }))
+    setIsAddingBrand(false)
+    setPendingBrandValue('')
+  }, [pendingBrandValue])
 
   const handleSave = async () => {
     if (isDisabled) {
@@ -128,7 +174,19 @@ const WardrobeEditContent = ({ item }: WardrobeEditContentProps) => {
         <span className="w-10" />
       </header>
 
-      <WardrobeReviewForm value={draft} onChange={setDraft} />
+      <WardrobeReviewForm
+        value={draft}
+        onChange={setDraft}
+        brandField={{
+          options: brandOptions,
+          pendingValue: pendingBrandValue,
+          isAdding: isAddingBrand,
+          onPendingValueChange: setPendingBrandValue,
+          onAddStart: handleBrandAddStart,
+          onAddCancel: handleBrandAddCancel,
+          onAddConfirm: handleBrandAddConfirm,
+        }}
+      />
 
       <div className="fixed right-0 bottom-0 left-0 z-40 mx-auto w-full max-w-93.75 bg-neutral-100 px-4 py-4">
         <button

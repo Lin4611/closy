@@ -7,10 +7,11 @@ import { CalendarOccasionChangeDialog } from '@/modules/calendar/components/Cale
 import { CalendarOccasionDialog } from '@/modules/calendar/components/CalendarOccasionDialog'
 import { CalendarSuccessDialog } from '@/modules/calendar/components/CalendarSuccessDialog'
 import { mockGoogleEvents } from '@/modules/calendar/data/mockGoogleEvents'
+import { useCalendarOutfits } from '@/modules/calendar/hooks/useCalendarOutfits'
 import { useCalendarStore } from '@/modules/calendar/hooks/useCalendarStore'
 import { getCalendarFormDraft, saveCalendarFormDraft, clearCalendarFormDraft, getCalendarSelectedOutfitDraft, clearCalendarSelectedOutfitDraft, clearCalendarFlowDrafts } from '@/modules/calendar/utils/calendarDraftStorage'
 import { buildCalendarSelectOutfitReturnTo, buildCalendarSelectOutfitRoute } from '@/modules/calendar/utils/calendarNavigation'
-import { getSelectableOutfitSummaryById } from '@/modules/calendar/utils/calendarOutfitAdapter'
+import { mapResolvedOutfitToPreviewModel } from '@/modules/calendar/utils/calendarOutfitAdapter'
 import { getNearestAvailableCalendarDate, hasSelectedOutfit, isCalendarDateBlocked, isCalendarDateDisabled, shouldResetSelectedOutfit } from '@/modules/calendar/utils/calendarRules'
 import { AppShell } from '@/modules/common/components/AppShell'
 import type { Occasion } from '@/modules/common/types/occasion'
@@ -54,7 +55,12 @@ const CalendarNewPage = () => {
     }
   }, [selectedOutfitDraft])
 
-  const selectedOutfit = selectedOutfitId ? getSelectableOutfitSummaryById(selectedOutfitId) : null
+  const { getOutfitStateById } = useCalendarOutfits(occasionKey, { source: 'api' })
+  const selectedOutfit = mapResolvedOutfitToPreviewModel({
+    resolvedOutfit: getOutfitStateById(selectedOutfitId),
+    outfitId: selectedOutfitId,
+    occasionKey,
+  })
   const disabledDates = useMemo(() => {
     return entries
       .filter((entry) => isCalendarDateBlocked({ date: entry.date, entries, googleEvents: mockGoogleEvents }))
