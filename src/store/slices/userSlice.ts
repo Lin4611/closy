@@ -50,7 +50,7 @@ const userSlice = createSlice({
       state.user = {
         userId: state.user?.userId ?? '',
         email: state.user?.email ?? '',
-        isProfileCompleted: state.user?.isProfileCompleted ?? true,
+        isProfileCompleted: state.user?.isProfileCompleted ?? false,
         name: action.payload.name,
         avatar: action.payload.picture,
         gender: action.payload.gender,

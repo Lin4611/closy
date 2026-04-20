@@ -19,6 +19,10 @@ import type { Colors } from '@/modules/settings/types/colorsTypes'
 import { useAppDispatch } from '@/store/hooks'
 import { updateUserColors } from '@/store/slices/userSlice'
 
+const hasSameSelections = (current: Colors[], baseline: Colors[]) => {
+  return current.length === baseline.length && current.every((selectedColor) => baseline.includes(selectedColor))
+}
+
 export const getServerSideProps: GetServerSideProps<{
   profileBaseline: SettingsProfileBaseline
 }> = async (context) => {
@@ -38,10 +42,7 @@ const SettingColors = ({ profileBaseline }: InferGetServerSidePropsType<typeof g
   useSettingsProfileHydration(profileBaseline)
 
   const handleColorChange = async (value: Colors[]) => {
-    if (
-      isSubmitting ||
-      (value.length === initialColors.length && value.every((selectedColor, index) => selectedColor === initialColors[index]))
-    ) {
+    if (isSubmitting || hasSameSelections(value, initialColors)) {
       router.push('/settings?status=unchanged')
       return
     }
