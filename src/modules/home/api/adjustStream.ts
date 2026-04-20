@@ -31,7 +31,10 @@ export const streamOutfitAdjust = async (
     signal,
   })
 
-  if (!response.ok) throw new Error('調整失敗')
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}))
+    throw new Error((errorData as { message?: string }).message ?? '調整失敗')
+  }
 
   const reader = response.body?.getReader()
   if (!reader) throw new Error('無法讀取串流')
@@ -59,12 +62,16 @@ export const streamOutfitAdjust = async (
 
         if (!dataLine) continue
 
-        const event = JSON.parse(dataLine) as SSEEvent
+        try {
+          const event = JSON.parse(dataLine) as SSEEvent
 
-        if (event.status === 'processing' && event.step === 1) callbacks.onStep1(event.message)
-        else if (event.status === 'processing' && event.step === 2) callbacks.onStep2(event.message)
-        else if (event.status === 'completed') callbacks.onCompleted(event.data)
-        else if (event.status === 'error') callbacks.onError(event.message)
+          if (event.status === 'processing' && event.step === 1) callbacks.onStep1(event.message)
+          else if (event.status === 'processing' && event.step === 2) callbacks.onStep2(event.message)
+          else if (event.status === 'completed') callbacks.onCompleted(event.data)
+          else if (event.status === 'error') callbacks.onError(event.message)
+        } catch {
+          console.error('Failed to parse SSE event:', dataLine)
+        }
       }
     }
   } finally {
