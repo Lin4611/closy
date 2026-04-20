@@ -9,8 +9,15 @@ import type { Occasion } from '@/modules/common/types/occasion'
 import { mockOutfitDetails } from '@/modules/outfit/data/mockOutfits'
 import type { OutfitItem } from '@/modules/outfit/types/outfitTypes'
 
+const ISO_DATE_PREFIX_PATTERN = /^\d{4}-\d{2}-\d{2}(?:$|T)/
+
 const formatSavedAt = (value: string) => {
-  const date = new Date(value)
+  if (!ISO_DATE_PREFIX_PATTERN.test(value)) {
+    return value
+  }
+
+  const normalizedValue = value.length === 10 ? `${value}T00:00:00` : value
+  const date = new Date(normalizedValue)
 
   if (Number.isNaN(date.getTime())) {
     return value
