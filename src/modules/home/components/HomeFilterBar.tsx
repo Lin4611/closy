@@ -4,7 +4,7 @@ import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
 import { cn } from '@/lib/utils'
 import { updateOccasion } from '@/modules/common/api/occasion'
-import type { Occasion } from '@/modules/common/types/occasion'
+import { defaultOccasion, type Occasion } from '@/modules/common/types/occasion'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { updateUserOccasion } from '@/store/slices/userSlice'
 
@@ -18,7 +18,7 @@ type HomeFilterBarProps = {
 
 export const HomeFilterBar = ({ className, onDayChange, onOccasionChange }: HomeFilterBarProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const selectedOccasion = useAppSelector((state) => state.user.user?.preferences.occasions ?? '')
+  const selectedOccasion = useAppSelector((state) => state.user.user?.preferences.occasions ?? defaultOccasion)
   const dispatch = useAppDispatch()
   const handleOccasionChange = async (value: string) => {
     if (isSubmitting || value === selectedOccasion) return

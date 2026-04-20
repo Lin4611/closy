@@ -1,11 +1,11 @@
-import { ChevronDown, ChevronUp, EllipsisVertical, Pencil } from 'lucide-react'
+import { ChevronDown, ChevronUp, EllipsisVertical, LoaderCircle, Pencil } from 'lucide-react'
 import Image from 'next/image'
 import { useMemo, useState } from 'react'
 
 import { cn } from '@/lib/utils'
 import { CalendarGoogleEventList } from '@/modules/calendar/components/CalendarGoogleEventList'
 import { CalendarLocalEntryMenu } from '@/modules/calendar/components/CalendarLocalEntryMenu'
-import type { CalendarEntry, CalendarGoogleEvent, SelectableOutfitSummary } from '@/modules/calendar/types'
+import type { CalendarEntry, CalendarEntryOutfitDisplayModel, CalendarGoogleEvent } from '@/modules/calendar/types'
 import {
   getCalendarEventsByDate,
   hasSelectedOutfit,
@@ -17,7 +17,7 @@ import { occasionLabelMap } from '@/modules/common/types/occasion'
 type CalendarEntryCardProps = {
   entry: CalendarEntry
   googleEvents: CalendarGoogleEvent[]
-  selectedOutfit: SelectableOutfitSummary | null
+  outfitDisplay: CalendarEntryOutfitDisplayModel
   onPreviewOutfit?: () => void
   onEdit: () => void
   onDelete: () => void
@@ -28,7 +28,7 @@ const formatDateLabel = (date: string) => date.replace(/-/g, '/')
 export const CalendarEntryCard = ({
   entry,
   googleEvents,
-  selectedOutfit,
+  outfitDisplay,
   onPreviewOutfit,
   onEdit,
   onDelete,
@@ -39,6 +39,24 @@ export const CalendarEntryCard = ({
   const isExpired = isCalendarEntryExpired(entry)
   const events = useMemo(() => getCalendarEventsByDate(entry.date, googleEvents), [entry.date, googleEvents])
   const hasOutfit = hasSelectedOutfit(entry)
+  const hasResolvedOutfit = outfitDisplay.status === 'resolved' && Boolean(outfitDisplay.imageUrl)
+  const showLoadingIndicator = outfitDisplay.status === 'loading'
+  const outfitStatusLabel =
+    outfitDisplay.status === 'resolved'
+      ? '已選穿搭'
+      : outfitDisplay.status === 'loading'
+        ? '穿搭載入中'
+        : outfitDisplay.status === 'missing'
+          ? '穿搭不存在'
+          : outfitDisplay.status === 'error'
+            ? '穿搭載入失敗'
+            : '未選穿搭'
+  const outfitStatusClassName =
+    outfitDisplay.status === 'resolved'
+      ? 'bg-[#E9F6EE] text-[#3AA769]'
+      : outfitDisplay.status === 'none'
+        ? 'bg-[#FCEEEE] text-[#E35D59]'
+        : 'bg-neutral-100 text-neutral-600'
 
   return (
     <article
@@ -52,11 +70,11 @@ export const CalendarEntryCard = ({
           type="button"
           onClick={onPreviewOutfit}
           disabled={!onPreviewOutfit}
-          className="flex h-16 w-12 shrink-0 items-center justify-center overflow-hidden rounded-[12px] disabled:pointer-events-none"
+          className="relative flex h-16 w-12 shrink-0 items-center justify-center overflow-hidden rounded-[12px] disabled:pointer-events-none"
         >
-          {hasOutfit && selectedOutfit ? (
+          {hasResolvedOutfit && outfitDisplay.imageUrl ? (
             <Image
-              src={selectedOutfit.imageUrl}
+              src={outfitDisplay.imageUrl}
               alt="行事曆穿搭"
               width={48}
               height={64}
@@ -65,12 +83,17 @@ export const CalendarEntryCard = ({
           ) : (
             <Image
               src="/calendar/figure-silhouette.png"
-              alt="未選穿搭"
+              alt={hasOutfit ? '已選穿搭狀態' : '未選穿搭'}
               width={48}
               height={64}
               className={cn('h-16 w-12 object-contain', isExpired && 'opacity-45')}
             />
           )}
+          {showLoadingIndicator ? (
+            <span className="absolute inset-0 flex items-center justify-center bg-white/70">
+              <LoaderCircle className="size-4 animate-spin text-neutral-600" strokeWidth={1.75} />
+            </span>
+          ) : null}
         </button>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
@@ -100,13 +123,9 @@ export const CalendarEntryCard = ({
               #{occasionLabelMap[entry.occasionKey]}
             </span>
             <span
-              className={cn(
-                'rounded-full px-3 py-1 font-paragraph-sm',
-                hasOutfit ? 'bg-[#E9F6EE] text-[#3AA769]' : 'bg-[#FCEEEE] text-[#E35D59]',
-                isExpired && 'bg-neutral-200 text-neutral-400'
-              )}
+              className={cn('rounded-full px-3 py-1 font-paragraph-sm', outfitStatusClassName, isExpired && 'bg-neutral-200 text-neutral-400')}
             >
-              {hasOutfit ? '已選穿搭' : '未選穿搭'}
+              {outfitStatusLabel}
             </span>
           </div>
         </div>

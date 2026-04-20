@@ -135,6 +135,10 @@ const OutfitOccasionDetail = () => {
           <div className="relative flex items-center justify-center">
             <Link
               href="/outfit"
+              onClick={(e) => {
+                e.preventDefault()
+                void router.push('/outfit')
+              }}
               className="absolute left-0 flex size-10 items-center justify-center"
             >
               <ChevronLeft className="text-neutral-700" size={24} strokeWidth={2} />
@@ -151,6 +155,7 @@ const OutfitOccasionDetail = () => {
               outfits={outfitList}
               onDelete={handleClickDelete}
               tab="groupByOccasion"
+              returnTo={`/outfit/occasion/${occasionId}`}
             />
           ) : (
             <OutfitEmptyOverView />

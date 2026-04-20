@@ -1,7 +1,7 @@
 import { ChevronLeft } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 
 import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
@@ -11,9 +11,17 @@ import { getOnboardingAddFlow, setOnboardingAddFlow } from '@/modules/guide/util
 import { createClothes } from '@/modules/wardrobe/api/createClothes'
 import { WardrobeReviewForm } from '@/modules/wardrobe/components/WardrobeReviewForm'
 import { useWardrobeCreationFlow } from '@/modules/wardrobe/hooks/useWardrobeCreationFlow'
-import { useWardrobeMock } from '@/modules/wardrobe/hooks/useWardrobeMock'
+import { useWardrobeLocalStore } from '@/modules/wardrobe/hooks/useWardrobeLocalStore'
 import type { WardrobeReviewDraft } from '@/modules/wardrobe/types'
 import { mapWardrobeReviewDraftToCreateClothesRequest } from '@/modules/wardrobe/utils/apiMappers'
+import {
+  getWardrobeBrandOptionsServerSnapshot,
+  getWardrobeBrandOptionsSnapshot,
+  mapWardrobeBrandValuesToOptions,
+  persistWardrobeBrandOption,
+  sanitizeWardrobeBrandValue,
+  subscribeWardrobeBrandOptions,
+} from '@/modules/wardrobe/utils/brandOptionsStorage'
 
 const getSaveErrorMessage = (error: unknown) => {
   if (error instanceof ApiError) {
@@ -55,13 +63,21 @@ const getNextOnboardingRoute = (savedCategory: WardrobeReviewDraft['category']) 
 
 const WardrobeReviewPage = () => {
   const router = useRouter()
-  const { syncCreatedItemFromServer, clearRecognitionDraft } = useWardrobeMock()
-  const { getContext, getReviewDraft, saveReviewDraft, clearFlow } = useWardrobeCreationFlow()
+  const { syncCreatedItemFromServer } = useWardrobeLocalStore()
+  const { getContext, getReviewDraft, saveReviewDraft, completeCreateSuccess } = useWardrobeCreationFlow()
 
   const [draft, setDraft] = useState<WardrobeReviewDraft | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false)
   const [successRedirectTo, setSuccessRedirectTo] = useState<string | null>(null)
+  const [isAddingBrand, setIsAddingBrand] = useState(false)
+  const [pendingBrandValue, setPendingBrandValue] = useState('')
+  const storedBrandOptions = useSyncExternalStore(
+    subscribeWardrobeBrandOptions,
+    getWardrobeBrandOptionsSnapshot,
+    getWardrobeBrandOptionsServerSnapshot
+  )
+
 
   useEffect(() => {
     const savedDraft = getReviewDraft()
@@ -90,6 +106,41 @@ const WardrobeReviewPage = () => {
     saveReviewDraft(next)
   }
 
+  const brandOptions = useMemo(() => {
+    const nextOptions = storedBrandOptions
+
+    if (!draft?.brand) {
+      return mapWardrobeBrandValuesToOptions(nextOptions)
+    }
+
+    return mapWardrobeBrandValuesToOptions([...nextOptions, draft.brand])
+  }, [draft?.brand, storedBrandOptions])
+
+  const handleBrandAddStart = useCallback(() => {
+    setIsAddingBrand(true)
+    setPendingBrandValue('')
+  }, [])
+
+  const handleBrandAddCancel = useCallback(() => {
+    setIsAddingBrand(false)
+    setPendingBrandValue('')
+  }, [])
+
+  const handleBrandAddConfirm = useCallback(() => {
+    const normalizedBrandValue = sanitizeWardrobeBrandValue(pendingBrandValue)
+
+    if (!normalizedBrandValue || !draft) {
+      return
+    }
+
+    persistWardrobeBrandOption(normalizedBrandValue)
+    const nextDraft = { ...draft, brand: normalizedBrandValue }
+    setDraft(nextDraft)
+    saveReviewDraft(nextDraft)
+    setIsAddingBrand(false)
+    setPendingBrandValue('')
+  }, [draft, pendingBrandValue, saveReviewDraft])
+
   const handleSave = async () => {
     if (!draft || isSubmitting) {
       return
@@ -114,8 +165,7 @@ const WardrobeReviewPage = () => {
       const createdItem = await createClothes(payload)
 
       syncCreatedItemFromServer(createdItem)
-      clearRecognitionDraft()
-      clearFlow()
+      completeCreateSuccess()
 
       setSuccessRedirectTo(getNextOnboardingRoute(createdItem.category))
       setIsSuccessDialogOpen(true)
@@ -141,7 +191,19 @@ const WardrobeReviewPage = () => {
           <span className="w-10" />
         </header>
 
-        <WardrobeReviewForm value={draft} onChange={handleDraftChange} />
+        <WardrobeReviewForm
+          value={draft}
+          onChange={handleDraftChange}
+          brandField={{
+            options: brandOptions,
+            pendingValue: pendingBrandValue,
+            isAdding: isAddingBrand,
+            onPendingValueChange: setPendingBrandValue,
+            onAddStart: handleBrandAddStart,
+            onAddCancel: handleBrandAddCancel,
+            onAddConfirm: handleBrandAddConfirm,
+          }}
+        />
 
         <div className="fixed right-0 bottom-0 left-0 z-40 mx-auto w-full max-w-93.75 bg-neutral-100 px-4 py-4">
           <button

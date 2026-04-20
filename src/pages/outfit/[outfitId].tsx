@@ -76,6 +76,10 @@ const OutfitDetailPage = () => {
       <div className="relative flex items-center justify-center">
         <Link
           href={backHref}
+          onClick={(e) => {
+            e.preventDefault()
+            void router.push(backHref)
+          }}
           className={cn('absolute left-0 flex size-10 items-center justify-center')}
         >
           <ChevronLeft className="text-neutral-700" size={24} strokeWidth={2} />

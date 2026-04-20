@@ -74,6 +74,34 @@ export type SelectableOutfitSummary = {
   itemNames: string[]
 }
 
+
+export type CalendarEntryOutfitDisplayStatus = 'none' | 'loading' | 'resolved' | 'missing' | 'error'
+
+export type CalendarEntryOutfitDisplayModel = {
+  status: CalendarEntryOutfitDisplayStatus
+  imageUrl: string | null
+  message: string | null
+}
+
+export type CalendarSelectedOutfitPreviewStatus = 'resolved' | 'loading' | 'missing' | 'error'
+
+export type CalendarSelectedOutfitPreviewModel = SelectableOutfitSummary & {
+  previewStatus: CalendarSelectedOutfitPreviewStatus
+  previewMessage: string | null
+}
+
+export type CalendarOutfitDataSource = 'mock' | 'api'
+
+export type CalendarOutfitCollectionStatus = 'idle' | 'loading' | 'ready' | 'empty' | 'error'
+
+export type CalendarOutfitReferenceStatus = 'idle' | 'loading' | 'ready' | 'missing' | 'error'
+
+export type CalendarResolvedOutfit = {
+  status: CalendarOutfitReferenceStatus
+  outfit: SelectableOutfitSummary | null
+  errorMessage: string | null
+}
+
 export type CalendarOccasionOption = {
   key: Occasion
   name: string

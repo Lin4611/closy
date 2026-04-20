@@ -10,25 +10,51 @@ import '@/styles/globals.css'
 import { Toaster } from '@/components/ui/sonner'
 import { inter } from '@/lib/font'
 import { MobileLayout } from '@/modules/common/components/MobileLayout'
-import { store, persistor } from '@/store'
+import { persistor, store } from '@/store'
 import { useAppSelector } from '@/store/hooks'
 
 const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ''
 
-function AuthGuard({ children }: { children: React.ReactNode }) {
+const isGuideRoute = (pathname: string) => pathname === '/guide' || pathname.startsWith('/guide/')
+const isWardrobeServerFirstRoute = (pathname: string) => {
+  return (
+    pathname === '/wardrobe' ||
+    pathname === '/wardrobe/[id]' ||
+    pathname === '/wardrobe/[id]/edit'
+  )
+}
+
+const isSettingsServerFirstRoute = (pathname: string) => {
+  return (
+    pathname === '/settings' ||
+    pathname === '/settings/colors' ||
+    pathname === '/settings/styles' ||
+    pathname === '/settings/occasion'
+  )
+}
+
+type AppRouteKind = 'server-first-protected' | 'client-first-protected' | 'public'
+
+const getAppRouteKind = (pathname: string): AppRouteKind => {
+  if (pathname === '/' || isGuideRoute(pathname)) {
+    return 'public'
+  }
+
+  if (
+    isWardrobeServerFirstRoute(pathname) ||
+    isSettingsServerFirstRoute(pathname)
+  ) {
+    return 'server-first-protected'
+  }
+
+  return 'client-first-protected'
+}
+
+function SplashRedirectController() {
   const router = useRouter()
   const isLoggedIn = useAppSelector((state) => state.user.isLoggedIn)
   const isProfileCompleted = useAppSelector((state) => state.user.user?.isProfileCompleted)
   const isSplash = router.pathname === '/'
-  const isGuide = router.pathname.startsWith('/guide/')
-  const isLoginPage = router.pathname === '/guide'
-  const isProtected = !isSplash && !isLoginPage
-
-  useEffect(() => {
-    if (isProtected && !isLoggedIn) {
-      router.replace(isGuide ? '/guide' : '/')
-    }
-  }, [isProtected, isLoggedIn, router, isGuide])
 
   useEffect(() => {
     if (!isSplash) return
@@ -36,6 +62,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
     if (isLoggedIn && isProfileCompleted) {
       router.prefetch('/home')
     }
+
     const timer = setTimeout(() => {
       if (isLoggedIn) {
         router.replace(isProfileCompleted ? '/home' : '/guide/welcome')
@@ -43,10 +70,54 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
         router.replace('/guide')
       }
     }, 1000)
+
     return () => clearTimeout(timer)
-  }, [isSplash, isLoggedIn, isProfileCompleted, router])
-  if (isProtected && !isLoggedIn) return null
+  }, [isLoggedIn, isProfileCompleted, isSplash, router])
+
+  return null
+}
+
+function ClientProtectedRoute({ children }: { children: React.ReactNode }) {
+  const router = useRouter()
+  const isLoggedIn = useAppSelector((state) => state.user.isLoggedIn)
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      router.replace('/')
+    }
+  }, [isLoggedIn, router])
+
+  if (!isLoggedIn) {
+    return null
+  }
+
   return <>{children}</>
+}
+
+type AppShellRouterProps = Pick<AppProps, 'Component' | 'pageProps'>
+
+function AppShellRouter({ Component, pageProps }: AppShellRouterProps) {
+  const router = useRouter()
+  const routeKind = getAppRouteKind(router.pathname)
+
+  if (routeKind === 'server-first-protected') {
+    return <Component {...pageProps} />
+  }
+
+  return (
+    <PersistGate loading={null} persistor={persistor}>
+      {routeKind === 'public' ? (
+        <>
+          <SplashRedirectController />
+          <Component {...pageProps} />
+        </>
+      ) : (
+        <ClientProtectedRoute>
+          <Component {...pageProps} />
+        </ClientProtectedRoute>
+      )}
+    </PersistGate>
+  )
 }
 
 export default function App({ Component, pageProps }: AppProps) {
@@ -56,16 +127,12 @@ export default function App({ Component, pageProps }: AppProps) {
         <title>Closy</title>
       </Head>
       <Provider store={store}>
-        <PersistGate loading={null} persistor={persistor}>
-          <GoogleOAuthProvider clientId={googleClientId}>
-            <MobileLayout className={inter.className}>
-              <AuthGuard>
-                <Component {...pageProps} />
-              </AuthGuard>
-            </MobileLayout>
-            <Toaster />
-          </GoogleOAuthProvider>
-        </PersistGate>
+        <GoogleOAuthProvider clientId={googleClientId}>
+          <MobileLayout className={inter.className}>
+            <AppShellRouter Component={Component} pageProps={pageProps} />
+          </MobileLayout>
+          <Toaster />
+        </GoogleOAuthProvider>
       </Provider>
     </>
   )

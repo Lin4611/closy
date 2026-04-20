@@ -33,7 +33,7 @@ npm run format:check # 檢查格式
 ```
 src/
   pages/          # 路由進入點與頁面組裝
-    api/          # BFF proxy routes — 附帶 auth cookie 後轉發至 backend
+    api/          # BFF proxy routes — 從 req.cookies 取 accessToken 後帶入 backend
   modules/        # 功能模組
     home/         # 首頁
     guide/        # 初始引導、登入、偏好建立
@@ -51,17 +51,39 @@ src/
   styles/         # 全域樣式
 ```
 
-### API Pattern（BFF Proxy）
+### API Pattern
 
-所有 API 呼叫都透過 `src/pages/api/` 轉發，由 route handler 附加 httpOnly cookie `accessToken` 後再打 backend。Client 端永遠不直接呼叫 backend。
+BFF 層（`src/pages/api/`）為主要 API 路徑。每個 BFF route handler 從 `req.cookies.accessToken` 取出 token，加入 `Authorization: Bearer` header 後轉發至 backend。
 
-流程：`Component → src/modules/[feature]/api/*.ts → /api/[route].ts → backend`
+流程：`Component → src/modules/[feature]/api/*.ts → /api/[route].ts（BFF）→ backend`
 
 API 邏輯需清楚區分：request function / route handler / state update / UI rendering。loading、empty、error state 要明確處理。
 
+**SSE / Streaming：** Next.js BFF 會 buffer response，不適合直接 proxy SSE。且因 httpOnly cookie 在 localhost 開發環境受 `Secure` flag 限制，client 無法直接帶 cookie 打 backend。處理方式：
+
+1. Client 先呼叫 `GET /api/auth/token`，BFF 從 httpOnly cookie 讀出 token 後回傳給 client
+2. Client 拿到 token 後直接建立 EventSource 連線至 backend，手動帶上 token
+
+`/api/auth/token` 是唯一用途為「將 httpOnly cookie 中的 token 暴露給 client」的 route，僅供 SSE 情境使用，不得用於其他目的。
+
+**SSR（getServerSideProps）：** 在 server side 呼叫 backend 時，將 `context.req.headers.cookie` 原封轉發，讓 backend 能驗證身份。
+
+```ts
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const cookie = context.req.headers.cookie ?? ''
+  const response = await apiClient({
+    baseUrl: process.env.API_BASE_URL,
+    endpoint: '/some/endpoint',
+    method: 'GET',
+    headers: { cookie },
+  })
+  // ...
+}
+```
+
 ### Auth 流程
 
-1. Google OAuth → `POST /api/guide/login` → token 存為 httpOnly cookie `accessToken`
+1. Google OAuth → `POST /api/guide/login` → BFF 呼叫 backend 取得 token，寫入 httpOnly cookie `accessToken`
 2. `dispatch(setUser(result.user))` 存入 Redux（登入 response **不含** `preferences`）
 3. 進入 settings 頁 → `GET /api/profile/get-info` → `dispatch(mergeUserProfile(data))` 補入 `preferences`、`gender`、`location`
 
@@ -70,6 +92,7 @@ API 邏輯需清楚區分：request function / route handler / state update / UI
 只有一個 slice：`userSlice`。一律使用 `src/store/hooks.ts` 的 `useAppDispatch` 和 `useAppSelector`。
 
 Key actions：
+
 - `setUser` — 登入後呼叫（payload 不含 preferences）
 - `mergeUserProfile` — fetch profile 後呼叫（合併 preferences / gender / location）。**`state.user` 為 null 時也能執行**，不會被 guard 擋住
 - `updateUserOccasion / updateUserStyles / updateUserColors` — 設定儲存後呼叫
@@ -78,6 +101,7 @@ Key actions：
 **持久化：** `redux-persist` 已設定，`user` 和 `isLoggedIn` 會存在 `localStorage`，重整後自動還原。`_app.tsx` 用 `PersistGate` 包裹，還原完成前不渲染子元件。
 
 **Settings 頁資料流：**
+
 1. 進頁面時 Redux 立刻從 localStorage 還原舊資料 → UI 先顯示快取
 2. `useEffect` 背景打 `GET /api/profile/get-info` → `dispatch(mergeUserProfile(data))` 更新為最新資料
 3. fetch 失敗（401）→ `router.push('/')` 導回登入頁

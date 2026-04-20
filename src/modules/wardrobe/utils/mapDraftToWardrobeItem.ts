@@ -1,4 +1,4 @@
-import { WardrobeDraftItem, WardrobeItem } from '../types'
+import type { WardrobeDraftItem, WardrobeItem } from '../types'
 
 const formatDate = (date: Date) => {
   const year = date.getFullYear()
@@ -22,5 +22,7 @@ export const mapDraftToWardrobeItem = (
     createdAt: options?.createdAt ?? now,
     updatedAt: now,
     ...draft,
+    brand: draft.brand.trim(),
   }
 }
+

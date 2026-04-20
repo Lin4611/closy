@@ -1,17 +1,19 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import type { GetServerSideProps, InferGetServerSidePropsType } from 'next'
+import { useMemo, useState } from 'react'
 
 import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
+import { fetchWardrobeServerItems } from '@/lib/api/wardrobe/shared'
 import { AppShell } from '@/modules/common/components/AppShell'
 import { SuccessAlertDialog } from '@/modules/common/components/SuccessAlertDialog'
 import { deleteClothes } from '@/modules/wardrobe/api/deleteClothes'
-import { getClothesList } from '@/modules/wardrobe/api/getClothesList'
 import { DeleteClothingDialog } from '@/modules/wardrobe/components/DeleteClothingDialog'
 import { WardrobeEmptyState } from '@/modules/wardrobe/components/WardrobeEmptyState'
 import { WardrobeFilterChips } from '@/modules/wardrobe/components/WardrobeFilterChips'
 import { WardrobeGrid } from '@/modules/wardrobe/components/WardrobeGrid'
 import { WardrobeHeader } from '@/modules/wardrobe/components/WardrobeHeader'
-import { useWardrobeMock } from '@/modules/wardrobe/hooks/useWardrobeMock'
+import { useWardrobeLocalStore, useWardrobeServerItems } from '@/modules/wardrobe/hooks/useWardrobeLocalStore'
+import type { WardrobeItem } from '@/modules/wardrobe/types'
 import type { WardrobeCategoryKey } from '@/modules/wardrobe/types'
 
 const getDeleteErrorMessage = (error: unknown) => {
@@ -26,63 +28,64 @@ const getDeleteErrorMessage = (error: unknown) => {
   return '刪除衣物失敗，請稍後再試'
 }
 
-const WardrobePage = () => {
-  const { deleteItem, hydrateItemsFromServer, isReady, items } = useWardrobeMock()
-  const hasHydratedFromServerRef = useRef(false)
-  const [activeCategory, setActiveCategory] = useState<WardrobeCategoryKey>('all')
+export const getServerSideProps: GetServerSideProps<{ initialItems: WardrobeItem[] }> = async ({ req }) => {
+  const accessToken = req.cookies.accessToken
 
-  useEffect(() => {
-    if (!isReady || hasHydratedFromServerRef.current) {
-      return
+  if (!accessToken) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
     }
+  }
 
-    let isActive = true
+  try {
+    const initialItems = await fetchWardrobeServerItems(accessToken)
 
-    const hydrateWardrobeItems = async () => {
-      try {
-        const serverItems = await getClothesList()
-
-        if (!isActive) {
-          return
-        }
-
-        hydrateItemsFromServer(serverItems)
-        hasHydratedFromServerRef.current = true
-      } catch {
-        if (!isActive) {
-          return
-        }
-
-        hasHydratedFromServerRef.current = true
+    return {
+      props: {
+        initialItems,
+      },
+    }
+  } catch (error) {
+    if (error instanceof ApiError && error.statusCode === 401) {
+      return {
+        redirect: {
+          destination: '/',
+          permanent: false,
+        },
       }
     }
 
-    void hydrateWardrobeItems()
+    throw error
+  }
+}
 
-    return () => {
-      isActive = false
-    }
-  }, [hydrateItemsFromServer, isReady])
+const WardrobePage = ({ initialItems }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+  const { deleteItem } = useWardrobeLocalStore()
+  const [activeCategory, setActiveCategory] = useState<WardrobeCategoryKey>('all')
+  const displayItems: WardrobeItem[] = useWardrobeServerItems(initialItems)
 
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isDeleteSuccessOpen, setIsDeleteSuccessOpen] = useState(false)
 
   const counts = useMemo(() => {
-    return items.reduce(
-      (acc, item) => {
+    return displayItems.reduce(
+      (acc: Partial<Record<WardrobeCategoryKey, number>>, item: WardrobeItem) => {
         acc.all = (acc.all ?? 0) + 1
         acc[item.category] = (acc[item.category] ?? 0) + 1
         return acc
       },
       {} as Partial<Record<WardrobeCategoryKey, number>>,
     )
-  }, [items])
+  }, [displayItems])
 
   const filteredItems = useMemo(() => {
-    if (activeCategory === 'all') return items
-    return items.filter((item) => item.category === activeCategory)
-  }, [activeCategory, items])
+    if (activeCategory === 'all') return displayItems
+    return displayItems.filter((item: WardrobeItem) => item.category === activeCategory)
+  }, [activeCategory, displayItems])
 
   const isWardrobeEmpty = filteredItems.length === 0
 
