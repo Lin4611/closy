@@ -7,9 +7,13 @@ import { ApiError } from '@/lib/api/client'
 import { PrimaryButton } from '@/modules/common/components/PrimaryButton'
 import { updateGender } from '@/modules/guide/api/gender'
 import { GenderButton } from '@/modules/guide/components/GenderButton'
+import { getOnboardingAddFlow, setOnboardingAddFlow } from '@/modules/guide/utils/onboardingAddFlow'
+import { useAppDispatch } from '@/store/hooks'
+import { setProfileCompleted, updateUserGender } from '@/store/slices/userSlice'
 
 const Gender = () => {
   const router = useRouter()
+  const dispatch = useAppDispatch()
   const [selectedGender, setSelectedGender] = useState<'男性' | '女性' | ''>('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -21,7 +25,14 @@ const Gender = () => {
     try {
       setIsSubmitting(true)
       await updateGender(gender)
-      router.push('/guide/add-top')
+      dispatch(updateUserGender(gender))
+      dispatch(setProfileCompleted())
+
+      if (!getOnboardingAddFlow()) {
+        setOnboardingAddFlow('top-required')
+      }
+
+      void router.push('/guide/add-top')
     } catch (error) {
       if (error instanceof ApiError) {
         showToast.error(error.message)
@@ -34,7 +45,7 @@ const Gender = () => {
   }
 
   return (
-    <main className="flex min-h-screen flex-col px-4 pt-3 pb-[143px]">
+    <main className="flex min-h-screen flex-col px-4 pt-3 pb-35.75">
       <section className="flex w-full flex-col gap-3">
         <button
           className="flex h-10 w-10 items-center justify-center"

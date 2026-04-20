@@ -5,7 +5,14 @@ const WardrobeNewEntryPage = () => {
   const router = useRouter()
 
   useEffect(() => {
-    void router.replace('/wardrobe/new/camera')
+    if (!router.isReady) {
+      return
+    }
+
+    void router.replace({
+      pathname: '/wardrobe/new/camera',
+      query: router.query,
+    })
   }, [router])
 
   return <div />

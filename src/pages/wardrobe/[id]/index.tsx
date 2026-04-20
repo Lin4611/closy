@@ -4,9 +4,9 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
+import { showToast } from '@/components/ui/sonner'
 import { AppShell } from '@/modules/common/components/AppShell'
 import { DeleteClothingDialog } from '@/modules/wardrobe/components/DeleteClothingDialog'
-import { DeleteSuccessDialog } from '@/modules/wardrobe/components/DeleteSuccessDialog'
 import { WardrobeColorPalette } from '@/modules/wardrobe/components/WardrobeColorPalette'
 import { WardrobeDetailSection } from '@/modules/wardrobe/components/WardrobeDetailSection'
 import { WardrobeItemMenu } from '@/modules/wardrobe/components/WardrobeItemMenu'
@@ -18,10 +18,9 @@ import { useWardrobeMock } from '@/modules/wardrobe/hooks/useWardrobeMock'
 const WardrobeDetailPage = () => {
   const router = useRouter()
   const { id } = router.query
-  const { getItemById, deleteItem } = useWardrobeMock()
+  const { getItemById } = useWardrobeMock()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
-  const [isDeleteSuccessOpen, setIsDeleteSuccessOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
@@ -108,12 +107,12 @@ const WardrobeDetailPage = () => {
             <h1 className="text-h3 text-neutral-900">
               {item.brand} {item.name}
             </h1>
-            <p className="font-paragraph-sm mt-1 text-neutral-500">新增日期：{item.createdAt}</p>
+            <p className="mt-1 font-paragraph-sm text-neutral-500">新增日期：{item.createdAt}</p>
           </div>
 
           <div className="mt-5 space-y-5">
             <WardrobeDetailSection title="類別">
-              <div className="bg-primary-900 font-label-xs inline-flex rounded-full px-3 py-1 text-white">
+              <div className="bg-primary-900 inline-flex rounded-full px-3 py-1 font-label-xs text-white">
                 {wardrobeCategoryOptions.find((option) => option.key === item.category)?.label}
               </div>
             </WardrobeDetailSection>
@@ -123,7 +122,7 @@ const WardrobeDetailPage = () => {
                 {item.occasionKeys.map((key) => (
                   <span
                     key={key}
-                    className="bg-primary-900 font-label-xs rounded-full px-3 py-1 text-white"
+                    className="bg-primary-900 rounded-full px-3 py-1 font-label-xs text-white"
                   >
                     {wardrobeOccasionOptions.find((option) => option.key === key)?.label}
                   </span>
@@ -136,7 +135,7 @@ const WardrobeDetailPage = () => {
                 {item.seasonKeys.map((key) => (
                   <span
                     key={key}
-                    className="bg-primary-900 font-label-xs rounded-full px-3 py-1 text-white"
+                    className="bg-primary-900 rounded-full px-3 py-1 font-label-xs text-white"
                   >
                     {wardrobeSeasonOptions.find((option) => option.key === key)?.label}
                   </span>
@@ -157,10 +156,10 @@ const WardrobeDetailPage = () => {
 
             <WardrobeDetailSection title="品牌">
               <div className="flex flex-wrap gap-2">
-                <span className="bg-primary-900 font-label-xs inline-flex rounded-full px-3 py-1 text-white">
+                <span className="bg-primary-900 inline-flex rounded-full px-3 py-1 font-label-xs text-white">
                   {item.brand}
                 </span>
-                <span className="font-label-xs inline-flex items-center text-neutral-500">
+                <span className="inline-flex items-center font-label-xs text-neutral-500">
                   新增品牌 +
                 </span>
               </div>
@@ -172,17 +171,8 @@ const WardrobeDetailPage = () => {
           open={isDeleteOpen}
           onClose={() => setIsDeleteOpen(false)}
           onConfirm={() => {
-            deleteItem(item.id)
             setIsDeleteOpen(false)
-            setIsDeleteSuccessOpen(true)
-          }}
-        />
-
-        <DeleteSuccessDialog
-          open={isDeleteSuccessOpen}
-          onClose={() => {
-            setIsDeleteSuccessOpen(false)
-            void router.push('/wardrobe')
+            showToast.error('目前尚未支援刪除衣物')
           }}
         />
       </div>
