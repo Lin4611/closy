@@ -1,0 +1,22 @@
+import { WardrobeItem } from '../types'
+import { WardrobeEmptyState } from './WardrobeEmptyState'
+import { WardrobeItemCard } from './WardrobeItemCard'
+
+type WardrobeGridProps = {
+  items: WardrobeItem[]
+  onDelete: (id: string) => void
+}
+
+export const WardrobeGrid = ({ items, onDelete }: WardrobeGridProps) => {
+  if (items.length === 0) {
+    return <WardrobeEmptyState />
+  }
+
+  return (
+    <section className="grid grid-cols-2 gap-x-3 gap-y-3 px-4 pb-28">
+      {items.map((item) => (
+        <WardrobeItemCard key={item.id} item={item} onDelete={onDelete} />
+      ))}
+    </section>
+  )
+}

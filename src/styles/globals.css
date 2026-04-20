@@ -1,8 +1,8 @@
 @import 'tailwindcss';
 @import './common/_colors.css';
 @import './common/_typography.css';
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -18,7 +18,14 @@
     @apply font-sans;
   }
 }
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
 
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
 @theme inline {
   --font-heading: var(--font-sans);
   --font-sans: var(--font-sans);
@@ -129,4 +136,18 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+}
+
+@keyframes skeleton-shift {
+  0%,
+  100% {
+    background-color: #edf3f6;
+  }
+  50% {
+    background-color: #e2e9ec;
+  }
+}
+
+.skeleton-two-tone {
+  animation: skeleton-shift 1.4s ease-in-out infinite;
 }
