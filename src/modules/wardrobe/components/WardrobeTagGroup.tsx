@@ -45,8 +45,8 @@ export const WardrobeTagGroup = <T extends string>({
             className={cn(
               'inline-flex items-center gap-1 rounded-full border px-3 py-1 font-label-xs transition-colors',
               selected
-                ? 'border-primary-900 bg-primary-900 text-white'
-                : 'border-neutral-300 bg-neutral-100 text-neutral-400'
+                ? 'border-primary-800 bg-primary-800 text-white'
+                : 'border-neutral-500 bg-neutral-100 text-neutral-500'
             )}
           >
             {option.label}

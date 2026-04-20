@@ -68,7 +68,7 @@ export const WardrobeReviewForm = ({ value, onChange }: WardrobeReviewFormProps)
             value={name}
             onChange={handleNameChange}
             placeholder="請輸入衣物名稱"
-            className="h-9 w-full rounded-full border border-neutral-300 bg-neutral-100 px-4 font-paragraph-sm text-neutral-900 outline-none focus:border-primary-900"
+            className="h-9 w-full rounded-full border border-neutral-300 bg-white px-4 font-paragraph-sm text-neutral-800 outline-none focus:border-primary-900"
           />
         </label>
 

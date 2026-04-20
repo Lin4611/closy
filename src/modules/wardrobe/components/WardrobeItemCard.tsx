@@ -57,9 +57,9 @@ export const WardrobeItemCard = ({ item, onDelete }: WardrobeItemCardProps) => {
           <div className="flex h-full flex-col justify-between gap-1">
             <div className="space-y-1">
               <p className="truncate font-label-sm text-neutral-900">{item.name}</p>
-              <p className="font-label-xs text-neutral-500">{item.createdAt}</p>
+              <p className="font-label-xs text-neutral-500">{item.updatedAt}</p>
             </div>
-            <p className="min-h-[18px] truncate font-label-xs text-neutral-400">{item.brand || ' '}</p>
+            <p className="min-h-4.5 truncate font-label-xs text-neutral-400">{item.brand || ' '}</p>
           </div>
         </Link>
 

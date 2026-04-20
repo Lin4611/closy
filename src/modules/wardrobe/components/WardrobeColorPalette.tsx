@@ -93,7 +93,7 @@ export const WardrobeColorPalette = ({
   }
 
   return (
-    <div ref={scrollContainerRef} className="overflow-x-auto p-0.75">
+    <div ref={scrollContainerRef} className="overflow-x-auto p-0.75 hide-scrollbar">
       <div className="flex w-max gap-3">
         {visibleColors.map((color) => {
           const selected = selectedKeys.includes(color.key)

@@ -159,7 +159,7 @@ const WardrobeDetailPage = ({ initialItem }: InferGetServerSidePropsType<typeof 
             <h1 className="text-h3 text-neutral-900">
               {item.brand} {item.name}
             </h1>
-            <p className="mt-1 font-paragraph-sm text-neutral-500">新增日期：{item.createdAt}</p>
+            <p className="mt-1 font-paragraph-sm text-neutral-500">更新日期：{item.updatedAt}</p>
           </div>
 
           <div className="mt-5 space-y-5">
