@@ -16,11 +16,17 @@ export const streamOutfitAdjust = async (
   payload: AdjustStreamPayload,
   callbacks: StreamCallbacks,
 ): Promise<void> => {
-  const response = await fetch('/api/adjust/stream', {
+  const tokenRes = await fetch('/api/auth/token')
+  if (!tokenRes.ok) throw new Error('尚未登入')
+  const { accessToken } = (await tokenRes.json()) as { accessToken: string }
+
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/outfit-adjustment/stream`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+    },
     body: JSON.stringify(payload),
-    credentials: 'include',
   })
 
   if (!response.ok) throw new Error('調整失敗')
@@ -37,15 +43,21 @@ export const streamOutfitAdjust = async (
       if (done) break
 
       buffer += decoder.decode(value, { stream: true })
-      const lines = buffer.split('\n')
-      buffer = lines.pop() ?? ''
 
-      for (const line of lines) {
-        if (!line.startsWith('data:')) continue
-        const jsonStr = line.slice(5).trim()
-        if (!jsonStr) continue
+      let sepIdx: number
+      while ((sepIdx = buffer.indexOf('\n\n')) !== -1) {
+        const rawEvent = buffer.slice(0, sepIdx)
+        buffer = buffer.slice(sepIdx + 2)
 
-        const event = JSON.parse(jsonStr) as SSEEvent
+        const dataLine = rawEvent
+          .split('\n')
+          .filter((l) => l.startsWith('data:'))
+          .map((l) => l.slice(5).trim())
+          .join('')
+
+        if (!dataLine) continue
+
+        const event = JSON.parse(dataLine) as SSEEvent
 
         if (event.status === 'processing' && event.step === 1) callbacks.onStep1(event.message)
         else if (event.status === 'processing' && event.step === 2) callbacks.onStep2(event.message)
