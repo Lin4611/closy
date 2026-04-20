@@ -4,25 +4,32 @@ import { useState } from 'react'
 
 import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
-import { getSettingsProtectedServerSideResult } from '@/lib/api/settings/shared'
+import {
+  getSettingsProtectedBaselineServerSideResult,
+  type SettingsProfileBaseline,
+} from '@/lib/api/settings/shared'
 import { updateOccasion } from '@/modules/common/api/occasion'
 import { ConfirmAlertDialog } from '@/modules/common/components/ConfirmAlertDialog'
 import { PrimaryButton } from '@/modules/common/components/PrimaryButton'
 import { occasionMetaMap, type Occasion } from '@/modules/common/types/occasion'
 import { OccasionOptionCard } from '@/modules/guide/components/OccasionOptionCard'
 import { SettingsHeader } from '@/modules/settings/components/SettingsHeader'
+import { useSettingsProfileHydration } from '@/modules/settings/hooks/useSettingsProfileHydration'
 
-export const getServerSideProps: GetServerSideProps<{ initialOccasion: Occasion }> = async (context) => {
-  return getSettingsProtectedServerSideResult(context, (profile) => ({
-    initialOccasion: profile.preferences.occasions,
-  }))
+export const getServerSideProps: GetServerSideProps<{
+  profileBaseline: SettingsProfileBaseline
+}> = async (context) => {
+  return getSettingsProtectedBaselineServerSideResult(context)
 }
 
-const SettingOccasion = ({ initialOccasion }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+const SettingOccasion = ({ profileBaseline }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+  const initialOccasion = profileBaseline.preferences.occasions
   const [occasionPreference, setOccasionPreference] = useState<Occasion>(initialOccasion)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const router = useRouter()
+
+  useSettingsProfileHydration(profileBaseline)
 
   const handleOccasionChange = async (value: Occasion) => {
     if (isSubmitting || value === initialOccasion) {

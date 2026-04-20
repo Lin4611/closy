@@ -1,48 +1,39 @@
 import type { GetServerSideProps, InferGetServerSidePropsType } from 'next'
 import { useRouter } from 'next/router'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { showToast } from '@/components/ui/sonner'
 import { apiClient } from '@/lib/api/client'
-import { getSettingsProtectedServerSideResult } from '@/lib/api/settings/shared'
+import {
+  buildSettingsSummary,
+  getSettingsProtectedBaselineServerSideResult,
+  type SettingsProfileBaseline,
+} from '@/lib/api/settings/shared'
 import { AppShell } from '@/modules/common/components/AppShell'
-import { occasionLabelMap } from '@/modules/common/types/occasion'
 import { GoogleCalendarSettingCard } from '@/modules/settings/components/GoogleCalendarSettingCard'
 import { SettingSection } from '@/modules/settings/components/SettingSection'
-import { colorsLabelMap } from '@/modules/settings/types/colorsTypes'
-import { stylesLabelMap } from '@/modules/settings/types/stylesTypes'
+import { useSettingsProfileHydration } from '@/modules/settings/hooks/useSettingsProfileHydration'
 import { useAppDispatch } from '@/store/hooks'
 import { clearDayCache } from '@/store/slices/homeSlice'
 import { clearOutfitCache } from '@/store/slices/outfitSlice'
 import { clearUser } from '@/store/slices/userSlice'
 
 export const getServerSideProps: GetServerSideProps<{
-  initialSummary: {
-    occasion: string
-    styles: string[]
-    colors: string[]
-  }
+  profileBaseline: SettingsProfileBaseline
 }> = async (context) => {
-  return getSettingsProtectedServerSideResult(context, (profile) => ({
-    initialSummary: {
-      occasion: occasionLabelMap[profile.preferences.occasions],
-      styles: profile.preferences.styles.length
-        ? profile.preferences.styles.map((style) => stylesLabelMap[style])
-        : ['未設定'],
-      colors: profile.preferences.colors.length
-        ? profile.preferences.colors.map((color) => colorsLabelMap[color])
-        : ['未設定'],
-    },
-  }))
+  return getSettingsProtectedBaselineServerSideResult(context)
 }
 
-const Setting = ({ initialSummary }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+const Setting = ({ profileBaseline }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const router = useRouter()
+  const summary = useMemo(() => buildSettingsSummary(profileBaseline), [profileBaseline])
 
   const [isSynced, setIsSynced] = useState(false)
   const [isSyncing, setIsSyncing] = useState(false)
   const dispatch = useAppDispatch()
+
+  useSettingsProfileHydration(profileBaseline)
 
   useEffect(() => {
     if (router.query.status === 'unchanged') {
@@ -89,9 +80,9 @@ const Setting = ({ initialSummary }: InferGetServerSidePropsType<typeof getServe
         </div>
         <div className="flex flex-1 flex-col gap-5 px-4 py-6">
           <SettingSection
-            defaultOccasion={initialSummary.occasion}
-            defaultStyle={initialSummary.styles}
-            defaultColor={initialSummary.colors}
+            defaultOccasion={summary.occasion}
+            defaultStyle={summary.styles}
+            defaultColor={summary.colors}
           />
           <GoogleCalendarSettingCard
             isSynced={isSynced}

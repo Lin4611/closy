@@ -4,24 +4,29 @@ import { useState } from 'react'
 
 import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
-import { getSettingsProtectedServerSideResult } from '@/lib/api/settings/shared'
+import {
+  getSettingsProtectedBaselineServerSideResult,
+  type SettingsProfileBaseline,
+} from '@/lib/api/settings/shared'
 import { ConfirmAlertDialog } from '@/modules/common/components/ConfirmAlertDialog'
 import { PrimaryButton } from '@/modules/common/components/PrimaryButton'
 import { updateColors } from '@/modules/settings/api/colors'
 import { ColorCard } from '@/modules/settings/components/ColorCard'
 import { SettingsHeader } from '@/modules/settings/components/SettingsHeader'
+import { useSettingsProfileHydration } from '@/modules/settings/hooks/useSettingsProfileHydration'
 import { colorsMetaMap } from '@/modules/settings/types/colorsTypes'
 import type { Colors } from '@/modules/settings/types/colorsTypes'
 import { useAppDispatch } from '@/store/hooks'
 import { updateUserColors } from '@/store/slices/userSlice'
 
-export const getServerSideProps: GetServerSideProps<{ initialColors: Colors[] }> = async (context) => {
-  return getSettingsProtectedServerSideResult(context, (profile) => ({
-    initialColors: profile.preferences.colors,
-  }))
+export const getServerSideProps: GetServerSideProps<{
+  profileBaseline: SettingsProfileBaseline
+}> = async (context) => {
+  return getSettingsProtectedBaselineServerSideResult(context)
 }
 
-const SettingColors = ({ initialColors }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+const SettingColors = ({ profileBaseline }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+  const initialColors = profileBaseline.preferences.colors
   const [colorPreference, setColorPreference] = useState<Colors[]>(initialColors)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -29,6 +34,8 @@ const SettingColors = ({ initialColors }: InferGetServerSidePropsType<typeof get
   const dispatch = useAppDispatch()
 
   const router = useRouter()
+
+  useSettingsProfileHydration(profileBaseline)
 
   const handleColorChange = async (value: Colors[]) => {
     if (

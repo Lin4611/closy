@@ -17,6 +17,8 @@ export type SettingsServerProfile = Omit<UserInfo, 'preferences'> & {
   preferences: SettingsServerPreferences
 }
 
+export type SettingsProfileBaseline = SettingsServerProfile
+
 const settingsColorKeys = Object.keys(colorsLabelMap) as Colors[]
 const settingsStyleKeys = Object.keys(stylesLabelMap) as Styles[]
 const settingsOccasionKeys = Object.keys(occasionLabelMap) as Occasion[]
@@ -64,6 +66,36 @@ export const fetchSettingsServerProfile = async (accessToken: string): Promise<S
   return normalizeSettingsProfile(response.data)
 }
 
+export const buildSettingsProfileBaseline = (profile: SettingsServerProfile): SettingsProfileBaseline => {
+  return profile
+}
+
+export const buildSettingsHydrationProfile = (profileBaseline: SettingsProfileBaseline): UserInfo => {
+  return {
+    name: profileBaseline.name,
+    picture: profileBaseline.picture,
+    gender: profileBaseline.gender,
+    preferences: {
+      styles: profileBaseline.preferences.styles,
+      colors: profileBaseline.preferences.colors,
+      occasions: profileBaseline.preferences.occasions,
+    },
+    location: profileBaseline.location,
+  }
+}
+
+export const buildSettingsSummary = (profileBaseline: SettingsProfileBaseline) => {
+  return {
+    occasion: occasionLabelMap[profileBaseline.preferences.occasions],
+    styles: profileBaseline.preferences.styles.length
+      ? profileBaseline.preferences.styles.map((style) => stylesLabelMap[style])
+      : ['未設定'],
+    colors: profileBaseline.preferences.colors.length
+      ? profileBaseline.preferences.colors.map((color) => colorsLabelMap[color])
+      : ['未設定'],
+  }
+}
+
 export const getSettingsProtectedServerSideResult = async <TProps extends object>(
   context: Pick<GetServerSidePropsContext, 'req'>,
   mapProps: (profile: SettingsServerProfile) => TProps,
@@ -97,4 +129,12 @@ export const getSettingsProtectedServerSideResult = async <TProps extends object
 
     throw error
   }
+}
+
+export const getSettingsProtectedBaselineServerSideResult = async (
+  context: Pick<GetServerSidePropsContext, 'req'>,
+): Promise<GetServerSidePropsResult<{ profileBaseline: SettingsProfileBaseline }>> => {
+  return getSettingsProtectedServerSideResult(context, (profile) => ({
+    profileBaseline: buildSettingsProfileBaseline(profile),
+  }))
 }

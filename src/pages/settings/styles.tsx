@@ -4,24 +4,29 @@ import { useState } from 'react'
 
 import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
-import { getSettingsProtectedServerSideResult } from '@/lib/api/settings/shared'
+import {
+  getSettingsProtectedBaselineServerSideResult,
+  type SettingsProfileBaseline,
+} from '@/lib/api/settings/shared'
 import { ConfirmAlertDialog } from '@/modules/common/components/ConfirmAlertDialog'
 import { PrimaryButton } from '@/modules/common/components/PrimaryButton'
 import { updateStyles } from '@/modules/settings/api/styles'
 import { SettingsHeader } from '@/modules/settings/components/SettingsHeader'
 import { StyleCard } from '@/modules/settings/components/StyleCard'
+import { useSettingsProfileHydration } from '@/modules/settings/hooks/useSettingsProfileHydration'
 import type { Styles } from '@/modules/settings/types/stylesTypes'
 import { stylesMetaMap } from '@/modules/settings/types/stylesTypes'
 import { useAppDispatch } from '@/store/hooks'
 import { updateUserStyles } from '@/store/slices/userSlice'
 
-export const getServerSideProps: GetServerSideProps<{ initialStyles: Styles[] }> = async (context) => {
-  return getSettingsProtectedServerSideResult(context, (profile) => ({
-    initialStyles: profile.preferences.styles,
-  }))
+export const getServerSideProps: GetServerSideProps<{
+  profileBaseline: SettingsProfileBaseline
+}> = async (context) => {
+  return getSettingsProtectedBaselineServerSideResult(context)
 }
 
-const SettingsStyles = ({ initialStyles }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+const SettingsStyles = ({ profileBaseline }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+  const initialStyles = profileBaseline.preferences.styles
   const [stylePreference, setStylePreference] = useState<Styles[]>(initialStyles)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -29,6 +34,8 @@ const SettingsStyles = ({ initialStyles }: InferGetServerSidePropsType<typeof ge
   const dispatch = useAppDispatch()
 
   const router = useRouter()
+
+  useSettingsProfileHydration(profileBaseline)
 
   const handleStyleChange = async (value: Styles[]) => {
     if (
