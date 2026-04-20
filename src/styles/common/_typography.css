@@ -1,0 +1,94 @@
+@utility font-display {
+  font-size: 32px;
+  line-height: 40px;
+  font-weight: 900;
+}
+
+@utility font-h1 {
+  font-size: 32px;
+  line-height: 40px;
+  font-weight: 700;
+}
+
+@utility font-h2 {
+  font-size: 28px;
+  line-height: 36px;
+  font-weight: 700;
+}
+
+@utility font-h3 {
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 700;
+}
+
+@utility font-h4 {
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 700;
+}
+
+@utility font-paragraph-lg {
+  font-size: 18px;
+  line-height: 28px;
+  font-weight: 400;
+}
+
+@utility font-paragraph-md {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+}
+@utility font-paragraph-sm {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+}
+
+@utility font-paragraph-xs {
+  font-size: 12px;
+  line-height: 20px;
+  font-weight: 400;
+}
+
+@utility font-label-xxl {
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+}
+
+@utility font-label-xl {
+  font-size: 18px;
+  line-height: 28px;
+  font-weight: 600;
+}
+
+@utility font-label-md {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+}
+
+@utility font-label-sm {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+}
+
+@utility font-label-xs {
+  font-size: 12px;
+  line-height: 20px;
+  font-weight: 600;
+}
+
+@utility font-label-xxs-r {
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 400;
+}
+
+@utility font-label-xxs-sb {
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 500;
+}
