@@ -76,19 +76,21 @@ export type ClothesApiItem = {
   imgUrl?: string
 }
 
+export type WardrobeClothesApiItem = ClothesApiItem
+
 export type GetClothesListResponseData = {
-  list: ClothesApiItem[]
+  list: WardrobeClothesApiItem[]
 }
 
-export type GetClothesDetailResponseData = ClothesApiItem
+export type GetClothesDetailResponseData = WardrobeClothesApiItem
 
-export type CreateClothesResponseData = ClothesApiItem
+export type CreateClothesResponseData = WardrobeClothesApiItem
 
 export type UpdateClothesRequest = Partial<
   Pick<CreateClothesRequest, 'category' | 'name' | 'color' | 'occasions' | 'seasons' | 'brand'>
 >
 
-export type UpdateClothesResponseData = ClothesApiItem
+export type UpdateClothesResponseData = WardrobeClothesApiItem
 
 export type DeleteClothesResponseData = Record<string, never>
 
