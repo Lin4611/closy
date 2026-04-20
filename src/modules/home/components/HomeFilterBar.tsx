@@ -12,9 +12,10 @@ import { DaySwitch } from './DaySwitch'
 import { OccasionSelect } from './OccasionSelect'
 type HomeFilterBarProps = {
   className?: string
+  onDayChange?: (day: 'today' | 'tomorrow') => void
 }
 
-export const HomeFilterBar = ({ className }: HomeFilterBarProps) => {
+export const HomeFilterBar = ({ className, onDayChange }: HomeFilterBarProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const selectedOccasion = useAppSelector((state) => state.user.user?.preferences.occasions ?? '')
   const dispatch = useAppDispatch()
@@ -42,7 +43,7 @@ export const HomeFilterBar = ({ className }: HomeFilterBarProps) => {
         className,
       )}
     >
-      <DaySwitch />
+      <DaySwitch onDayChange={onDayChange} />
       <div id="occasion-trigger">
         <OccasionSelect value={selectedOccasion} onValueChange={handleOccasionChange} />
       </div>
