@@ -18,14 +18,20 @@ export const OutfitsContentSection = ({
   occasionsList,
 }: OutfitsContentSectionProps) => {
   const router = useRouter()
-  const [tab, setTab] = useState<OutfitTab>('overview')
-
+  const [tab, setTab] = useState<OutfitTab>(() => {
+    if (typeof window === 'undefined') return 'overview'
+    return (sessionStorage.getItem('outfitTab') as OutfitTab) ?? 'overview'
+  })
+  const handleTabChange = (newTab: OutfitTab) => {
+    sessionStorage.setItem('outfitTab', newTab)
+    setTab(newTab)
+  }
   const handleSelectOccasion = (occasionId: string) => {
     void router.push(`/outfit/occasion/${occasionId}`)
   }
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <OutfitsTabs tab={tab} onTabChange={setTab} />
+      <OutfitsTabs tab={tab} onTabChange={handleTabChange} />
       {tab === 'overview' ? (
         <OutfitsOverview outfits={outfits} onDelete={onDelete} tab={tab} />
       ) : (
