@@ -137,11 +137,7 @@ const OutfitOccasionDetail = () => {
               href="/outfit"
               onClick={(e) => {
                 e.preventDefault()
-                if (window.history.length > 1) {
-                  router.back()
-                } else {
-                  void router.push('/outfit')
-                }
+                void router.push('/outfit')
               }}
               className="absolute left-0 flex size-10 items-center justify-center"
             >
