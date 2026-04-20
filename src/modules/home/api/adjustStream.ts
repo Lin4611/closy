@@ -15,8 +15,9 @@ type StreamCallbacks = {
 export const streamOutfitAdjust = async (
   payload: AdjustStreamPayload,
   callbacks: StreamCallbacks,
+  signal?: AbortSignal,
 ): Promise<void> => {
-  const tokenRes = await fetch('/api/auth/token')
+  const tokenRes = await fetch('/api/auth/token', { signal })
   if (!tokenRes.ok) throw new Error('尚未登入')
   const { accessToken } = (await tokenRes.json()) as { accessToken: string }
 
@@ -27,6 +28,7 @@ export const streamOutfitAdjust = async (
       Authorization: `Bearer ${accessToken}`,
     },
     body: JSON.stringify(payload),
+    signal,
   })
 
   if (!response.ok) throw new Error('調整失敗')

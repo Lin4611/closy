@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { Drawer, DrawerContent } from '@/components/ui/drawer'
 import { getAdjustQuota } from '@/modules/home/api/adjustQuota'
@@ -70,6 +70,7 @@ export const OutfitAdjustDrawer = ({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [count, setCount] = useState<number | null>(null)
   const [result, setResult] = useState<AdjustStreamResult | null>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
 
   const name = useAppSelector((state) => state.user.user?.name)
   const isComposerDisabled = isSubmitting || count === null || count <= 0
@@ -129,6 +130,9 @@ export const OutfitAdjustDrawer = ({
     setMessage('')
     setCount((prev) => (prev ?? 0) - 1)
 
+    const abortController = new AbortController()
+    abortControllerRef.current = abortController
+
     try {
       await streamOutfitAdjust(
         { prompt: trimmed, originalImageUrl: outfitImageUrl, day, selectedItems },
@@ -164,8 +168,10 @@ export const OutfitAdjustDrawer = ({
             )
           },
         },
+        abortController.signal,
       )
-    } catch {
+    } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') return
       setMessages((prev) =>
         prev.map((msg) =>
           msg.id === step1MessageId
@@ -191,7 +197,10 @@ export const OutfitAdjustDrawer = ({
   }
 
   const handleOpenChange = (nextOpen: boolean) => {
-    if (!nextOpen) resetDrawerState()
+    if (!nextOpen) {
+      abortControllerRef.current?.abort()
+      resetDrawerState()
+    }
     onOpenChange(nextOpen)
   }
 
