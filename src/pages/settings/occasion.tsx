@@ -15,6 +15,8 @@ import { occasionMetaMap, type Occasion } from '@/modules/common/types/occasion'
 import { OccasionOptionCard } from '@/modules/guide/components/OccasionOptionCard'
 import { SettingsHeader } from '@/modules/settings/components/SettingsHeader'
 import { useSettingsProfileHydration } from '@/modules/settings/hooks/useSettingsProfileHydration'
+import { useAppDispatch } from '@/store/hooks'
+import { updateUserOccasion } from '@/store/slices/userSlice'
 
 export const getServerSideProps: GetServerSideProps<{
   profileBaseline: SettingsProfileBaseline
@@ -28,6 +30,7 @@ const SettingOccasion = ({ profileBaseline }: InferGetServerSidePropsType<typeof
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const router = useRouter()
+  const dispatch = useAppDispatch()
 
   useSettingsProfileHydration(profileBaseline)
 
@@ -40,6 +43,7 @@ const SettingOccasion = ({ profileBaseline }: InferGetServerSidePropsType<typeof
     try {
       setIsSubmitting(true)
       await updateOccasion(value)
+      dispatch(updateUserOccasion(value))
       setIsDialogOpen(true)
     } catch (error) {
       if (error instanceof ApiError) {
