@@ -207,14 +207,15 @@ const WardrobeDetailPage = ({ initialItem }: InferGetServerSidePropsType<typeof 
             </WardrobeDetailSection>
 
             <WardrobeDetailSection title="品牌">
-              <div className="flex flex-wrap gap-2">
-                <span className="bg-primary-900 inline-flex rounded-full px-3 py-1 font-label-xs text-white">
-                  {item.brand}
-                </span>
-                <span className="inline-flex items-center font-label-xs text-neutral-500">
-                  新增品牌 +
-                </span>
-              </div>
+              {item.brand ? (
+                <div className="flex flex-wrap gap-2">
+                  <span className="bg-primary-900 inline-flex rounded-full px-3 py-1 font-label-xs text-white">
+                    {item.brand}
+                  </span>
+                </div>
+              ) : (
+                <span className="font-label-xs text-neutral-500">尚未選擇品牌</span>
+              )}
             </WardrobeDetailSection>
           </div>
         </section>

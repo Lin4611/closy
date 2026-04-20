@@ -17,6 +17,7 @@ type WardrobeReviewFormBrandFieldProps = {
   onAddStart: () => void
   onAddCancel: () => void
   onAddConfirm: () => void
+  addInputPlaceholder?: string
 }
 
 type WardrobeReviewFormProps = {
@@ -46,10 +47,6 @@ export const WardrobeReviewForm = ({ value, onChange, brandField }: WardrobeRevi
 
   const handleNameChange = (event: ChangeEvent<HTMLInputElement>) => {
     onChange({ ...value, name: event.target.value })
-  }
-
-  const handleBrandChange = (event: ChangeEvent<HTMLInputElement>) => {
-    onChange({ ...value, brand: event.target.value })
   }
 
   const handleBrandSelectionChange = (next: string[]) => {
@@ -151,8 +148,14 @@ export const WardrobeReviewForm = ({ value, onChange, brandField }: WardrobeRevi
                   <input
                     value={brandField.pendingValue}
                     onChange={(event) => brandField.onPendingValueChange(event.target.value)}
-                    placeholder="輸入品牌名稱"
-                    className="h-9 flex-1 rounded-full border border-neutral-500 bg-white px-4 font-paragraph-sm text-neutral-900 outline-none focus:border-primary-900"
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') {
+                        event.preventDefault()
+                        brandField.onAddConfirm()
+                      }
+                    }}
+                    placeholder={brandField.addInputPlaceholder ?? '輸入品牌名稱'}
+                    className="h-9 flex-1 rounded-full border border-neutral-500 bg-neutral-100 px-4 font-paragraph-sm text-neutral-900 outline-none focus:border-primary-900"
                     aria-label="新增品牌"
                   />
                   <button
@@ -181,18 +184,7 @@ export const WardrobeReviewForm = ({ value, onChange, brandField }: WardrobeRevi
               )}
             </div>
           </WardrobeDetailSection>
-        ) : (
-          <label className="block space-y-1.5">
-            <span className="font-label-md text-neutral-900">品牌</span>
-            <input
-              value={brand}
-              onChange={handleBrandChange}
-              placeholder="可選填品牌名稱"
-              className="h-9 w-full rounded-full border border-neutral-300 bg-neutral-100 px-4 font-paragraph-sm text-neutral-900 outline-none focus:border-primary-900"
-              aria-label="品牌"
-            />
-          </label>
-        )}
+        ) : null}
       </section>
     </form>
   )

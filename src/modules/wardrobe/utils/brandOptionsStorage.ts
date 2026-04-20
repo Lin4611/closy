@@ -2,6 +2,13 @@ import { WARDROBE_BRAND_OPTIONS_STORAGE_KEY } from '@/modules/wardrobe/constants
 import type { WardrobeBrandOption } from '@/modules/wardrobe/types'
 
 const isClient = () => typeof window !== 'undefined'
+const brandOptionListeners = new Set<() => void>()
+let cachedBrandOptionsRaw: string | null = null
+let cachedBrandOptionsSnapshot: string[] = []
+
+const notifyWardrobeBrandOptionsChanged = () => {
+  brandOptionListeners.forEach((listener) => listener())
+}
 
 export const sanitizeWardrobeBrandValue = (value: unknown) =>
   typeof value === 'string' ? value.trim() : ''
@@ -34,25 +41,39 @@ export const sanitizeWardrobeBrandOptions = (value: unknown): string[] => {
   return normalizeWardrobeBrandOptions(value)
 }
 
-export const getWardrobeBrandOptions = (): string[] => {
+const readWardrobeBrandOptionsRaw = () => {
   if (!isClient()) {
-    return []
+    return null
   }
 
-  const parsed = safeParseJson(window.localStorage.getItem(WARDROBE_BRAND_OPTIONS_STORAGE_KEY))
-
-  return sanitizeWardrobeBrandOptions(parsed)
+  return window.localStorage.getItem(WARDROBE_BRAND_OPTIONS_STORAGE_KEY)
 }
+
+const updateCachedWardrobeBrandOptionsSnapshot = (raw: string | null) => {
+  if (raw === cachedBrandOptionsRaw) {
+    return cachedBrandOptionsSnapshot
+  }
+
+  cachedBrandOptionsRaw = raw
+  cachedBrandOptionsSnapshot = sanitizeWardrobeBrandOptions(safeParseJson(raw))
+
+  return cachedBrandOptionsSnapshot
+}
+
+export const getWardrobeBrandOptions = (): string[] =>
+  updateCachedWardrobeBrandOptionsSnapshot(readWardrobeBrandOptionsRaw())
 
 export const saveWardrobeBrandOptions = (options: readonly string[]) => {
   if (!isClient()) {
     return
   }
 
-  window.localStorage.setItem(
-    WARDROBE_BRAND_OPTIONS_STORAGE_KEY,
-    JSON.stringify(normalizeWardrobeBrandOptions(options))
-  )
+  const normalizedOptions = normalizeWardrobeBrandOptions(options)
+  const nextRaw = JSON.stringify(normalizedOptions)
+
+  window.localStorage.setItem(WARDROBE_BRAND_OPTIONS_STORAGE_KEY, nextRaw)
+  updateCachedWardrobeBrandOptionsSnapshot(nextRaw)
+  notifyWardrobeBrandOptionsChanged()
 }
 
 export const mergeWardrobeBrandOption = (
@@ -73,6 +94,36 @@ export const persistWardrobeBrandOption = (brandValue: string): string[] => {
   saveWardrobeBrandOptions(nextOptions)
   return nextOptions
 }
+
+export const subscribeWardrobeBrandOptions = (listener: () => void) => {
+  brandOptionListeners.add(listener)
+
+  if (!isClient()) {
+    return () => {
+      brandOptionListeners.delete(listener)
+    }
+  }
+
+  const handleStorage = (event: StorageEvent) => {
+    if (event.key && event.key !== WARDROBE_BRAND_OPTIONS_STORAGE_KEY) {
+      return
+    }
+
+    updateCachedWardrobeBrandOptionsSnapshot(readWardrobeBrandOptionsRaw())
+    listener()
+  }
+
+  window.addEventListener('storage', handleStorage)
+
+  return () => {
+    brandOptionListeners.delete(listener)
+    window.removeEventListener('storage', handleStorage)
+  }
+}
+
+export const getWardrobeBrandOptionsSnapshot = () => getWardrobeBrandOptions()
+
+export const getWardrobeBrandOptionsServerSnapshot = () => cachedBrandOptionsSnapshot
 
 export const mapWardrobeBrandValuesToOptions = (
   values: readonly string[]
