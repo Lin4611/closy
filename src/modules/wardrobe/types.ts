@@ -68,6 +68,8 @@ export type WardrobeItem = {
   updatedAt: string
 }
 
+export type WardrobeStoredItem = WardrobeItem
+
 export type WardrobeDraftItem = {
   name: string
   brand: string

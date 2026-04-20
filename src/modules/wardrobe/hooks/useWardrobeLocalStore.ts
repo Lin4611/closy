@@ -1,40 +1,33 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 
-import { mockWardrobeItems } from '../data/mockWardrobeItems'
-import type { WardrobeDraftItem, WardrobeItem } from '../types'
+import type { WardrobeDraftItem, WardrobeItem, WardrobeStoredItem } from '../types'
 import { mapDraftToWardrobeItem } from '../utils/mapDraftToWardrobeItem'
 
 const WARDROBE_STORAGE_KEY = 'closy:wardrobe-items'
 const WARDROBE_ITEMS_UPDATED_EVENT = 'closy:wardrobe-items-updated'
+const EMPTY_WARDROBE_ITEMS: WardrobeStoredItem[] = []
 
-const mockItemMap = new Map(mockWardrobeItems.map((item) => [item.id, item] as const))
-
-let cachedItemsSnapshot: WardrobeItem[] = mockWardrobeItems
+let cachedItemsSnapshot: WardrobeStoredItem[] = EMPTY_WARDROBE_ITEMS
 let cachedItemsStorageValue: string | null | undefined = undefined
 let cachedItemsRevision = 0
 
-const normalizeItem = (item: WardrobeItem): WardrobeItem => {
-  const fallbackItem = mockItemMap.get(item.id)
+const normalizeItem = (item: WardrobeStoredItem): WardrobeStoredItem => ({
+  ...item,
+})
 
-  return {
-    ...item,
-    imageUrl: item.imageUrl ?? fallbackItem?.imageUrl,
-  }
-}
-
-const safeParseItems = (value: string | null): WardrobeItem[] => {
-  if (!value) return mockWardrobeItems
+const safeParseItems = (value: string | null): WardrobeStoredItem[] => {
+  if (!value) return EMPTY_WARDROBE_ITEMS
 
   try {
-    const parsed = JSON.parse(value) as WardrobeItem[]
+    const parsed = JSON.parse(value) as unknown
 
     if (!Array.isArray(parsed)) {
-      return mockWardrobeItems
+      return EMPTY_WARDROBE_ITEMS
     }
 
-    return parsed.map(normalizeItem)
+    return parsed.map((item) => normalizeItem(item as WardrobeStoredItem))
   } catch {
-    return mockWardrobeItems
+    return EMPTY_WARDROBE_ITEMS
   }
 }
 
@@ -50,9 +43,9 @@ const getWardrobeItemsSignature = (items: WardrobeItem[]) => {
   return items.map((item) => getWardrobeItemSignature(item)).join('|')
 }
 
-const getStoredItemsSnapshot = (): WardrobeItem[] => {
+const getStoredItemsSnapshot = (): WardrobeStoredItem[] => {
   if (typeof window === 'undefined') {
-    return mockWardrobeItems
+    return EMPTY_WARDROBE_ITEMS
   }
 
   const storageValue = window.localStorage.getItem(WARDROBE_STORAGE_KEY)
@@ -67,16 +60,17 @@ const getStoredItemsSnapshot = (): WardrobeItem[] => {
   return cachedItemsSnapshot
 }
 
+const getServerStoredItemsSnapshot = (): WardrobeStoredItem[] => EMPTY_WARDROBE_ITEMS
 
-const getWritableStoredItemsBase = (): WardrobeItem[] => {
+const getWritableStoredItemsBase = (): WardrobeStoredItem[] => {
   if (typeof window === 'undefined') {
-    return []
+    return EMPTY_WARDROBE_ITEMS
   }
 
   const storageValue = window.localStorage.getItem(WARDROBE_STORAGE_KEY)
 
   if (!storageValue) {
-    return []
+    return EMPTY_WARDROBE_ITEMS
   }
 
   return safeParseItems(storageValue)
@@ -88,7 +82,7 @@ const notifyWardrobeItemsChanged = () => {
   window.dispatchEvent(new Event(WARDROBE_ITEMS_UPDATED_EVENT))
 }
 
-const writeStoredItems = (items: WardrobeItem[]) => {
+const writeStoredItems = (items: WardrobeStoredItem[]) => {
   if (typeof window === 'undefined') return
 
   const normalizedItems = items.map(normalizeItem)
@@ -106,6 +100,25 @@ const writeStoredItems = (items: WardrobeItem[]) => {
   cachedItemsRevision += 1
 
   window.localStorage.setItem(WARDROBE_STORAGE_KEY, nextStorageValue)
+  notifyWardrobeItemsChanged()
+}
+
+const clearStoredItems = () => {
+  if (typeof window === 'undefined') return
+
+  const currentStorageValue = window.localStorage.getItem(WARDROBE_STORAGE_KEY)
+
+  if (currentStorageValue === null) {
+    cachedItemsStorageValue = null
+    cachedItemsSnapshot = EMPTY_WARDROBE_ITEMS
+    return
+  }
+
+  cachedItemsStorageValue = null
+  cachedItemsSnapshot = EMPTY_WARDROBE_ITEMS
+  cachedItemsRevision += 1
+
+  window.localStorage.removeItem(WARDROBE_STORAGE_KEY)
   notifyWardrobeItemsChanged()
 }
 
@@ -146,7 +159,7 @@ const useWardrobeServerTakeover = (hydrateFromServer: () => void) => {
 }
 
 export const useWardrobeLocalStore = () => {
-  const items = useSyncExternalStore(subscribeWardrobeItems, getStoredItemsSnapshot, () => mockWardrobeItems)
+  const items = useSyncExternalStore(subscribeWardrobeItems, getStoredItemsSnapshot, getServerStoredItemsSnapshot)
   const isReady = typeof window !== 'undefined'
   const itemsRevision = cachedItemsRevision
 
@@ -220,8 +233,9 @@ export const useWardrobeLocalStore = () => {
   const getItemById = useCallback((id: string) => {
     return items.find((item) => item.id === id) ?? null
   }, [items])
+
   const resetWardrobe = useCallback(() => {
-    writeStoredItems(mockWardrobeItems)
+    clearStoredItems()
   }, [])
 
   return useMemo(
