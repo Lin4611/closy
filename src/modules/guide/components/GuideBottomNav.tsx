@@ -4,18 +4,12 @@ import { bottomNavItems, type TBottomNavItem } from '@/modules/common/data/botto
 
 type GuideBottomNavProps = {
   onAddClick?: () => void
-  disable?: boolean
+  disabled?: boolean
 }
 
-export const GuideBottomNav = ({ onAddClick, disable = false }: GuideBottomNavProps) => {
+export const GuideBottomNav = ({ onAddClick, disabled }: GuideBottomNavProps) => {
   const renderNavItem = (item: TBottomNavItem) => (
-    <BottomNavItem
-      key={item.id}
-      {...item}
-      active={item.id === 'home'}
-      onClick={() => {}}
-      disabled={disable}
-    />
+    <BottomNavItem key={item.id} {...item} active={item.id === 'home'} disabled={disabled} />
   )
 
   const handleAddClick = () => {

@@ -1,10 +1,12 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 
+import type { Occasion } from '@/modules/common/types/occasion'
 import type { DayRecommendation } from '@/modules/home/types/dayRecommendationTypes'
 
 type DayCache = {
   dayRecommendation: DayRecommendation
-  imageUrl: string
+  outfitImgUrl: string
+  occasion?: Occasion
 }
 
 type HomeState = {
@@ -33,11 +35,16 @@ const homeSlice = createSlice({
     },
     updateDayImageUrl: (
       state,
-      action: PayloadAction<{ day: 'today' | 'tomorrow'; imageUrl: string }>,
+      action: PayloadAction<{
+        day: 'today' | 'tomorrow'
+        outfitImgUrl: string
+        occasion: Occasion
+      }>,
     ) => {
       const dayState = state[action.payload.day]
       if (dayState) {
-        dayState.imageUrl = action.payload.imageUrl
+        dayState.outfitImgUrl = action.payload.outfitImgUrl
+        dayState.occasion = action.payload.occasion
       }
     },
     clearDayCache: (state) => {

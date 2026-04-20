@@ -11,31 +11,35 @@ type HomeOutfitPreviewProps = {
   disable?: boolean
   isLoading?: boolean
   onDislikeClick?: () => void
+  onLikeClick?: () => void
 }
 
 export const HomeOutfitPreview = ({
   src,
   alt,
   onDislikeClick,
+  onLikeClick,
   isLoading,
   disable,
 }: HomeOutfitPreviewProps) => {
   const [isImageLoaded, setIsImageLoaded] = useState(false)
 
   return (
-    <div className="relative flex w-full flex-col items-center justify-center">
+    <div className="relative flex h-100 w-full flex-col items-center justify-center">
       {isLoading ? (
         <HomeOutfitPreviewSkeleton />
       ) : (
         src && (
-          <Image
-            src={src}
-            alt={alt}
-            width={139}
-            height={400}
-            className={`h-100 w-[139px] object-contain transition-opacity duration-300 ${isImageLoaded ? 'opacity-100' : 'opacity-0'}`}
-            onLoad={() => setIsImageLoaded(true)}
-          />
+          <div className="relative h-100 w-[139px] shrink-0">
+            <Image
+              src={src}
+              alt={alt}
+              width={139}
+              height={400}
+              className={`h-100 w-[139px] object-contain transition-opacity duration-300 ${isImageLoaded ? 'opacity-100' : 'opacity-0'}`}
+              onLoad={() => setIsImageLoaded(true)}
+            />
+          </div>
         )
       )}
       <div className="absolute bottom-0 left-1/2 flex w-full max-w-[283px] -translate-x-1/2 items-center justify-between">
@@ -49,7 +53,7 @@ export const HomeOutfitPreview = ({
         <CircleIconButton
           kind="like"
           icon={Heart}
-          onClick={() => {}}
+          onClick={onLikeClick}
           ariaLabel="喜歡這套穿搭"
           disabled={disable}
         />

@@ -1,4 +1,4 @@
-import { EllipsisVertical, Package } from 'lucide-react'
+import { ChevronLeft, EllipsisVertical, Package } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -7,6 +7,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
 import { AppShell } from '@/modules/common/components/AppShell'
+import { SuccessAlertDialog } from '@/modules/common/components/SuccessAlertDialog'
 import { deleteClothes } from '@/modules/wardrobe/api/deleteClothes'
 import { getClothesDetail } from '@/modules/wardrobe/api/getClothesDetail'
 import { DeleteClothingDialog } from '@/modules/wardrobe/components/DeleteClothingDialog'
@@ -37,6 +38,7 @@ const WardrobeDetailPage = () => {
   const { deleteItem, getItemById, isReady, syncItemFromServer } = useWardrobeMock()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
+  const [isDeleteSuccessOpen, setIsDeleteSuccessOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isNotFound, setIsNotFound] = useState(false)
@@ -162,12 +164,12 @@ const WardrobeDetailPage = () => {
   return (
     <AppShell activeTab="wardrobe">
       <div className="relative bg-neutral-100">
-        <header className="flex items-center justify-between px-4 pt-5 pb-2">
-          <Link href="/wardrobe" className="font-label-sm text-neutral-500">
-            ←
+        <header className="relative flex items-center justify-center h-16 px-4 pt-5 pb-2">
+          <Link href="/wardrobe" className="absolute left-4 flex size-10 items-center justify-center" aria-label="返回我的衣櫃">
+            <ChevronLeft className="text-neutral-700" size={24} strokeWidth={2} />
           </Link>
 
-          <div ref={menuRef} className="relative">
+          <div ref={menuRef} className="absolute right-4">
             <button
               type="button"
               onClick={() => setIsMenuOpen((prev) => !prev)}
@@ -209,7 +211,7 @@ const WardrobeDetailPage = () => {
           </div>
         </section>
 
-        <section className="min-h-[calc(100vh-248px)] rounded-t-[28px] bg-white px-4 pt-5 pb-24 shadow-[0_-2px_8px_rgba(15,23,42,0.04)]">
+        <section className="min-h-[calc(100vh-248px)] rounded-t-[28px] bg-white px-4 pt-5 pb-10 shadow-[0_-2px_8px_rgba(15,23,42,0.04)]">
           <div>
             <h1 className="text-h3 text-neutral-900">
               {item.brand} {item.name}
@@ -294,14 +296,22 @@ const WardrobeDetailPage = () => {
                 await deleteClothes(item.id)
                 deleteItem(item.id)
                 setIsDeleteOpen(false)
-                showToast.success('已刪除衣物')
-                await router.replace('/wardrobe')
+                setIsDeleteSuccessOpen(true)
               } catch (error) {
                 showToast.error(getDeleteErrorMessage(error))
               } finally {
                 setIsDeleting(false)
               }
             })()
+          }}
+        />
+
+        <SuccessAlertDialog
+          open={isDeleteSuccessOpen}
+          title="已刪除衣物"
+          onClose={() => {
+            setIsDeleteSuccessOpen(false)
+            void router.replace('/wardrobe')
           }}
         />
       </div>

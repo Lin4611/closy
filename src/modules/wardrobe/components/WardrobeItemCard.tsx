@@ -53,11 +53,13 @@ export const WardrobeItemCard = ({ item, onDelete }: WardrobeItemCardProps) => {
       </Link>
 
       <div className="flex items-end justify-between gap-2">
-        <Link href={`/wardrobe/${item.id}`} className="min-w-0 flex-1">
-          <div className="space-y-1">
-            <p className="truncate font-label-sm text-neutral-900">{item.name}</p>
-            <p className="font-label-xs text-neutral-500">{item.createdAt}</p>
-            <p className="truncate font-label-xs text-neutral-400">{item.brand}</p>
+        <Link href={`/wardrobe/${item.id}`} className="min-w-0 flex-1 self-stretch">
+          <div className="flex h-full flex-col justify-between gap-1">
+            <div className="space-y-1">
+              <p className="truncate font-label-sm text-neutral-900">{item.name}</p>
+              <p className="font-label-xs text-neutral-500">{item.createdAt}</p>
+            </div>
+            <p className="min-h-[18px] truncate font-label-xs text-neutral-400">{item.brand || ' '}</p>
           </div>
         </Link>
 

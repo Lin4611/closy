@@ -11,22 +11,29 @@ type CalendarSelectedOutfitPreviewProps = {
 
 export const CalendarSelectedOutfitPreview = ({ outfit, onClick }: CalendarSelectedOutfitPreviewProps) => {
   return (
-    <div className="flex flex-col items-center gap-4 pb-2">
-      <div className="flex h-65.5 w-full items-center justify-center rounded-[24px] border border-neutral-200 bg-white">
-        {outfit ? (
-          <Image src={outfit.imageUrl} alt="已選穿搭" width={144} height={256} className="h-64 w-36 object-contain" />
-        ) : (
-          <Button type="button" variant="outline" size="lg" className="rounded-full border-neutral-500 bg-white text-neutral-800" onClick={onClick}>
-            <Plus className="size-5" strokeWidth={2} />
-            選擇穿搭
-          </Button>
-        )}
-      </div>
+    <div className="relative mx-auto flex w-full max-w-85.75 min-h-83 flex-col items-center pb-2 pt-2">
       {outfit ? (
-        <Button type="button" variant="outline" size="sm" className="rounded-full border-neutral-300 bg-[#F5F7FB] text-neutral-700" onClick={onClick}>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="absolute right-0 top-0 rounded-full bg-primary-200 h-11 p-3 text-primary-700 shadow-[0_4px_4px_rgba(#18181B0D)] font-label-sm"
+          onClick={onClick}
+        >
           重選穿搭
         </Button>
       ) : null}
+
+      {outfit ? (
+        <Image src={outfit.imageUrl} alt="已選穿搭" width={144} height={256} className="h-80 w-36 object-contain" />
+      ) : (
+        <div className="flex min-h-83 max-w-66.25 w-full items-center justify-center rounded-[20px] border border-neutral-200 shadow-[0_1px_3px_rgba(0,0,0,0.12)] bg-white">
+          <Button type="button" variant="outline" size="lg" className="rounded-full border border-black bg-white text-neutral-800 font-h4" onClick={onClick}>
+            <Plus className="size-5" strokeWidth={2} />
+            選擇穿搭
+          </Button>
+        </div>
+      )}
     </div>
   )
 }

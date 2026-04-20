@@ -6,7 +6,10 @@ import { Overlay } from '@/modules/common/components/Overlay'
 import { AddClothingDrawer } from '@/modules/common/components/overlay/AddClothingDrawer'
 import { GuideBottomNav } from '@/modules/guide/components/GuideBottomNav'
 import { GuideToolTip } from '@/modules/guide/components/GuideToolTip'
-import { getOnboardingAddFlow, getOnboardingStepRoute } from '@/modules/guide/utils/onboardingAddFlow'
+import {
+  getOnboardingAddFlow,
+  getOnboardingStepRoute,
+} from '@/modules/guide/utils/onboardingAddFlow'
 import { HomeFilterBar } from '@/modules/home/components/HomeFilterBar'
 import { HomeInsightsSection } from '@/modules/home/components/HomeInsightsSection'
 import { HomeOutfitPreview } from '@/modules/home/components/HomeOutfitPreview'
@@ -85,9 +88,11 @@ const AddTopPage = () => {
         </div>
 
         <HomeInsightsSection />
-        <GuideBottomNav onAddClick={handleOpenDrawer} disable />
+        <GuideBottomNav onAddClick={handleOpenDrawer} />
       </div>
-      {isAddClothingDrawerOpen ? openedGuideHint : (
+      {isAddClothingDrawerOpen ? (
+        openedGuideHint
+      ) : (
         <>
           <Overlay className="fixed inset-0 z-40 bg-[#191B23]/45" />
           {closedGuideHint}

@@ -13,6 +13,7 @@ type AppShellProps = {
 
 export const AppShell = ({ children, activeTab, showBottomNav = true }: AppShellProps) => {
   const router = useRouter()
+
   const [isAddClothingDrawerOpen, setIsAddClothingDrawerOpen] = useState(false)
 
   const handleNavigateCamera = () => {

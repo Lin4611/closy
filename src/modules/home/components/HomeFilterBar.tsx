@@ -13,9 +13,10 @@ import { OccasionSelect } from './OccasionSelect'
 type HomeFilterBarProps = {
   className?: string
   onDayChange?: (day: 'today' | 'tomorrow') => void
+  onOccasionChange?: () => void
 }
 
-export const HomeFilterBar = ({ className, onDayChange }: HomeFilterBarProps) => {
+export const HomeFilterBar = ({ className, onDayChange, onOccasionChange }: HomeFilterBarProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const selectedOccasion = useAppSelector((state) => state.user.user?.preferences.occasions ?? '')
   const dispatch = useAppDispatch()
@@ -26,6 +27,7 @@ export const HomeFilterBar = ({ className, onDayChange }: HomeFilterBarProps) =>
       setIsSubmitting(true)
       await updateOccasion(value as Occasion)
       dispatch(updateUserOccasion(value as Occasion))
+      onOccasionChange?.()
     } catch (error) {
       if (error instanceof ApiError) {
         showToast.error(error.message)

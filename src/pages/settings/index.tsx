@@ -5,6 +5,7 @@ import { useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
+import { apiClient } from '@/lib/api/client'
 import { getUserInfo } from '@/modules/common/api/userInfo'
 import { AppShell } from '@/modules/common/components/AppShell'
 import { occasionLabelMap } from '@/modules/common/types/occasion'
@@ -13,7 +14,9 @@ import { SettingSection } from '@/modules/settings/components/SettingSection'
 import { colorsLabelMap } from '@/modules/settings/types/colorsTypes'
 import { stylesLabelMap } from '@/modules/settings/types/stylesTypes'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
-import { mergeUserProfile } from '@/store/slices/userSlice'
+import { clearDayCache } from '@/store/slices/homeSlice'
+import { clearOutfitCache } from '@/store/slices/outfitSlice'
+import { clearUser, mergeUserProfile } from '@/store/slices/userSlice'
 
 const Setting = () => {
   const router = useRouter()
@@ -61,7 +64,16 @@ const Setting = () => {
   }
 
   const handleLogout = async () => {
-    console.log('logout')
+    try {
+      await apiClient({ endpoint: '/api/profile/logout', method: 'POST' })
+    } catch {
+      showToast.error('登出失敗')
+    } finally {
+      dispatch(clearUser())
+      dispatch(clearDayCache())
+      dispatch(clearOutfitCache())
+      void router.push('/')
+    }
   }
 
   return (
@@ -93,7 +105,7 @@ const Setting = () => {
             text={isSyncing ? '同步中' : isSynced ? '已同步' : '未同步'}
           />
           <Button
-            className="h-[67px] w-full justify-start rounded-[20px] bg-white px-4 shadow-[1px_1px_4px_rgba(0,0,0,0.1),inset_0_0_0_0.5px_rgba(50,18,51,0.24)] transition duration-300 ease-out"
+            className="h-16.75 w-full justify-start rounded-[20px] bg-white px-4 shadow-[1px_1px_4px_rgba(0,0,0,0.1),inset_0_0_0_0.5px_rgba(50,18,51,0.24)] transition duration-300 ease-out"
             onClick={handleLogout}
           >
             <span className="font-paragraph-md text-danger-300">登出</span>

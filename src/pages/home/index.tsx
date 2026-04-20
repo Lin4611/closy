@@ -6,6 +6,7 @@ import { useEffect } from 'react'
 import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
 import { AppShell } from '@/modules/common/components/AppShell'
+import { addOutfit } from '@/modules/home/api/addOutfit'
 import { getHomeRecommendation } from '@/modules/home/api/home'
 import { generateOutfit } from '@/modules/home/api/outfit'
 import { HomeFilterBar } from '@/modules/home/components/HomeFilterBar'
@@ -26,7 +27,7 @@ const HomeOnboardingGate = dynamic(
 
 const Home = () => {
   const router = useRouter()
-  const [isAdjustPromptOpen, setIsAdjustPromptOpen] = useState(true)
+  const [isAdjustPromptOpen, setIsAdjustPromptOpen] = useState(false)
   const [isOnboardingVisible, setIsOnboardingVisible] = useState(false)
   const [isOutfitAdjustDrawerOpen, setIsOutfitAdjustDrawerOpen] = useState(false)
   const [isImageLoading, setIsImageLoading] = useState(false)
@@ -35,8 +36,8 @@ const Home = () => {
   const homeState = useAppSelector((state) => state.home)
   const [activeDay, setActiveDay] = useState<'today' | 'tomorrow'>('today')
 
-  const fetchDayOutfit = async (day: 'today' | 'tomorrow') => {
-    if (homeState[day]) {
+  const fetchDayOutfit = async (day: 'today' | 'tomorrow', force = false) => {
+    if (homeState[day] && !force) {
       setIsLoading(false)
       return
     }
@@ -44,11 +45,16 @@ const Home = () => {
     setIsLoading(true)
     try {
       const res = await getHomeRecommendation(day)
-      dispatch(setDayCache({ day, cache: { dayRecommendation: res, imageUrl: '' } }))
+      dispatch(setDayCache({ day, cache: { dayRecommendation: res, outfitImgUrl: '' } }))
       setIsLoading(false)
       setIsImageLoading(true)
-      const { imageUrl } = await generateOutfit({ selectedItems: res.recommendation.selectedItems })
-      dispatch(updateDayImageUrl({ day, imageUrl }))
+      const result = await generateOutfit({
+        selectedItems: res.recommendation.selectedItems,
+        occasion: res.recommendation.occasion,
+      })
+      dispatch(
+        updateDayImageUrl({ day, outfitImgUrl: result.outfitImgUrl, occasion: result.occasion }),
+      )
     } catch (e) {
       if (e instanceof ApiError) showToast.error(e.message)
     } finally {
@@ -61,12 +67,28 @@ const Home = () => {
     const today = new Date().toISOString().split('T')[0]
     const isStale = homeState.cacheDate !== today
     if (isStale) dispatch(clearDayCache())
-    fetchDayOutfit('today')
+    fetchDayOutfit('today', isStale)
   }, [])
 
   const handleDayChange = (day: 'today' | 'tomorrow') => {
     setActiveDay(day)
     fetchDayOutfit(day)
+  }
+
+  const addLikeOutfit = async () => {
+    const recommendation = homeState[activeDay]?.dayRecommendation.recommendation
+    if (!recommendation) return
+
+    try {
+      await addOutfit({
+        outfitImgUrl: homeState[activeDay]?.outfitImgUrl || '/home/model_man.webp',
+        selectedItems: recommendation.selectedItems,
+        occasion: recommendation.occasion,
+      })
+      showToast.success('已加入收藏')
+    } catch (e) {
+      if (e instanceof ApiError) showToast.error(e.message)
+    }
   }
 
   useEffect(() => {
@@ -92,12 +114,19 @@ const Home = () => {
       hideTimerRef.current = null
     }
   }
+
+  const handleOccasionChange = () => {
+    dispatch(clearDayCache())
+    fetchDayOutfit(activeDay, true)
+  }
+
   const setHideTimer = (duration: number) => {
     hideTimerRef.current = setTimeout(() => {
       setIsAdjustPromptOpen(false)
       hideTimerRef.current = null
     }, duration)
   }
+
   const showAdjustPrompt = (duration: number) => {
     setIsAdjustPromptOpen(true)
     clearHideTimer()
@@ -105,8 +134,15 @@ const Home = () => {
   }
 
   useEffect(() => {
-    setHideTimer(2000)
+    const openTimer = setTimeout(() => {
+      if (!hideTimerRef.current) {
+        setIsAdjustPromptOpen(true)
+        setHideTimer(2000)
+      }
+    }, 2000)
+
     return () => {
+      clearTimeout(openTimer)
       clearHideTimer()
     }
   }, [])
@@ -120,7 +156,7 @@ const Home = () => {
     <>
       <AppShell activeTab="home">
         <div className="sticky top-0 z-10">
-          <HomeFilterBar onDayChange={handleDayChange} />
+          <HomeFilterBar onDayChange={handleDayChange} onOccasionChange={handleOccasionChange} />
         </div>
         <div className="relative">
           <HomePreviewTopBar
@@ -132,10 +168,11 @@ const Home = () => {
           />
           <div className="flex flex-col items-center justify-center pt-13">
             <HomeOutfitPreview
-              src={currentData?.imageUrl}
+              src={currentData?.outfitImgUrl || '/home/model_man.webp'}
               alt={`${activeDay}穿搭`}
               isLoading={isLoading || isImageLoading || !currentData}
               onDislikeClick={handleDislikeClick}
+              onLikeClick={addLikeOutfit}
             />
           </div>
         </div>

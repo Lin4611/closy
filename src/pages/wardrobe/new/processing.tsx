@@ -9,7 +9,10 @@ import { removeBackground } from '@/modules/wardrobe/api/removeBackground'
 import { RecognitionLoading } from '@/modules/wardrobe/components/RecognitionLoading'
 import { useWardrobeCreationFlow } from '@/modules/wardrobe/hooks/useWardrobeCreationFlow'
 import { mapAnalyzeResponseToWardrobeReviewDraft } from '@/modules/wardrobe/utils/apiMappers'
-import { getCreationFlowSourceRoute, resolveCreationFlowEntryScope } from '@/modules/wardrobe/utils/creationFlowNavigation'
+import {
+  getCreationFlowSourceRoute,
+  resolveCreationFlowEntryScope,
+} from '@/modules/wardrobe/utils/creationFlowNavigation'
 
 const FAILURE_TIP_MESSAGE = '建議更換較清楚衣物圖片'
 
@@ -42,8 +45,6 @@ const WardrobeProcessingPage = () => {
   const [statusText, setStatusText] = useState('圖片去背中...')
   const [isFailure, setIsFailure] = useState(false)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
-
-  const footerText = '請稍後...'
   const currentContext = getContext()
   const entryScope = resolveCreationFlowEntryScope({ router, context: currentContext })
 
@@ -112,7 +113,7 @@ const WardrobeProcessingPage = () => {
         setStatusText('正在辨識中...')
 
         const analyzeResult = await analyzeClothes({
-          imageUrl: removeBackgroundResult.cloudinaryImageUrl,
+          cloudinaryImageUrl: removeBackgroundResult.cloudinaryImageUrl,
           imageHash: removeBackgroundResult.imageHash,
         })
 
@@ -166,22 +167,28 @@ const WardrobeProcessingPage = () => {
 
   if (isFailure) {
     const context = getContext()
-    const retryHref = context?.entryType ? '/wardrobe/new/preview' : getCreationFlowSourceRoute(null, entryScope)
+    const retryHref = context?.entryType
+      ? '/wardrobe/new/preview'
+      : getCreationFlowSourceRoute(null, entryScope)
     const retryLabel = context?.entryType ? '回到圖片確認' : '重新選擇新增方式'
 
     return (
       <>
         <div className="flex min-h-screen flex-col bg-neutral-100">
-          <header className="px-4 pt-5 pb-3">
-            <div className="rounded-full bg-primary-100 px-3 py-2 text-center font-label-xs text-primary-900">
-              {FAILURE_TIP_MESSAGE}
+          <header className="px-4 pt-14 pb-3">
+            <div className="rounded-[12px] bg-[#FDF0F0] px-3 py-2">
+              <div className="flex items-center gap-2">
+                <span className="font-label-xs rounded-full bg-[#D9534F] px-2 py-1 text-white">
+                  小提醒
+                </span>
+                <span className="font-paragraph-sm text-neutral-700">{FAILURE_TIP_MESSAGE}</span>
+              </div>
             </div>
           </header>
 
-          <main className="flex flex-1 flex-col items-center justify-center px-6 text-center">
+          <main className="flex flex-1 flex-col items-center justify-center px-6 pb-48 text-center">
             <div className="space-y-2">
               <p className="font-label-xxl text-neutral-900">辨識失敗</p>
-              <p className="font-paragraph-sm text-neutral-500">請回到上一個步驟後重新嘗試</p>
             </div>
 
             {!shouldUseFailureSheet ? (
@@ -190,7 +197,7 @@ const WardrobeProcessingPage = () => {
                 onClick={() => {
                   void router.replace(retryHref)
                 }}
-                className="mt-6 rounded-full bg-primary-900 px-5 py-3 font-label-md text-white"
+                className="bg-primary-900 font-label-md mt-6 rounded-full px-5 py-3 text-white"
               >
                 {retryLabel}
               </button>
@@ -200,9 +207,13 @@ const WardrobeProcessingPage = () => {
 
         <AddClothingDrawer
           open={isSheetOpen}
-          onOpenChange={setIsSheetOpen}
+          onOpenChange={(open) => {
+            if (!open) return
+            setIsSheetOpen(true)
+          }}
           onCameraClick={handleNavigateCamera}
           onAlbumClick={handleNavigateAlbum}
+          dismissible={false}
         />
       </>
     )
@@ -210,10 +221,7 @@ const WardrobeProcessingPage = () => {
 
   return (
     <div className="relative min-h-screen bg-neutral-100">
-      <RecognitionLoading title={statusText} description="" />
-      <div className="absolute right-0 bottom-10 left-0 px-6 text-center font-paragraph-xs text-neutral-500">
-        {footerText}
-      </div>
+      <RecognitionLoading title={statusText} description="請稍後..." />
     </div>
   )
 }

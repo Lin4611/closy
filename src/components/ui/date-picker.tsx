@@ -6,6 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils'
 
 type DatePickerProps = {
+  initialDisplayValue?: string
   value?: string
   onChange?: (value: string) => void
   placeholder?: string
@@ -30,6 +31,7 @@ const toDateKey = (date: Date) => {
 }
 
 export const DatePicker = ({
+  initialDisplayValue,
   value,
   onChange,
   placeholder = '選擇日期',
@@ -45,14 +47,19 @@ export const DatePicker = ({
   isDateDisabled,
 }: DatePickerProps) => {
   const selectedDate = useMemo(() => toDateValue(value), [value])
+  const initialDisplayDate = useMemo(() => toDateValue(initialDisplayValue), [initialDisplayValue])
   const selectedMonth = useMemo(
     () => (selectedDate ? new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1) : null),
     [selectedDate],
   )
+  const initialDisplayMonth = useMemo(
+    () => (initialDisplayDate ? new Date(initialDisplayDate.getFullYear(), initialDisplayDate.getMonth(), 1) : null),
+    [initialDisplayDate],
+  )
   const disabledDateSet = useMemo(() => new Set(disabledDates), [disabledDates])
   const [open, setOpen] = useState(false)
   const [monthOverride, setMonthOverride] = useState<Date | null>(null)
-  const month = monthOverride ?? selectedMonth ?? new Date()
+  const month = monthOverride ?? selectedMonth ?? initialDisplayMonth ?? new Date()
 
   const isDisabledDate = (date: Date) => {
     const dateKey = toDateKey(date)
@@ -69,11 +76,11 @@ export const DatePicker = ({
     <div className={cn('relative w-full', className)}>
       {name ? <input type="hidden" name={name} value={value ?? ''} /> : null}
       <Popover open={open} onOpenChange={(nextOpen) => {
-          setOpen(nextOpen)
-          if (nextOpen) {
-            setMonthOverride(selectedMonth ?? new Date())
-          }
-        }}>
+        setOpen(nextOpen)
+        if (nextOpen) {
+          setMonthOverride(selectedMonth ?? initialDisplayMonth ?? new Date())
+        }
+      }}>
         <PopoverTrigger asChild>
           <button
             type="button"
@@ -81,7 +88,7 @@ export const DatePicker = ({
             disabled={disabled}
             aria-label="選擇日期"
             className={cn(
-              'h-13 w-full rounded-[20px] border border-neutral-300 bg-white px-4 pr-12 text-left font-paragraph-md text-neutral-800 outline-none transition-colors focus-visible:border-primary-800 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-400 disabled:opacity-100',
+              ' font-paragraph-lg h-13 w-full rounded-[16px] border border-neutral-300 bg-white px-5 py-3 text-left text-neutral-800 outline-none transition-colors focus-visible:border-primary-800 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-400 disabled:opacity-100',
               inputClassName,
             )}
           >
@@ -90,7 +97,7 @@ export const DatePicker = ({
             </span>
             <span
               className={cn(
-                'absolute top-1/2 right-4 flex -translate-y-1/2 items-center justify-center text-neutral-500',
+                'absolute top-1/2 right-5 flex -translate-y-1/2 items-center justify-center text-neutral-500',
                 disabled && 'text-neutral-300',
                 iconClassName,
               )}

@@ -1,29 +1,83 @@
 import { ChevronLeft } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
+import { showToast } from '@/components/ui/sonner'
 import { AppShell } from '@/modules/common/components/AppShell'
 import { ConfirmAlertDialog } from '@/modules/common/components/ConfirmAlertDialog'
 import { occasionMetaMap } from '@/modules/common/types/occasion'
+import type { Occasion } from '@/modules/common/types/occasion'
+import { deleteOutfit } from '@/modules/outfit/api/delOutfit'
+import { getOccasionList } from '@/modules/outfit/api/occasionList'
+import { getOutfitList } from '@/modules/outfit/api/outfit'
+import { OutfitGridSkeleton } from '@/modules/outfit/components/OutfitCardSkeleton'
 import { OutfitEmptyOverView } from '@/modules/outfit/components/OutfitEmptyOverView'
 import { OutfitsOverview } from '@/modules/outfit/components/OutfitsOverview'
-import { mockOutfits } from '@/modules/outfit/data/mockOutfits'
+import type { OutfitItem } from '@/modules/outfit/types/outfitTypes'
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
+import { setOccasionsList, setOutfitList as setOutfitListCache } from '@/store/slices/outfitSlice'
 
 const isValidOccasionId = (value: string) => {
-  return occasionMetaMap.some((item) => item.id === value)
+  return occasionMetaMap.some((item) => item.key === value)
 }
 
 const OutfitOccasionDetail = () => {
+  const dispatch = useAppDispatch()
+  const cachedOutfitList = useAppSelector((state) => state.outfit.outfitList)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [dialogMode, setDialogMode] = useState<'confirm' | 'success'>('confirm')
   const [selectedOutfitId, setSelectedOutfitId] = useState<string | null>(null)
 
+  const [outfitList, setOutfitList] = useState<OutfitItem[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const router = useRouter()
-
   const { occasionId } = router.query
+
+  const fetchOutfitList = async (occasionKey: Occasion) => {
+    setIsLoading(true)
+    try {
+      const list = await getOutfitList(occasionKey)
+      setOutfitList(list)
+    } catch {
+      showToast.error('取得穿搭失敗')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const delOutfit = async (id: string) => {
+    setIsLoading(true)
+    try {
+      await deleteOutfit(id)
+      setDialogMode('success')
+      const [list, summaryList] = await Promise.all([
+        getOutfitList(occasionId as Occasion),
+        getOccasionList(),
+      ])
+      setOutfitList(list)
+      dispatch(setOutfitListCache(cachedOutfitList.filter((item) => item._id !== id)))
+      dispatch(setOccasionsList(summaryList))
+    } catch {
+      showToast.error('刪除穿搭失敗')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (!router.isReady) return
+    const occasion = occasionMetaMap.find((item) => item.key === occasionId)
+    if (!occasion) return
+    const load = async () => {
+      await fetchOutfitList(occasion.key)
+    }
+    load()
+  }, [router.isReady, occasionId])
+
   if (typeof occasionId !== 'string') {
     return null
   }
@@ -34,11 +88,9 @@ const OutfitOccasionDetail = () => {
     setIsDialogOpen(true)
   }
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (!selectedOutfitId) return
-
-    console.log('delete', selectedOutfitId)
-    setDialogMode('success')
+    await delOutfit(selectedOutfitId)
   }
 
   const handleCloseDialog = () => {
@@ -74,8 +126,7 @@ const OutfitOccasionDetail = () => {
     )
   }
 
-  const occasion = occasionMetaMap.find((item) => item.id === occasionId)
-  const filteredOutfits = mockOutfits.filter((outfit) => outfit.occasionKey === occasion?.key)
+  const occasion = occasionMetaMap.find((item) => item.key === occasionId)
 
   return (
     <AppShell activeTab="outfit">
@@ -93,9 +144,11 @@ const OutfitOccasionDetail = () => {
         </header>
 
         <div className="flex min-h-0 flex-1 flex-col py-4">
-          {filteredOutfits.length > 0 ? (
+          {isLoading ? (
+            <OutfitGridSkeleton />
+          ) : outfitList.length > 0 ? (
             <OutfitsOverview
-              outfits={filteredOutfits}
+              outfits={outfitList}
               onDelete={handleClickDelete}
               tab="groupByOccasion"
             />
