@@ -16,7 +16,13 @@ import { HomePreviewTopBar } from '@/modules/home/components/HomePreviewTopBar'
 import { OutfitAdjustDrawer } from '@/modules/home/components/outfit-adjust-drawer/OutfitAdjustDrawer'
 import type { AdjustStreamResult } from '@/modules/home/types/outfitAdjustChat'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
-import { clearDayCache, setDayCache, updateDayAdjustResult, updateDayImageUrl } from '@/store/slices/homeSlice'
+import {
+  clearDayCache,
+  setDayCache,
+  markDaySaved,
+  updateDayAdjustResult,
+  updateDayImageUrl,
+} from '@/store/slices/homeSlice'
 
 const HomeOnboardingGate = dynamic(
   () =>
@@ -36,6 +42,8 @@ const Home = () => {
   const dispatch = useAppDispatch()
   const homeState = useAppSelector((state) => state.home)
   const [activeDay, setActiveDay] = useState<'today' | 'tomorrow'>('today')
+
+  const addLikeRef = useRef(false)
 
   const fetchDayOutfit = async (day: 'today' | 'tomorrow', force = false) => {
     if (homeState[day] && !force) {
@@ -57,7 +65,13 @@ const Home = () => {
         updateDayImageUrl({ day, outfitImgUrl: result.outfitImgUrl, occasion: result.occasion }),
       )
     } catch (e) {
-      if (e instanceof ApiError) showToast.error(e.message)
+      if (e instanceof ApiError) {
+        if (e.statusCode === 503) {
+          showToast.error('目前 AI 繁忙中，請稍後重試')
+        } else {
+          showToast.error(e.message)
+        }
+      }
     } finally {
       setIsLoading(false)
       setIsImageLoading(false)
@@ -77,8 +91,13 @@ const Home = () => {
   }
 
   const addLikeOutfit = async () => {
+    if (addLikeRef.current) return
+    addLikeRef.current = true
     const recommendation = homeState[activeDay]?.dayRecommendation.recommendation
-    if (!recommendation) return
+    if (!recommendation) {
+      addLikeRef.current = false
+      return
+    }
 
     try {
       await addOutfit({
@@ -86,9 +105,12 @@ const Home = () => {
         selectedItems: recommendation.selectedItems,
         occasion: recommendation.occasion,
       })
-      showToast.success('已加入收藏')
+      dispatch(markDaySaved({ day: activeDay }))
+      showToast.info('已新增至我的穿搭', 1500)
     } catch (e) {
       if (e instanceof ApiError) showToast.error(e.message)
+    } finally {
+      addLikeRef.current = false
     }
   }
 
@@ -149,10 +171,12 @@ const Home = () => {
   }, [])
 
   const handleDislikeClick = () => {
+    showToast.info('已記錄偏好，重新推薦中', 1500)
     showAdjustPrompt(3000)
   }
 
   const currentData = homeState[activeDay]
+  const isSaved = currentData?.isSaved ?? false
 
   const handleConfirmAdjust = async (result: AdjustStreamResult) => {
     const occasion = currentData?.dayRecommendation.recommendation.occasion
@@ -164,13 +188,16 @@ const Home = () => {
         selectedItems: result.selectedItems,
         occasion,
       })
-      dispatch(updateDayAdjustResult({
-        day: activeDay,
-        outfitImgUrl: result.adjustedImageUrl,
-        selectedItems: result.selectedItems,
-        reasoning: result.text,
-      }))
-      showToast.success('已加入收藏')
+      dispatch(
+        updateDayAdjustResult({
+          day: activeDay,
+          outfitImgUrl: result.adjustedImageUrl,
+          selectedItems: result.selectedItems,
+          reasoning: result.text,
+        }),
+      )
+      dispatch(markDaySaved({ day: activeDay }))
+      showToast.info('已新增至我的穿搭', 1500)
     } catch (e) {
       if (e instanceof ApiError) showToast.error(e.message)
     }
@@ -188,7 +215,7 @@ const Home = () => {
             city={currentData?.dayRecommendation.city}
             expanded={isAdjustPromptOpen}
             onClick={() => setIsOutfitAdjustDrawerOpen(true)}
-            onCalendarClick={() => void router.push('/calendar')}
+            onCalendarClick={() => {}}
           />
           <div className="flex flex-col items-center justify-center pt-13">
             <HomeOutfitPreview
@@ -197,6 +224,7 @@ const Home = () => {
               isLoading={isLoading || isImageLoading || !currentData}
               onDislikeClick={handleDislikeClick}
               onLikeClick={addLikeOutfit}
+              disable={isSaved}
             />
           </div>
         </div>
