@@ -228,6 +228,7 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
       date,
       occasionKey,
       selectedOutfitId: effectiveSelectedOutfitId,
+      selectionStatus: getCalendarFormDraft()?.selectionStatus ?? 'unchanged',
       sourceEntryId: entry.id,
       returnTo: `/calendar/${routeDate}/edit`,
     })
@@ -324,6 +325,7 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
       date,
       occasionKey,
       selectedOutfitId: effectiveSelectedOutfitId,
+      selectionStatus: getCalendarFormDraft()?.selectionStatus ?? 'unchanged',
       sourceEntryId: entry.id,
       returnTo: `/calendar/${routeDate}/edit`,
     })
@@ -442,6 +444,7 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
               date,
               occasionKey: occasionChangeCandidate,
               selectedOutfitId: null,
+              selectionStatus: 'explicit-empty',
               sourceEntryId: entry.id,
               returnTo: `/calendar/${routeDate}/edit`,
             })

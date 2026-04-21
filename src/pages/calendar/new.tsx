@@ -111,6 +111,7 @@ const CalendarNewPage = ({ initialEntries }: InferGetServerSidePropsType<typeof 
       date,
       occasionKey,
       selectedOutfitId,
+      selectionStatus: getCalendarFormDraft()?.selectionStatus ?? 'unchanged',
       sourceEntryId: null,
       returnTo: '/calendar/new',
     })
@@ -166,6 +167,7 @@ const CalendarNewPage = ({ initialEntries }: InferGetServerSidePropsType<typeof 
       date,
       occasionKey,
       selectedOutfitId,
+      selectionStatus: getCalendarFormDraft()?.selectionStatus ?? 'unchanged',
       sourceEntryId: null,
       returnTo: '/calendar/new',
     })
@@ -247,6 +249,7 @@ const CalendarNewPage = ({ initialEntries }: InferGetServerSidePropsType<typeof 
               date,
               occasionKey: pendingOccasionKey,
               selectedOutfitId: null,
+              selectionStatus: 'explicit-empty',
               sourceEntryId: null,
               returnTo: '/calendar/new',
             })

@@ -94,6 +94,7 @@ const CalendarSelectOutfitPage = ({ initialEntries }: InferGetServerSidePropsTyp
         ...formDraft,
         date: resolvedDate,
         selectedOutfitId: nextOutfitId,
+        selectionStatus: nextOutfitId ? 'selected' : 'explicit-empty',
         returnTo,
       })
     }

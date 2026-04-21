@@ -2,10 +2,11 @@ import {
   CALENDAR_FORM_DRAFT_STORAGE_KEY,
   CALENDAR_SELECTED_OUTFIT_DRAFT_STORAGE_KEY,
 } from '@/modules/calendar/constants/storage'
-import type { CalendarFormDraft, CalendarSelectedOutfitDraft, CalendarFormMode } from '@/modules/calendar/types'
+import type { CalendarFormDraft, CalendarSelectedOutfitDraft, CalendarFormMode, CalendarOutfitSelectionStatus } from '@/modules/calendar/types'
 import type { Occasion } from '@/modules/common/types/occasion'
 
 const calendarFormModes: CalendarFormMode[] = ['new', 'edit']
+const calendarOutfitSelectionStatuses: CalendarOutfitSelectionStatus[] = ['unchanged', 'selected', 'explicit-empty']
 const occasions: Occasion[] = ['socialGathering', 'campusCasual', 'businessCasual', 'professional']
 
 const isClient = () => typeof window !== 'undefined'
@@ -37,6 +38,14 @@ const sanitizeReturnTo = (value: unknown) => {
   return value
 }
 
+
+const sanitizeCalendarOutfitSelectionStatus = (value: unknown): CalendarOutfitSelectionStatus => {
+  if (typeof value !== 'string') return 'unchanged'
+  return calendarOutfitSelectionStatuses.includes(value as CalendarOutfitSelectionStatus)
+    ? (value as CalendarOutfitSelectionStatus)
+    : 'unchanged'
+}
+
 const sanitizeCalendarFormDraft = (value: unknown): CalendarFormDraft | null => {
   if (typeof value !== 'object' || value === null) {
     return null
@@ -56,6 +65,7 @@ const sanitizeCalendarFormDraft = (value: unknown): CalendarFormDraft | null => 
     date: sanitizeString(candidate.date),
     occasionKey: sanitizeOccasion(candidate.occasionKey),
     selectedOutfitId: sanitizeNullableString(candidate.selectedOutfitId),
+    selectionStatus: sanitizeCalendarOutfitSelectionStatus(candidate.selectionStatus),
     sourceEntryId: sanitizeNullableString(candidate.sourceEntryId),
     returnTo: sanitizeReturnTo(candidate.returnTo),
   }
