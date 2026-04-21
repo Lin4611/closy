@@ -208,7 +208,7 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
   }, [date, effectiveSelectedOutfitId, entry, hasRestoredDraftState, occasionKey, routeDate, selectionStatus])
 
   const selectedOutfit = useMemo(() => {
-    if (!effectiveSelectedOutfitId) {
+    if (!hasRestoredDraftState || !effectiveSelectedOutfitId) {
       return null
     }
 
@@ -217,7 +217,9 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
       outfitId: effectiveSelectedOutfitId,
       occasionKey,
     })
-  }, [effectiveSelectedOutfitId, getOutfitStateById, occasionKey])
+  }, [effectiveSelectedOutfitId, getOutfitStateById, hasRestoredDraftState, occasionKey])
+
+  const isOutfitPreviewLoading = !hasRestoredDraftState
 
   const disabledDates = useMemo(() => {
     if (!entry) {
@@ -378,6 +380,7 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
           occasionKey={occasionKey}
           date={date}
           outfit={selectedOutfit}
+          isOutfitLoading={isOutfitPreviewLoading}
           disabledDate={!canEditCalendarDate(entry)}
           disabledDates={disabledDates}
           initialDisplayDate={initialDisplayDate}
