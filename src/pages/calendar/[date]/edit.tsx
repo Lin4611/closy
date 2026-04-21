@@ -160,6 +160,8 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [hasRestoredDraftState, setHasRestoredDraftState] = useState(false)
 
+  const { outfits, getOutfitStateById } = useCalendarOutfits(occasionKey, { source: 'api' })
+
   useEffect(() => {
     if (!entry) {
       return
@@ -174,20 +176,27 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
     const nextOccasionKey = formDraft?.occasionKey ?? selectedOutfitDraft?.occasionKey ?? entry.occasionKey
     const nextDate = formDraft?.date || selectedOutfitDraft?.date || entry.date
     const shouldUseFormDraftSelectedOutfit = hasMatchingFormDraft && hasFormDraftSelectedOutfitValue
-    const nextSelectedOutfitId = hasMatchingSelectedOutfitDraft
+    const restoredSelectedOutfitId = hasMatchingSelectedOutfitDraft
       ? (selectedOutfitDraft?.selectedOutfitId ?? null)
       : shouldUseFormDraftSelectedOutfit
         ? (formDraft?.selectedOutfitId ?? null)
-        : entry.selectedOutfitId
+        : null
+    const nextSelectedOutfitId = restoredSelectedOutfitId ?? (
+      nextOccasionKey === entry.occasionKey
+        ? resolveCalendarEntryOutfitDetailId({
+            resolvedOutfit: getOutfitStateById(restoredSelectedOutfitId),
+            serverOutfitPreview: entry.serverOutfitPreview,
+            selectableOutfits: outfits,
+          })
+        : null
+    )
 
     setOccasionKey(nextOccasionKey)
     setDate(nextDate)
     setSelectedOutfitId(nextSelectedOutfitId)
     setHasSelectedOutfitDraftOverride(hasMatchingSelectedOutfitDraft || shouldUseFormDraftSelectedOutfit)
     setHasRestoredDraftState(true)
-  }, [entry])
-
-  const { outfits, getOutfitStateById } = useCalendarOutfits(occasionKey, { source: 'api' })
+  }, [entry, getOutfitStateById, outfits])
 
   const effectiveSelectedOutfitId = useMemo(() => {
     if (!entry) {
