@@ -38,8 +38,8 @@ export const CalendarEntryCard = ({
   const isGoogleEntry = isGoogleCalendarEntry(entry)
   const isExpired = isCalendarEntryExpired(entry)
   const events = useMemo(() => getCalendarEventsByDate(entry.date, googleEvents), [entry.date, googleEvents])
-  const hasOutfit = hasSelectedOutfit(entry)
   const hasResolvedOutfit = outfitDisplay.status === 'resolved' && Boolean(outfitDisplay.imageUrl)
+  const hasOutfit = hasSelectedOutfit(entry) || hasResolvedOutfit
   const showLoadingIndicator = outfitDisplay.status === 'loading'
   const outfitStatusLabel =
     outfitDisplay.status === 'resolved'

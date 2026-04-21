@@ -1,24 +1,84 @@
+import type { GetServerSideProps, InferGetServerSidePropsType } from 'next'
 import { useRouter } from 'next/router'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
+import { fetchCalendarEntriesBaseline } from '@/lib/api/calendar/shared'
+import { ApiError } from '@/lib/api/client'
 import { CalendarHeader } from '@/modules/calendar/components/CalendarHeader'
 import { SelectableOutfitCard } from '@/modules/calendar/components/SelectableOutfitCard'
 import { SelectableOutfitEmptyState } from '@/modules/calendar/components/SelectableOutfitEmptyState'
 import { useCalendarOutfits } from '@/modules/calendar/hooks/useCalendarOutfits'
-import { getCalendarFormDraft, saveCalendarSelectedOutfitDraft } from '@/modules/calendar/utils/calendarDraftStorage'
+import { useCalendarServerEntries } from '@/modules/calendar/hooks/useCalendarStore'
+import type { CalendarEntriesBaseline } from '@/modules/calendar/types'
+import {
+  getCalendarFormDraft,
+  saveCalendarFormDraft,
+  saveCalendarSelectedOutfitDraft,
+} from '@/modules/calendar/utils/calendarDraftStorage'
+import { normalizeCalendarReturnTo } from '@/modules/calendar/utils/calendarNavigation'
 import { AppShell } from '@/modules/common/components/AppShell'
 
-const CalendarSelectOutfitPage = () => {
+export const getServerSideProps: GetServerSideProps<{ initialEntries: CalendarEntriesBaseline }> = async ({ req }) => {
+  const accessToken = req.cookies.accessToken
+
+  if (!accessToken) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    }
+  }
+
+  try {
+    const initialEntries = await fetchCalendarEntriesBaseline(accessToken)
+
+    return {
+      props: {
+        initialEntries,
+      },
+    }
+  } catch (error) {
+    if (error instanceof ApiError && error.statusCode === 401) {
+      return {
+        redirect: {
+          destination: '/',
+          permanent: false,
+        },
+      }
+    }
+
+    throw error
+  }
+}
+
+const CalendarSelectOutfitPage = ({ initialEntries }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const router = useRouter()
+  useCalendarServerEntries(initialEntries)
   const formDraft = useMemo(() => getCalendarFormDraft(), [])
-  const returnTo = typeof router.query.returnTo === 'string' ? router.query.returnTo : formDraft?.returnTo ?? '/calendar/new'
+  const returnTo = useMemo(() => {
+    const queryReturnTo = typeof router.query.returnTo === 'string' ? normalizeCalendarReturnTo(router.query.returnTo) : null
+
+    return queryReturnTo ?? formDraft?.returnTo ?? '/calendar/new'
+  }, [formDraft?.returnTo, router.query.returnTo])
+  const resolvedDate = useMemo(() => {
+    return typeof router.query.date === 'string' ? router.query.date : formDraft?.date ?? ''
+  }, [formDraft?.date, router.query.date])
   const { outfits, isEmpty, isError, isLoading, errorMessage, reload } = useCalendarOutfits(
     formDraft?.occasionKey ?? null,
     { source: 'api' },
   )
   const [selectedOutfitId, setSelectedOutfitId] = useState<string | null>(formDraft?.selectedOutfitId ?? null)
+
+  useEffect(() => {
+    if (formDraft?.occasionKey) {
+      return
+    }
+
+    void router.replace('/calendar/new')
+  }, [formDraft?.occasionKey, router])
 
   const resolvedSelectedOutfitId = useMemo(() => {
     if (!selectedOutfitId) {
@@ -29,14 +89,27 @@ const CalendarSelectOutfitPage = () => {
   }, [outfits, selectedOutfitId])
 
   const handleComplete = (nextOutfitId: string | null) => {
+    if (formDraft) {
+      saveCalendarFormDraft({
+        ...formDraft,
+        date: resolvedDate,
+        selectedOutfitId: nextOutfitId,
+        returnTo,
+      })
+    }
+
     saveCalendarSelectedOutfitDraft({
       selectedOutfitId: nextOutfitId,
       returnTo,
       sourceEntryId: formDraft?.sourceEntryId ?? null,
       occasionKey: formDraft?.occasionKey ?? null,
-      date: formDraft?.date ?? '',
+      date: resolvedDate,
     })
     void router.push(returnTo)
+  }
+
+  if (!formDraft?.occasionKey) {
+    return null
   }
 
   return (

@@ -3,10 +3,10 @@ import type {
   CalendarOutfitCollectionStatus,
   CalendarResolvedOutfit,
   CalendarSelectedOutfitPreviewModel,
+  CalendarServerOutfitPreview,
   SelectableOutfitSummary,
 } from '@/modules/calendar/types'
 import type { Occasion } from '@/modules/common/types/occasion'
-import { mockOutfitDetails } from '@/modules/outfit/data/mockOutfits'
 import type { OutfitItem } from '@/modules/outfit/types/outfitTypes'
 
 const ISO_DATE_PREFIX_PATTERN = /^\d{4}-\d{2}-\d{2}(?:$|T)/
@@ -180,32 +180,60 @@ export const mapResolvedOutfitToPreviewModel = ({
   })
 }
 
-export const selectableOutfitSummaries: SelectableOutfitSummary[] = mockOutfitDetails.map((outfit) => ({
-  id: outfit.id,
-  imageUrl: outfit.imageUrl,
-  occasionKey: outfit.occasionKey,
-  savedAt: outfit.savedAt,
-  itemNames: outfit.items.map((item) => item.name),
-}))
 
-export const getSelectableOutfitSummaries = (occasionKey?: Occasion | null) => {
-  return filterSelectableOutfitSummariesByOccasion(selectableOutfitSummaries, occasionKey)
+export const mapServerOutfitPreviewToPreviewModel = (
+  preview: CalendarServerOutfitPreview,
+): CalendarSelectedOutfitPreviewModel => ({
+  id: `calendar-server-preview-${preview.imageUrl}`,
+  imageUrl: preview.imageUrl,
+  occasionKey: preview.occasionKey,
+  savedAt: preview.savedAt ?? '',
+  itemNames: preview.items.map((item) => item.name),
+  previewStatus: 'resolved',
+  previewMessage: null,
+})
+
+export const resolveCalendarEntryOutfitDetailId = ({
+  resolvedOutfit,
+  serverOutfitPreview,
+  selectableOutfits,
+}: {
+  resolvedOutfit: CalendarResolvedOutfit
+  serverOutfitPreview?: CalendarServerOutfitPreview | null
+  selectableOutfits: SelectableOutfitSummary[]
+}) => {
+  if (resolvedOutfit.status === 'ready' && resolvedOutfit.outfit) {
+    return resolvedOutfit.outfit.id
+  }
+
+  if (!serverOutfitPreview?.imageUrl) {
+    return null
+  }
+
+  const matchedOutfit = selectableOutfits.find((outfit) => outfit.imageUrl === serverOutfitPreview.imageUrl) ?? null
+
+  return matchedOutfit?.id ?? null
 }
-
-export const getSelectableOutfitSummaryById = (outfitId: string) => {
-  return selectableOutfitSummaries.find((outfit) => outfit.id === outfitId) ?? null
-}
-
 
 export const mapResolvedOutfitToEntryDisplayModel = ({
   resolvedOutfit,
+  serverOutfitPreview,
 }: {
   resolvedOutfit: CalendarResolvedOutfit
+  serverOutfitPreview?: CalendarServerOutfitPreview | null
 }): CalendarEntryOutfitDisplayModel => {
   if (resolvedOutfit.status === 'ready' && resolvedOutfit.outfit) {
     return {
       status: 'resolved',
       imageUrl: resolvedOutfit.outfit.imageUrl,
+      message: null,
+    }
+  }
+
+  if (serverOutfitPreview?.imageUrl) {
+    return {
+      status: 'resolved',
+      imageUrl: serverOutfitPreview.imageUrl,
       message: null,
     }
   }
