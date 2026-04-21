@@ -20,6 +20,12 @@ export type OutfitErrorResponse = {
   message: string
 }
 
+
+export type OutfitBaseline = {
+  outfitList: OutfitListItem[]
+  occasionsList: OutfitOccasionSummary[]
+}
+
 export const getOutfitApiBaseUrl = () => {
   const baseUrl = process.env.API_BASE_URL
 
@@ -104,6 +110,18 @@ export const fetchOutfitServerSummary = async (
   const response = await fetchOutfitSummaryResponse(accessToken)
 
   return mapOutfitSummaryResponseData(response.data)
+}
+
+export const fetchOutfitBaseline = async (accessToken: string): Promise<OutfitBaseline> => {
+  const [outfitList, occasionsList] = await Promise.all([
+    fetchOutfitServerList(accessToken),
+    fetchOutfitServerSummary(accessToken),
+  ])
+
+  return {
+    outfitList,
+    occasionsList,
+  }
 }
 
 const isOutfitProductRequest = (value: unknown) => {
