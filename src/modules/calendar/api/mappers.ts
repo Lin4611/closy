@@ -49,7 +49,7 @@ export const mapCalendarApiEntryToCalendarServerEntry = (entry: CalendarApiEntry
     serverId: entry._id,
     date: toCalendarDashedDate(entry.scheduleDate),
     occasionKey: entry.calendarEventOccasion,
-    selectedOutfitId: null,
+    selectedOutfitId: entry.outfitId ?? null,
     sourceType: 'local',
     googleEventId: null,
     createdAt: Number.isFinite(createdAtTime) ? createdAtTime : 0,
