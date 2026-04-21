@@ -22,6 +22,7 @@ import {
 import { buildCalendarSelectOutfitReturnTo, buildCalendarSelectOutfitRoute, parseCalendarEditDateParam } from '@/modules/calendar/utils/calendarNavigation'
 import {
   mapResolvedOutfitToPreviewModel,
+  mapServerOutfitPreviewToPreviewModel,
   resolveCalendarEntryOutfitDetailId,
 } from '@/modules/calendar/utils/calendarOutfitAdapter'
 import { EMPTY_CALENDAR_GOOGLE_EVENTS, canEditCalendarDate, getNearestAvailableCalendarDate, isCalendarDateBlocked, isCalendarDateDisabled, shouldResetSelectedOutfit } from '@/modules/calendar/utils/calendarRules'
@@ -148,8 +149,34 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
   const [isOccasionChangeDialogOpen, setIsOccasionChangeDialogOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [hasRestoredDraftState, setHasRestoredDraftState] = useState(false)
+  const [outfitLookupOccasionKey, setOutfitLookupOccasionKey] = useState<Occasion | null>(null)
 
-  const { outfits, isReady: areOutfitsReady, getOutfitStateById } = useCalendarOutfits(occasionKey, { source: 'api' })
+  useEffect(() => {
+    if (outfitLookupOccasionKey || !entry) {
+      return
+    }
+
+    const matchingDraft = getMatchingCalendarEditDraft(entry.id)
+    setOutfitLookupOccasionKey(matchingDraft?.occasionKey ?? entry.occasionKey)
+  }, [entry, outfitLookupOccasionKey])
+
+  const { outfits, isReady: areOutfitsReady, getOutfitStateById } = useCalendarOutfits(outfitLookupOccasionKey, { source: 'api' })
+
+  const initialResolvedOutfitId = useMemo(() => {
+    if (!entry) {
+      return null
+    }
+
+    if (entry.selectedOutfitId) {
+      return entry.selectedOutfitId
+    }
+
+    return resolveCalendarEntryOutfitDetailId({
+      resolvedOutfit: getOutfitStateById(entry.selectedOutfitId),
+      serverOutfitPreview: entry.serverOutfitPreview,
+      selectableOutfits: outfits,
+    })
+  }, [entry, getOutfitStateById, outfits])
 
   useEffect(() => {
     if (!entry) {
@@ -167,17 +194,13 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
       return
     }
 
-    if (!entry.selectedOutfitId && entry.serverOutfitPreview && !areOutfitsReady) {
+    if (!entry.selectedOutfitId && entry.serverOutfitPreview && outfitLookupOccasionKey && !areOutfitsReady) {
       return
     }
 
     const initialDraft = buildInitialCalendarEditDraft({
       entry,
-      selectableOutfitId: entry.selectedOutfitId ?? resolveCalendarEntryOutfitDetailId({
-        resolvedOutfit: getOutfitStateById(entry.selectedOutfitId),
-        serverOutfitPreview: entry.serverOutfitPreview,
-        selectableOutfits: outfits,
-      }),
+      selectableOutfitId: initialResolvedOutfitId,
       routeDate,
     })
 
@@ -187,7 +210,7 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
     setSelectedOutfitId(initialDraft.selectedOutfitId)
     setSelectionStatus(initialDraft.selectionStatus)
     setHasRestoredDraftState(true)
-  }, [areOutfitsReady, entry, getOutfitStateById, outfits, routeDate])
+  }, [areOutfitsReady, entry, initialResolvedOutfitId, outfitLookupOccasionKey, routeDate])
 
   const effectiveSelectedOutfitId = selectedOutfitId
 
@@ -212,14 +235,23 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
       return null
     }
 
+    if (
+      selectionStatus === 'unchanged' &&
+      entry?.serverOutfitPreview &&
+      initialResolvedOutfitId &&
+      effectiveSelectedOutfitId === initialResolvedOutfitId
+    ) {
+      return mapServerOutfitPreviewToPreviewModel(entry.serverOutfitPreview)
+    }
+
     return mapResolvedOutfitToPreviewModel({
       resolvedOutfit: getOutfitStateById(effectiveSelectedOutfitId),
       outfitId: effectiveSelectedOutfitId,
       occasionKey,
     })
-  }, [effectiveSelectedOutfitId, getOutfitStateById, hasRestoredDraftState, occasionKey])
+  }, [effectiveSelectedOutfitId, entry?.serverOutfitPreview, getOutfitStateById, hasRestoredDraftState, initialResolvedOutfitId, occasionKey, selectionStatus])
 
-  const isOutfitPreviewLoading = !hasRestoredDraftState
+  const isOutfitPreviewLoading = !hasRestoredDraftState || (!areOutfitsReady && Boolean(entry?.serverOutfitPreview) && selectionStatus === 'unchanged')
 
   const disabledDates = useMemo(() => {
     if (!entry) {
