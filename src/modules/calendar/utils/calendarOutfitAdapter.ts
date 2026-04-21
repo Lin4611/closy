@@ -3,6 +3,7 @@ import type {
   CalendarOutfitCollectionStatus,
   CalendarResolvedOutfit,
   CalendarSelectedOutfitPreviewModel,
+  CalendarServerOutfitPreview,
   SelectableOutfitSummary,
 } from '@/modules/calendar/types'
 import type { Occasion } from '@/modules/common/types/occasion'
@@ -179,6 +180,19 @@ export const mapResolvedOutfitToPreviewModel = ({
     message: '這套穿搭已不存在，請重新選擇',
   })
 }
+
+
+export const mapServerOutfitPreviewToPreviewModel = (
+  preview: CalendarServerOutfitPreview,
+): CalendarSelectedOutfitPreviewModel => ({
+  id: `calendar-server-preview-${preview.imageUrl}`,
+  imageUrl: preview.imageUrl,
+  occasionKey: preview.occasionKey,
+  savedAt: preview.savedAt ?? '',
+  itemNames: preview.items.map((item) => item.name),
+  previewStatus: 'resolved',
+  previewMessage: null,
+})
 
 export const selectableOutfitSummaries: SelectableOutfitSummary[] = mockOutfitDetails.map((outfit) => ({
   id: outfit.id,
