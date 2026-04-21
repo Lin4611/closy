@@ -117,6 +117,16 @@ const getCalendarSelectedOutfitDraftRawValue = () => {
   return window.sessionStorage.getItem(CALENDAR_SELECTED_OUTFIT_DRAFT_STORAGE_KEY)
 }
 
+export const hasCalendarFormDraftSelectedOutfitValue = () => {
+  const rawValue = isClient() ? window.sessionStorage.getItem(CALENDAR_FORM_DRAFT_STORAGE_KEY) : null
+
+  if (!rawValue) return false
+
+  const parsed = safeParseJson<Record<string, unknown>>(rawValue)
+
+  return typeof parsed === 'object' && parsed !== null && Object.prototype.hasOwnProperty.call(parsed, 'selectedOutfitId')
+}
+
 export const hasCalendarSelectedOutfitDraft = () => {
   return getCalendarSelectedOutfitDraftRawValue() !== null
 }

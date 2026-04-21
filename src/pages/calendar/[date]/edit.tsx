@@ -19,6 +19,7 @@ import {
   clearCalendarSelectedOutfitDraft,
   getCalendarFormDraft,
   getCalendarSelectedOutfitDraft,
+  hasCalendarFormDraftSelectedOutfitValue,
   hasCalendarSelectedOutfitDraft,
   saveCalendarFormDraft,
 } from '@/modules/calendar/utils/calendarDraftStorage'
@@ -34,14 +35,22 @@ type CalendarEditPageProps = {
   routeDate: string
 }
 
-const getMatchingEditDraft = (entryId: string): CalendarFormDraft | null => {
+const getMatchingEditDraftState = (entryId: string): {
+  hasMatchingDraft: boolean
+  hasSelectedOutfitValue: boolean
+  draft: CalendarFormDraft | null
+} => {
   const draft = getCalendarFormDraft()
 
   if (!draft || draft.mode !== 'edit' || draft.sourceEntryId !== entryId) {
-    return null
+    return { hasMatchingDraft: false, hasSelectedOutfitValue: false, draft: null }
   }
 
-  return draft
+  return {
+    hasMatchingDraft: true,
+    hasSelectedOutfitValue: hasCalendarFormDraftSelectedOutfitValue(),
+    draft,
+  }
 }
 
 const getMatchingSelectedOutfitDraftState = (entryId: string): {
@@ -152,18 +161,25 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
       return
     }
 
-    const formDraft = getMatchingEditDraft(entry.id)
-    const { hasMatchingDraft, draft: selectedOutfitDraft } = getMatchingSelectedOutfitDraftState(entry.id)
+    const {
+      hasMatchingDraft: hasMatchingFormDraft,
+      hasSelectedOutfitValue: hasFormDraftSelectedOutfitValue,
+      draft: formDraft,
+    } = getMatchingEditDraftState(entry.id)
+    const { hasMatchingDraft: hasMatchingSelectedOutfitDraft, draft: selectedOutfitDraft } = getMatchingSelectedOutfitDraftState(entry.id)
     const nextOccasionKey = formDraft?.occasionKey ?? selectedOutfitDraft?.occasionKey ?? entry.occasionKey
     const nextDate = formDraft?.date || selectedOutfitDraft?.date || entry.date
-    const nextSelectedOutfitId = hasMatchingDraft
+    const shouldUseFormDraftSelectedOutfit = hasMatchingFormDraft && hasFormDraftSelectedOutfitValue
+    const nextSelectedOutfitId = hasMatchingSelectedOutfitDraft
       ? (selectedOutfitDraft?.selectedOutfitId ?? null)
-      : (formDraft?.selectedOutfitId ?? entry.selectedOutfitId)
+      : shouldUseFormDraftSelectedOutfit
+        ? (formDraft?.selectedOutfitId ?? null)
+        : entry.selectedOutfitId
 
     setOccasionKey(nextOccasionKey)
     setDate(nextDate)
     setSelectedOutfitId(nextSelectedOutfitId)
-    setHasSelectedOutfitDraftOverride(hasMatchingDraft)
+    setHasSelectedOutfitDraftOverride(hasMatchingSelectedOutfitDraft || shouldUseFormDraftSelectedOutfit)
     setHasRestoredDraftState(true)
   }, [entry])
 
