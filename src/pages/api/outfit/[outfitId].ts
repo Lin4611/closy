@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 
 import {
   deleteOutfitResponse,
-  fetchOutfitDetailResponse,
+  fetchOutfitServerDetail,
   getOutfitApiErrorResponse,
   getOutfitRouteIdParam,
 } from '@/lib/api/outfit/shared'
@@ -22,9 +22,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (req.method === 'GET') {
     try {
-      const response = await fetchOutfitDetailResponse(accessToken, outfitId)
+      const detail = await fetchOutfitServerDetail(accessToken, outfitId)
 
-      return res.status(200).json(response)
+      return res.status(200).json({
+        statusCode: 200,
+        status: true,
+        message: '取得穿搭詳情成功',
+        data: detail,
+      })
     } catch (error) {
       const errorResponse = getOutfitApiErrorResponse(error, '取得穿搭詳情失敗')
 

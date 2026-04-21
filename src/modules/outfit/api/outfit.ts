@@ -2,7 +2,7 @@ import { apiClient } from '@/lib/api/client'
 import type { OutfitBaseline } from '@/lib/api/outfit/shared'
 import type { ApiResponse } from '@/lib/api/types'
 import type { Occasion } from '@/modules/common/types/occasion'
-import type { OutfitDetailResponseEnvelope, OutfitListResponseData } from '@/modules/outfit/api/types'
+import type { OutfitListItemResponse, OutfitListResponseData } from '@/modules/outfit/api/types'
 import type { OutfitDetail, OutfitListItem } from '@/modules/outfit/types/outfitTypes'
 
 import { mapOutfitDetailResponseData, mapOutfitListResponseData } from './mappers'
@@ -19,7 +19,6 @@ export const getOutfitList = async (occasion?: Occasion): Promise<OutfitListItem
   return mapOutfitListResponseData(response.data)
 }
 
-
 export const getOutfitBaseline = async (): Promise<OutfitBaseline> => {
   const [outfitList, occasionsList] = await Promise.all([getOutfitList(), getOccasionList()])
 
@@ -29,9 +28,8 @@ export const getOutfitBaseline = async (): Promise<OutfitBaseline> => {
   }
 }
 
-
 export const getOutfitDetail = async (outfitId: string): Promise<OutfitDetail> => {
-  const response = await apiClient<ApiResponse<OutfitDetailResponseEnvelope>>({
+  const response = await apiClient<ApiResponse<OutfitListItemResponse>>({
     endpoint: `/api/outfit/${outfitId}`,
     method: 'GET',
   })

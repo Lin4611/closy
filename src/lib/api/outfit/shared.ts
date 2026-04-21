@@ -1,14 +1,12 @@
 import { ApiError, apiClient } from '@/lib/api/client'
 import type { ApiResponse } from '@/lib/api/types'
 import {
-  mapOutfitDetailResponseData,
   mapOutfitListResponseData,
   mapOutfitSummaryResponseData,
 } from '@/modules/outfit/api/mappers'
 import type {
   AddOutfitRequest,
   DeleteOutfitResponseData,
-  OutfitDetailResponseEnvelope,
   OutfitListResponseData,
   OutfitSummaryResponseData,
 } from '@/modules/outfit/api/types'
@@ -22,7 +20,6 @@ import type {
 export type OutfitErrorResponse = {
   message: string
 }
-
 
 export type OutfitBaseline = {
   outfitList: OutfitListItem[]
@@ -75,17 +72,6 @@ export const fetchOutfitSummaryResponse = async (accessToken: string) => {
   })
 }
 
-export const fetchOutfitDetailResponse = async (accessToken: string, outfitId: string) => {
-  return apiClient<ApiResponse<OutfitDetailResponseEnvelope>>({
-    baseUrl: getOutfitApiBaseUrl(),
-    endpoint: `/outfit/${outfitId}`,
-    method: 'GET',
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  })
-}
-
 export const deleteOutfitResponse = async (accessToken: string, outfitId: string) => {
   return apiClient<ApiResponse<DeleteOutfitResponseData>>({
     baseUrl: getOutfitApiBaseUrl(),
@@ -126,12 +112,19 @@ export const fetchOutfitServerSummary = async (
   return mapOutfitSummaryResponseData(response.data)
 }
 
+export const resolveOutfitDetailFromList = (
+  outfitList: OutfitListItem[],
+  outfitId: string,
+): OutfitDetail | null => {
+  return outfitList.find((item) => item._id === outfitId) ?? null
+}
+
 export const fetchOutfitServerDetail = async (accessToken: string, outfitId: string): Promise<OutfitDetail> => {
-  const response = await fetchOutfitDetailResponse(accessToken, outfitId)
-  const detail = mapOutfitDetailResponseData(response.data)
+  const outfitList = await fetchOutfitServerList(accessToken)
+  const detail = resolveOutfitDetailFromList(outfitList, outfitId)
 
   if (!detail) {
-    throw new Error('無法解析穿搭詳情資料')
+    throw new ApiError('找不到指定的穿搭資料', 404)
   }
 
   return detail
