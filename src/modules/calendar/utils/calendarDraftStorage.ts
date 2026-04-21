@@ -111,11 +111,19 @@ export const clearCalendarFormDraft = () => {
   window.sessionStorage.removeItem(CALENDAR_FORM_DRAFT_STORAGE_KEY)
 }
 
-export const getCalendarSelectedOutfitDraft = () => {
+const getCalendarSelectedOutfitDraftRawValue = () => {
   if (!isClient()) return null
 
+  return window.sessionStorage.getItem(CALENDAR_SELECTED_OUTFIT_DRAFT_STORAGE_KEY)
+}
+
+export const hasCalendarSelectedOutfitDraft = () => {
+  return getCalendarSelectedOutfitDraftRawValue() !== null
+}
+
+export const getCalendarSelectedOutfitDraft = () => {
   return sanitizeCalendarSelectedOutfitDraft(
-    safeParseJson(window.sessionStorage.getItem(CALENDAR_SELECTED_OUTFIT_DRAFT_STORAGE_KEY))
+    safeParseJson(getCalendarSelectedOutfitDraftRawValue())
   )
 }
 

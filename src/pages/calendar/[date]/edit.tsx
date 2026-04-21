@@ -19,6 +19,7 @@ import {
   clearCalendarSelectedOutfitDraft,
   getCalendarFormDraft,
   getCalendarSelectedOutfitDraft,
+  hasCalendarSelectedOutfitDraft,
   saveCalendarFormDraft,
 } from '@/modules/calendar/utils/calendarDraftStorage'
 import { buildCalendarSelectOutfitReturnTo, buildCalendarSelectOutfitRoute, parseCalendarEditDateParam } from '@/modules/calendar/utils/calendarNavigation'
@@ -43,14 +44,21 @@ const getMatchingEditDraft = (entryId: string): CalendarFormDraft | null => {
   return draft
 }
 
-const getMatchingSelectedOutfitDraft = (entryId: string): CalendarSelectedOutfitDraft | null => {
+const getMatchingSelectedOutfitDraftState = (entryId: string): {
+  hasMatchingDraft: boolean
+  draft: CalendarSelectedOutfitDraft | null
+} => {
+  if (!hasCalendarSelectedOutfitDraft()) {
+    return { hasMatchingDraft: false, draft: null }
+  }
+
   const draft = getCalendarSelectedOutfitDraft()
 
   if (!draft || draft.sourceEntryId !== entryId) {
-    return null
+    return { hasMatchingDraft: false, draft: null }
   }
 
-  return draft
+  return { hasMatchingDraft: true, draft }
 }
 
 const getUpdateErrorMessage = (error: unknown) => {
@@ -137,6 +145,7 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false)
   const [isOccasionChangeDialogOpen, setIsOccasionChangeDialogOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [hasRestoredDraftState, setHasRestoredDraftState] = useState(false)
 
   useEffect(() => {
     if (!entry) {
@@ -144,22 +153,22 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
     }
 
     const formDraft = getMatchingEditDraft(entry.id)
-    const selectedOutfitDraft = getMatchingSelectedOutfitDraft(entry.id)
+    const { hasMatchingDraft, draft: selectedOutfitDraft } = getMatchingSelectedOutfitDraftState(entry.id)
     const nextOccasionKey = formDraft?.occasionKey ?? selectedOutfitDraft?.occasionKey ?? entry.occasionKey
     const nextDate = formDraft?.date || selectedOutfitDraft?.date || entry.date
-    const nextSelectedOutfitId =
-      selectedOutfitDraft !== null
-        ? selectedOutfitDraft.selectedOutfitId
-        : (formDraft?.selectedOutfitId ?? entry.selectedOutfitId)
+    const nextSelectedOutfitId = hasMatchingDraft
+      ? (selectedOutfitDraft?.selectedOutfitId ?? null)
+      : (formDraft?.selectedOutfitId ?? entry.selectedOutfitId)
 
     setOccasionKey(nextOccasionKey)
     setDate(nextDate)
     setSelectedOutfitId(nextSelectedOutfitId)
-    setHasSelectedOutfitDraftOverride(selectedOutfitDraft !== null)
+    setHasSelectedOutfitDraftOverride(hasMatchingDraft)
+    setHasRestoredDraftState(true)
   }, [entry])
 
   useEffect(() => {
-    if (!entry) {
+    if (!entry || !hasRestoredDraftState) {
       return
     }
 
@@ -171,7 +180,7 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
       sourceEntryId: entry.id,
       returnTo: `/calendar/${routeDate}/edit`,
     })
-  }, [date, entry, occasionKey, routeDate, selectedOutfitId])
+  }, [date, entry, hasRestoredDraftState, occasionKey, routeDate, selectedOutfitId])
 
   const { getOutfitStateById } = useCalendarOutfits(occasionKey, { source: 'api' })
 
