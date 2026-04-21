@@ -148,7 +148,9 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
     const nextOccasionKey = formDraft?.occasionKey ?? selectedOutfitDraft?.occasionKey ?? entry.occasionKey
     const nextDate = formDraft?.date || selectedOutfitDraft?.date || entry.date
     const nextSelectedOutfitId =
-      selectedOutfitDraft?.selectedOutfitId ?? formDraft?.selectedOutfitId ?? entry.selectedOutfitId
+      selectedOutfitDraft !== null
+        ? selectedOutfitDraft.selectedOutfitId
+        : (formDraft?.selectedOutfitId ?? entry.selectedOutfitId)
 
     setOccasionKey(nextOccasionKey)
     setDate(nextDate)

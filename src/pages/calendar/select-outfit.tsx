@@ -88,7 +88,7 @@ const CalendarSelectOutfitPage = ({ initialEntries }: InferGetServerSidePropsTyp
     return outfits.some((outfit) => outfit.id === selectedOutfitId) ? selectedOutfitId : null
   }, [outfits, selectedOutfitId])
 
-  const handleComplete = (nextOutfitId: string | null) => {
+  const handleSubmitSelection = (nextOutfitId: string | null) => {
     if (formDraft) {
       saveCalendarFormDraft({
         ...formDraft,
@@ -105,6 +105,10 @@ const CalendarSelectOutfitPage = ({ initialEntries }: InferGetServerSidePropsTyp
       occasionKey: formDraft?.occasionKey ?? null,
       date: resolvedDate,
     })
+    void router.push(returnTo)
+  }
+
+  const handleLeaveWithoutSubmit = () => {
     void router.push(returnTo)
   }
 
@@ -129,10 +133,10 @@ const CalendarSelectOutfitPage = ({ initialEntries }: InferGetServerSidePropsTyp
             primaryLabel="重新整理"
             secondaryLabel="略過"
             onPrimary={reload}
-            onSecondary={() => handleComplete(null)}
+            onSecondary={handleLeaveWithoutSubmit}
           />
         ) : isEmpty ? (
-          <SelectableOutfitEmptyState onPrimary={() => void router.push('/home')} onSecondary={() => handleComplete(null)} />
+          <SelectableOutfitEmptyState onPrimary={() => void router.push('/home')} onSecondary={handleLeaveWithoutSubmit} />
         ) : (
           <>
             <div className="px-4 pb-6">
@@ -153,7 +157,7 @@ const CalendarSelectOutfitPage = ({ initialEntries }: InferGetServerSidePropsTyp
             </div>
             <div className="fixed inset-x-0 bottom-0 z-10 px-4 py-4">
               <div className="mx-auto flex max-w-sm flex-col gap-3">
-                <Button type="button" variant="brand" size="xl" onClick={() => handleComplete(resolvedSelectedOutfitId)}>
+                <Button type="button" variant="brand" size="xl" onClick={() => handleSubmitSelection(resolvedSelectedOutfitId)}>
                   下一步
                 </Button>
                 <Button
@@ -161,7 +165,7 @@ const CalendarSelectOutfitPage = ({ initialEntries }: InferGetServerSidePropsTyp
                   variant="outline"
                   size="xl"
                   className="border-neutral-300 bg-white text-neutral-700"
-                  onClick={() => handleComplete(null)}
+                  onClick={handleLeaveWithoutSubmit}
                 >
                   略過
                 </Button>
