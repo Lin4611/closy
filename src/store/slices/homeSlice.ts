@@ -7,6 +7,7 @@ type DayCache = {
   dayRecommendation: DayRecommendation
   outfitImgUrl: string
   occasion?: Occasion
+  isSaved?: boolean
 }
 
 type HomeState = {
@@ -63,6 +64,12 @@ const homeSlice = createSlice({
         dayState.dayRecommendation.recommendation.reasoning = action.payload.reasoning
       }
     },
+    markDaySaved: (state, action: PayloadAction<{ day: 'today' | 'tomorrow' }>) => {
+      const dayState = state[action.payload.day]
+      if (dayState) {
+        dayState.isSaved = true
+      }
+    },
     clearDayCache: (state) => {
       state.today = null
       state.tomorrow = null
@@ -70,6 +77,11 @@ const homeSlice = createSlice({
   },
 })
 
-export const { setDayCache, clearDayCache, updateDayImageUrl, updateDayAdjustResult } =
-  homeSlice.actions
+export const {
+  setDayCache,
+  clearDayCache,
+  updateDayImageUrl,
+  updateDayAdjustResult,
+  markDaySaved,
+} = homeSlice.actions
 export default homeSlice.reducer
