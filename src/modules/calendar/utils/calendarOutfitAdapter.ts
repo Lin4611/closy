@@ -7,7 +7,6 @@ import type {
   SelectableOutfitSummary,
 } from '@/modules/calendar/types'
 import type { Occasion } from '@/modules/common/types/occasion'
-import { mockOutfitDetails } from '@/modules/outfit/data/mockOutfits'
 import type { OutfitItem } from '@/modules/outfit/types/outfitTypes'
 
 const ISO_DATE_PREFIX_PATTERN = /^\d{4}-\d{2}-\d{2}(?:$|T)/
@@ -193,24 +192,6 @@ export const mapServerOutfitPreviewToPreviewModel = (
   previewStatus: 'resolved',
   previewMessage: null,
 })
-
-export const selectableOutfitSummaries: SelectableOutfitSummary[] = mockOutfitDetails.map((outfit) => ({
-  id: outfit.id,
-  imageUrl: outfit.imageUrl,
-  occasionKey: outfit.occasionKey,
-  savedAt: outfit.savedAt,
-  itemNames: outfit.items.map((item) => item.name),
-}))
-
-export const getSelectableOutfitSummaries = (occasionKey?: Occasion | null) => {
-  return filterSelectableOutfitSummariesByOccasion(selectableOutfitSummaries, occasionKey)
-}
-
-export const getSelectableOutfitSummaryById = (outfitId: string) => {
-  return selectableOutfitSummaries.find((outfit) => outfit.id === outfitId) ?? null
-}
-
-
 
 export const resolveCalendarEntryOutfitDetailId = ({
   resolvedOutfit,

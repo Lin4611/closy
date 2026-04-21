@@ -11,7 +11,6 @@ import { CalendarHeader } from '@/modules/calendar/components/CalendarHeader'
 import { CalendarOccasionChangeDialog } from '@/modules/calendar/components/CalendarOccasionChangeDialog'
 import { CalendarOccasionDialog } from '@/modules/calendar/components/CalendarOccasionDialog'
 import { CalendarSuccessDialog } from '@/modules/calendar/components/CalendarSuccessDialog'
-import { mockGoogleEvents } from '@/modules/calendar/data/mockGoogleEvents'
 import { useCalendarOutfits } from '@/modules/calendar/hooks/useCalendarOutfits'
 import { useCalendarServerEntries, useCalendarStore } from '@/modules/calendar/hooks/useCalendarStore'
 import type { CalendarEntriesBaseline } from '@/modules/calendar/types'
@@ -26,6 +25,7 @@ import {
 import { buildCalendarSelectOutfitReturnTo, buildCalendarSelectOutfitRoute } from '@/modules/calendar/utils/calendarNavigation'
 import { mapResolvedOutfitToPreviewModel } from '@/modules/calendar/utils/calendarOutfitAdapter'
 import {
+  EMPTY_CALENDAR_GOOGLE_EVENTS,
   getNearestAvailableCalendarDate,
   hasSelectedOutfit,
   isCalendarDateBlocked,
@@ -90,11 +90,11 @@ const CalendarNewPage = ({ initialEntries }: InferGetServerSidePropsType<typeof 
   const initialDate = useMemo(() => {
     const draftDate = selectedOutfitDraft?.date || initialDraft?.date || ''
 
-    if (draftDate && !isCalendarDateDisabled({ date: draftDate, entries, googleEvents: mockGoogleEvents })) {
+    if (draftDate && !isCalendarDateDisabled({ date: draftDate, entries, googleEvents: EMPTY_CALENDAR_GOOGLE_EVENTS })) {
       return draftDate
     }
 
-    return getNearestAvailableCalendarDate({ entries, googleEvents: mockGoogleEvents })
+    return getNearestAvailableCalendarDate({ entries, googleEvents: EMPTY_CALENDAR_GOOGLE_EVENTS })
   }, [entries, initialDraft?.date, selectedOutfitDraft?.date])
   const [occasionKey, setOccasionKey] = useState<Occasion | null>(selectedOutfitDraft?.occasionKey ?? initialDraft?.occasionKey ?? null)
   const [date, setDate] = useState(initialDate)
@@ -130,23 +130,23 @@ const CalendarNewPage = ({ initialEntries }: InferGetServerSidePropsType<typeof 
   })
   const disabledDates = useMemo(() => {
     return entries
-      .filter((entry) => isCalendarDateBlocked({ date: entry.date, entries, googleEvents: mockGoogleEvents }))
+      .filter((entry) => isCalendarDateBlocked({ date: entry.date, entries, googleEvents: EMPTY_CALENDAR_GOOGLE_EVENTS }))
       .map((entry) => entry.date)
   }, [entries])
 
   const initialDisplayDate = useMemo(() => {
-    if (date && !isCalendarDateDisabled({ date, entries, googleEvents: mockGoogleEvents })) {
+    if (date && !isCalendarDateDisabled({ date, entries, googleEvents: EMPTY_CALENDAR_GOOGLE_EVENTS })) {
       return date
     }
 
-    return getNearestAvailableCalendarDate({ entries, googleEvents: mockGoogleEvents })
+    return getNearestAvailableCalendarDate({ entries, googleEvents: EMPTY_CALENDAR_GOOGLE_EVENTS })
   }, [date, entries])
 
   const isDateDisabled = (candidateDate: string) => {
     return isCalendarDateDisabled({
       date: candidateDate,
       entries,
-      googleEvents: mockGoogleEvents,
+      googleEvents: EMPTY_CALENDAR_GOOGLE_EVENTS,
     })
   }
 

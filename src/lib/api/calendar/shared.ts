@@ -165,9 +165,17 @@ export const deleteCalendarEntry = async (accessToken: string, id: string) => {
 }
 
 export const fetchCalendarServerEntries = async (accessToken: string): Promise<CalendarServerEntry[]> => {
-  const response = await fetchCalendarList(accessToken)
+  try {
+    const response = await fetchCalendarList(accessToken)
 
-  return mapGetCalendarListResponseToCalendarEntries(response.data)
+    return mapGetCalendarListResponseToCalendarEntries(response.data)
+  } catch (error) {
+    if (error instanceof ApiError && error.statusCode === 404) {
+      return []
+    }
+
+    throw error
+  }
 }
 
 export const fetchCalendarEntriesBaseline = async (accessToken: string): Promise<CalendarEntriesBaseline> => {

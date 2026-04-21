@@ -10,7 +10,6 @@ import { CalendarForm } from '@/modules/calendar/components/CalendarForm'
 import { CalendarHeader } from '@/modules/calendar/components/CalendarHeader'
 import { CalendarOccasionChangeDialog } from '@/modules/calendar/components/CalendarOccasionChangeDialog'
 import { CalendarSuccessDialog } from '@/modules/calendar/components/CalendarSuccessDialog'
-import { mockGoogleEvents } from '@/modules/calendar/data/mockGoogleEvents'
 import { useCalendarOutfits } from '@/modules/calendar/hooks/useCalendarOutfits'
 import { useCalendarServerEntries, useCalendarStore } from '@/modules/calendar/hooks/useCalendarStore'
 import type { CalendarEntriesBaseline, CalendarEntry, CalendarFormDraft, CalendarSelectedOutfitDraft } from '@/modules/calendar/types'
@@ -24,7 +23,7 @@ import {
 } from '@/modules/calendar/utils/calendarDraftStorage'
 import { buildCalendarSelectOutfitReturnTo, buildCalendarSelectOutfitRoute, parseCalendarEditDateParam } from '@/modules/calendar/utils/calendarNavigation'
 import { mapResolvedOutfitToPreviewModel, mapServerOutfitPreviewToPreviewModel } from '@/modules/calendar/utils/calendarOutfitAdapter'
-import { canEditCalendarDate, getNearestAvailableCalendarDate, isCalendarDateBlocked, isCalendarDateDisabled, shouldResetSelectedOutfit } from '@/modules/calendar/utils/calendarRules'
+import { EMPTY_CALENDAR_GOOGLE_EVENTS, canEditCalendarDate, getNearestAvailableCalendarDate, isCalendarDateBlocked, isCalendarDateDisabled, shouldResetSelectedOutfit } from '@/modules/calendar/utils/calendarRules'
 import { AppShell } from '@/modules/common/components/AppShell'
 import type { Occasion } from '@/modules/common/types/occasion'
 
@@ -216,7 +215,7 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
     }
 
     return entries
-      .filter((item) => isCalendarDateBlocked({ date: item.date, entries, googleEvents: mockGoogleEvents, currentEntryId: entry.id }))
+      .filter((item) => isCalendarDateBlocked({ date: item.date, entries, googleEvents: EMPTY_CALENDAR_GOOGLE_EVENTS, currentEntryId: entry.id }))
       .map((item) => item.date)
   }, [entries, entry])
 
@@ -225,13 +224,13 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
       return ''
     }
 
-    if (date && !isCalendarDateDisabled({ date, entries, googleEvents: mockGoogleEvents, currentEntryId: entry.id })) {
+    if (date && !isCalendarDateDisabled({ date, entries, googleEvents: EMPTY_CALENDAR_GOOGLE_EVENTS, currentEntryId: entry.id })) {
       return date
     }
 
     return getNearestAvailableCalendarDate({
       entries,
-      googleEvents: mockGoogleEvents,
+      googleEvents: EMPTY_CALENDAR_GOOGLE_EVENTS,
       currentEntryId: entry.id,
     })
   }, [date, entries, entry])
@@ -244,7 +243,7 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
     return isCalendarDateDisabled({
       date: candidateDate,
       entries,
-      googleEvents: mockGoogleEvents,
+      googleEvents: EMPTY_CALENDAR_GOOGLE_EVENTS,
       currentEntryId: entry.id,
     })
   }
@@ -341,7 +340,16 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
   }
 
   if (!entry) {
-    return null
+    return (
+      <AppShell showBottomNav={false}>
+        <div className="flex min-h-screen flex-col">
+          <CalendarHeader title="編輯" backHref="/calendar" />
+          <div className="flex flex-1 items-center justify-center px-6 text-center">
+            <p className="font-paragraph-md text-neutral-400">找不到對應的行事曆資料</p>
+          </div>
+        </div>
+      </AppShell>
+    )
   }
 
   return (

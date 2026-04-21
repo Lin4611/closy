@@ -14,7 +14,6 @@ import { CalendarEntryCard } from '@/modules/calendar/components/CalendarEntryCa
 import { CalendarHeader } from '@/modules/calendar/components/CalendarHeader'
 import { CalendarMonthBar } from '@/modules/calendar/components/CalendarMonthBar'
 import { CalendarSuccessDialog } from '@/modules/calendar/components/CalendarSuccessDialog'
-import { mockGoogleEvents } from '@/modules/calendar/data/mockGoogleEvents'
 import { useCalendarOutfits } from '@/modules/calendar/hooks/useCalendarOutfits'
 import { useCalendarServerEntries, useCalendarStore } from '@/modules/calendar/hooks/useCalendarStore'
 import type { CalendarEntriesBaseline, CalendarEntry } from '@/modules/calendar/types'
@@ -23,7 +22,7 @@ import {
   mapResolvedOutfitToEntryDisplayModel,
   resolveCalendarEntryOutfitDetailId,
 } from '@/modules/calendar/utils/calendarOutfitAdapter'
-import { sortCalendarEntriesForHome } from '@/modules/calendar/utils/calendarRules'
+import { EMPTY_CALENDAR_GOOGLE_EVENTS, sortCalendarEntriesForHome } from '@/modules/calendar/utils/calendarRules'
 import { AppShell } from '@/modules/common/components/AppShell'
 
 const getCurrentMonthLabel = () => {
@@ -195,7 +194,7 @@ const CalendarPage = ({ initialEntries }: InferGetServerSidePropsType<typeof get
                 <CalendarEntryCard
                   key={entry.id}
                   entry={entry}
-                  googleEvents={mockGoogleEvents}
+                  googleEvents={EMPTY_CALENDAR_GOOGLE_EVENTS}
                   outfitDisplay={outfitDisplay}
                   onPreviewOutfit={
                     previewOutfitId

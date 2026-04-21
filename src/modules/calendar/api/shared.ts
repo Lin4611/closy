@@ -1,4 +1,4 @@
-import { apiClient } from '@/lib/api/client'
+import { ApiError, apiClient } from '@/lib/api/client'
 import type { ApiResponse } from '@/lib/api/types'
 import type { CalendarServerEntry } from '@/modules/calendar/types'
 
@@ -17,12 +17,20 @@ import type {
 } from './types'
 
 export const requestCalendarEntries = async (): Promise<CalendarServerEntry[]> => {
-  const response = await apiClient<ApiResponse<GetCalendarListResponseData>>({
-    endpoint: '/api/calendar',
-    method: 'GET',
-  })
+  try {
+    const response = await apiClient<ApiResponse<GetCalendarListResponseData>>({
+      endpoint: '/api/calendar',
+      method: 'GET',
+    })
 
-  return mapGetCalendarListResponseToCalendarEntries(response.data)
+    return mapGetCalendarListResponseToCalendarEntries(response.data)
+  } catch (error) {
+    if (error instanceof ApiError && error.statusCode === 404) {
+      return []
+    }
+
+    throw error
+  }
 }
 
 export const requestCreatedCalendarEntry = async (input: {
