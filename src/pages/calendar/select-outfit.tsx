@@ -11,7 +11,7 @@ import { SelectableOutfitCard } from '@/modules/calendar/components/SelectableOu
 import { SelectableOutfitEmptyState } from '@/modules/calendar/components/SelectableOutfitEmptyState'
 import { useCalendarOutfits } from '@/modules/calendar/hooks/useCalendarOutfits'
 import { useCalendarServerEntries } from '@/modules/calendar/hooks/useCalendarStore'
-import type { CalendarEntriesBaseline } from '@/modules/calendar/types'
+import type { CalendarEntriesBaseline, CalendarFormDraft } from '@/modules/calendar/types'
 import { getCalendarFormDraft, saveCalendarFormDraft } from '@/modules/calendar/utils/calendarDraftStorage'
 import { normalizeCalendarReturnTo } from '@/modules/calendar/utils/calendarNavigation'
 import { AppShell } from '@/modules/common/components/AppShell'
@@ -50,6 +50,18 @@ export const getServerSideProps: GetServerSideProps<{ initialEntries: CalendarEn
   }
 }
 
+const resolveInitialSelectedOutfitId = (draft: CalendarFormDraft | null) => {
+  if (!draft) {
+    return null
+  }
+
+  if (draft.selectionStatus === 'explicit-empty') {
+    return null
+  }
+
+  return draft.selectedOutfitId
+}
+
 const CalendarSelectOutfitPage = ({ initialEntries }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const router = useRouter()
   useCalendarServerEntries(initialEntries)
@@ -66,7 +78,7 @@ const CalendarSelectOutfitPage = ({ initialEntries }: InferGetServerSidePropsTyp
     formDraft?.occasionKey ?? null,
     { source: 'api' },
   )
-  const [selectedOutfitId, setSelectedOutfitId] = useState<string | null>(formDraft?.selectedOutfitId ?? null)
+  const [selectedOutfitId, setSelectedOutfitId] = useState<string | null>(resolveInitialSelectedOutfitId(formDraft))
 
   useEffect(() => {
     if (formDraft?.occasionKey) {
