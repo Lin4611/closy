@@ -1,8 +1,13 @@
 import { Plus } from 'lucide-react'
+import type { GetServerSideProps, InferGetServerSidePropsType } from 'next'
 import { useRouter } from 'next/router'
 import { useMemo, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
+import { showToast } from '@/components/ui/sonner'
+import { fetchCalendarEntriesBaseline } from '@/lib/api/calendar/shared'
+import { ApiError } from '@/lib/api/client'
+import { requestCalendarEntries, requestDeletedCalendarEntry } from '@/modules/calendar/api/shared'
 import { CalendarDeleteEntryDialog } from '@/modules/calendar/components/CalendarDeleteEntryDialog'
 import { CalendarEmptyState } from '@/modules/calendar/components/CalendarEmptyState'
 import { CalendarEntryCard } from '@/modules/calendar/components/CalendarEntryCard'
@@ -11,8 +16,8 @@ import { CalendarMonthBar } from '@/modules/calendar/components/CalendarMonthBar
 import { CalendarSuccessDialog } from '@/modules/calendar/components/CalendarSuccessDialog'
 import { mockGoogleEvents } from '@/modules/calendar/data/mockGoogleEvents'
 import { useCalendarOutfits } from '@/modules/calendar/hooks/useCalendarOutfits'
-import { useCalendarStore } from '@/modules/calendar/hooks/useCalendarStore'
-import type { CalendarEntry } from '@/modules/calendar/types'
+import { useCalendarServerEntries, useCalendarStore } from '@/modules/calendar/hooks/useCalendarStore'
+import type { CalendarEntriesBaseline, CalendarEntry } from '@/modules/calendar/types'
 import { buildOutfitDetailReturnTo, getCalendarEditRoute } from '@/modules/calendar/utils/calendarNavigation'
 import { mapResolvedOutfitToEntryDisplayModel } from '@/modules/calendar/utils/calendarOutfitAdapter'
 import { sortCalendarEntriesForHome } from '@/modules/calendar/utils/calendarRules'
@@ -26,12 +31,60 @@ const getCurrentMonthLabel = () => {
   return `${year}年${month}月`
 }
 
-const CalendarPage = () => {
+const getDeleteErrorMessage = (error: unknown) => {
+  if (error instanceof ApiError) {
+    return error.message
+  }
+
+  if (error instanceof Error && error.message.trim()) {
+    return error.message
+  }
+
+  return '刪除行事曆失敗，請稍後再試'
+}
+
+export const getServerSideProps: GetServerSideProps<{ initialEntries: CalendarEntriesBaseline }> = async ({ req }) => {
+  const accessToken = req.cookies.accessToken
+
+  if (!accessToken) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    }
+  }
+
+  try {
+    const initialEntries = await fetchCalendarEntriesBaseline(accessToken)
+
+    return {
+      props: {
+        initialEntries,
+      },
+    }
+  } catch (error) {
+    if (error instanceof ApiError && error.statusCode === 401) {
+      return {
+        redirect: {
+          destination: '/',
+          permanent: false,
+        },
+      }
+    }
+
+    throw error
+  }
+}
+
+const CalendarPage = ({ initialEntries }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const router = useRouter()
-  const { entries, deleteEntry } = useCalendarStore()
+  const { deleteEntry, hydrateEntriesFromServer } = useCalendarStore()
+  const entries = useCalendarServerEntries(initialEntries)
   const { getOutfitStateById } = useCalendarOutfits(undefined, { source: 'api' })
   const [isSynced, setIsSynced] = useState(false)
   const [deletingEntry, setDeletingEntry] = useState<CalendarEntry | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
   const [isDeleteSuccessOpen, setIsDeleteSuccessOpen] = useState(false)
   const currentMonthLabel = useMemo(() => getCurrentMonthLabel(), [])
   const monthOptions = useMemo(() => {
@@ -63,6 +116,33 @@ const CalendarPage = () => {
     const normalized = selectedMonth.replace('年', '-').replace('月', '')
     return sortCalendarEntriesForHome(entries.filter((entry) => entry.date.startsWith(normalized)))
   }, [entries, selectedMonth])
+
+  const handleDeleteConfirm = () => {
+    if (!deletingEntry || isDeleting) {
+      return
+    }
+
+    void (async () => {
+      try {
+        setIsDeleting(true)
+
+        if (deletingEntry.serverId) {
+          await requestDeletedCalendarEntry(deletingEntry.serverId)
+          const nextEntries = await requestCalendarEntries()
+          hydrateEntriesFromServer(nextEntries)
+        } else {
+          deleteEntry(deletingEntry.id)
+        }
+
+        setDeletingEntry(null)
+        setIsDeleteSuccessOpen(true)
+      } catch (error) {
+        showToast.error(getDeleteErrorMessage(error))
+      } finally {
+        setIsDeleting(false)
+      }
+    })()
+  }
 
   return (
     <AppShell showBottomNav={false}>
@@ -111,12 +191,12 @@ const CalendarPage = () => {
                   onPreviewOutfit={
                     canPreviewOutfit
                       ? () =>
-                          void router.push(
-                            buildOutfitDetailReturnTo({
-                              outfitId: entry.selectedOutfitId as string,
-                              returnTo: '/calendar',
-                            })
-                          )
+                        void router.push(
+                          buildOutfitDetailReturnTo({
+                            outfitId: entry.selectedOutfitId as string,
+                            returnTo: '/calendar',
+                          })
+                        )
                       : undefined
                   }
                   onEdit={() => void router.push(getCalendarEditRoute(entry.date))}
@@ -128,13 +208,14 @@ const CalendarPage = () => {
         </div>
         <CalendarDeleteEntryDialog
           open={Boolean(deletingEntry)}
-          onClose={() => setDeletingEntry(null)}
-          onConfirm={() => {
-            if (!deletingEntry) return
-            deleteEntry(deletingEntry.id)
+          onClose={() => {
+            if (isDeleting) {
+              return
+            }
+
             setDeletingEntry(null)
-            setIsDeleteSuccessOpen(true)
           }}
+          onConfirm={handleDeleteConfirm}
         />
         <CalendarSuccessDialog
           open={isDeleteSuccessOpen}
