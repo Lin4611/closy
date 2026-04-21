@@ -215,7 +215,7 @@ const Home = () => {
             city={currentData?.dayRecommendation.city}
             expanded={isAdjustPromptOpen}
             onClick={() => setIsOutfitAdjustDrawerOpen(true)}
-            onCalendarClick={() => void router.push('/calendar')}
+            onCalendarClick={() => {}}
           />
           <div className="flex flex-col items-center justify-center pt-13">
             <HomeOutfitPreview
