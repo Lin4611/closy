@@ -13,7 +13,6 @@ import { useCalendarOutfits } from '@/modules/calendar/hooks/useCalendarOutfits'
 import { useCalendarServerEntries } from '@/modules/calendar/hooks/useCalendarStore'
 import type { CalendarEntriesBaseline } from '@/modules/calendar/types'
 import {
-  clearCalendarSelectedOutfitDraft,
   getCalendarFormDraft,
   saveCalendarFormDraft,
   saveCalendarSelectedOutfitDraft,
@@ -110,7 +109,6 @@ const CalendarSelectOutfitPage = ({ initialEntries }: InferGetServerSidePropsTyp
   }
 
   const handleLeaveWithoutSubmit = () => {
-    clearCalendarSelectedOutfitDraft()
     void router.push(returnTo)
   }
 
