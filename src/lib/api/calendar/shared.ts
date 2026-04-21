@@ -110,7 +110,7 @@ export const isUpdateCalendarEntryRequest = (value: unknown): value is UpdateCal
   }
 
   if ('outfitId' in candidate) {
-    if (typeof candidate.outfitId !== 'string' || candidate.outfitId.length === 0) {
+    if (typeof candidate.outfitId !== 'string') {
       return false
     }
   }
