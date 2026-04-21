@@ -29,6 +29,19 @@ const outfitSlice = createSlice({
       state.occasionsList = action.payload
       state.cacheRevision += 1
     },
+
+    syncOutfitFromServer: (state, action: PayloadAction<OutfitListItem>) => {
+      const nextItem = action.payload
+      const existingIndex = state.outfitList.findIndex((item) => item._id === nextItem._id)
+
+      if (existingIndex === -1) {
+        state.outfitList = [nextItem, ...state.outfitList]
+      } else {
+        state.outfitList[existingIndex] = nextItem
+      }
+
+      state.cacheRevision += 1
+    },
     hydrateOutfitBaseline: (
       state,
       action: PayloadAction<{ outfitList: OutfitListItem[]; occasionsList: OutfitOccasionSummary[] }>,
@@ -45,5 +58,5 @@ const outfitSlice = createSlice({
   },
 })
 
-export const { setOutfitList, setOccasionsList, hydrateOutfitBaseline, clearOutfitCache } = outfitSlice.actions
+export const { setOutfitList, setOccasionsList, syncOutfitFromServer, hydrateOutfitBaseline, clearOutfitCache } = outfitSlice.actions
 export default outfitSlice.reducer

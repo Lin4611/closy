@@ -1,17 +1,20 @@
 import { ApiError, apiClient } from '@/lib/api/client'
 import type { ApiResponse } from '@/lib/api/types'
 import {
+  mapOutfitDetailResponseData,
   mapOutfitListResponseData,
   mapOutfitSummaryResponseData,
 } from '@/modules/outfit/api/mappers'
 import type {
   AddOutfitRequest,
   DeleteOutfitResponseData,
+  OutfitDetailResponseEnvelope,
   OutfitListResponseData,
   OutfitSummaryResponseData,
 } from '@/modules/outfit/api/types'
 import type {
   AddOutfitItem,
+  OutfitDetail,
   OutfitListItem,
   OutfitOccasionSummary,
 } from '@/modules/outfit/types/outfitTypes'
@@ -72,6 +75,17 @@ export const fetchOutfitSummaryResponse = async (accessToken: string) => {
   })
 }
 
+export const fetchOutfitDetailResponse = async (accessToken: string, outfitId: string) => {
+  return apiClient<ApiResponse<OutfitDetailResponseEnvelope>>({
+    baseUrl: getOutfitApiBaseUrl(),
+    endpoint: `/outfit/${outfitId}`,
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  })
+}
+
 export const deleteOutfitResponse = async (accessToken: string, outfitId: string) => {
   return apiClient<ApiResponse<DeleteOutfitResponseData>>({
     baseUrl: getOutfitApiBaseUrl(),
@@ -110,6 +124,17 @@ export const fetchOutfitServerSummary = async (
   const response = await fetchOutfitSummaryResponse(accessToken)
 
   return mapOutfitSummaryResponseData(response.data)
+}
+
+export const fetchOutfitServerDetail = async (accessToken: string, outfitId: string): Promise<OutfitDetail> => {
+  const response = await fetchOutfitDetailResponse(accessToken, outfitId)
+  const detail = mapOutfitDetailResponseData(response.data)
+
+  if (!detail) {
+    throw new Error('無法解析穿搭詳情資料')
+  }
+
+  return detail
 }
 
 export const fetchOutfitBaseline = async (accessToken: string): Promise<OutfitBaseline> => {

@@ -46,3 +46,10 @@ export type AddOutfitRequest = {
     cloudImgUrl: string
   }>
 }
+
+
+export type OutfitDetailResponseEnvelope = {
+  item?: unknown
+  outfit?: unknown
+  detail?: unknown
+}

@@ -2,13 +2,12 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 
 import {
   deleteOutfitResponse,
+  fetchOutfitDetailResponse,
   getOutfitApiErrorResponse,
   getOutfitRouteIdParam,
 } from '@/lib/api/outfit/shared'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'DELETE') return res.status(405).end()
-
   const accessToken = req.cookies.accessToken
 
   if (!accessToken) {
@@ -21,13 +20,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ message: '缺少穿搭 ID' })
   }
 
-  try {
-    const response = await deleteOutfitResponse(accessToken, outfitId)
+  if (req.method === 'GET') {
+    try {
+      const response = await fetchOutfitDetailResponse(accessToken, outfitId)
 
-    return res.status(200).json(response)
-  } catch (error) {
-    const errorResponse = getOutfitApiErrorResponse(error, '刪除穿搭失敗')
+      return res.status(200).json(response)
+    } catch (error) {
+      const errorResponse = getOutfitApiErrorResponse(error, '取得穿搭詳情失敗')
 
-    return res.status(errorResponse.statusCode).json({ message: errorResponse.message })
+      return res.status(errorResponse.statusCode).json({ message: errorResponse.message })
+    }
   }
+
+  if (req.method === 'DELETE') {
+    try {
+      const response = await deleteOutfitResponse(accessToken, outfitId)
+
+      return res.status(200).json(response)
+    } catch (error) {
+      const errorResponse = getOutfitApiErrorResponse(error, '刪除穿搭失敗')
+
+      return res.status(errorResponse.statusCode).json({ message: errorResponse.message })
+    }
+  }
+
+  return res.status(405).end()
 }

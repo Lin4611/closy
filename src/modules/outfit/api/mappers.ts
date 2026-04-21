@@ -7,6 +7,7 @@ import type {
 } from '@/modules/outfit/types/outfitTypes'
 
 import type {
+  OutfitDetailResponseEnvelope,
   OutfitListItemResponse,
   OutfitListResponseData,
   OutfitOccasionSummaryResponse,
@@ -91,6 +92,28 @@ export const mapOutfitListResponseData = (data: OutfitListResponseData): OutfitL
 
 export const mapOutfitDetailFromListItem = (item: OutfitListItem): OutfitDetail => {
   return item
+}
+
+
+export const mapOutfitDetailResponseData = (data: unknown): OutfitDetail | null => {
+  const directItem = mapOutfitListItemResponse(data)
+
+  if (directItem) {
+    return mapOutfitDetailFromListItem(directItem)
+  }
+
+  if (typeof data !== 'object' || data === null) {
+    return null
+  }
+
+  const candidate = data as OutfitDetailResponseEnvelope
+  const nestedItem = mapOutfitListItemResponse(candidate.item ?? candidate.outfit ?? candidate.detail)
+
+  if (!nestedItem) {
+    return null
+  }
+
+  return mapOutfitDetailFromListItem(nestedItem)
 }
 
 const mapOutfitOccasionSummaryResponse = (summary: unknown): OutfitOccasionSummary | null => {

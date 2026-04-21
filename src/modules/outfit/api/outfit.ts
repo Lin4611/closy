@@ -2,10 +2,10 @@ import { apiClient } from '@/lib/api/client'
 import type { OutfitBaseline } from '@/lib/api/outfit/shared'
 import type { ApiResponse } from '@/lib/api/types'
 import type { Occasion } from '@/modules/common/types/occasion'
-import type { OutfitListResponseData } from '@/modules/outfit/api/types'
-import type { OutfitListItem } from '@/modules/outfit/types/outfitTypes'
+import type { OutfitDetailResponseEnvelope, OutfitListResponseData } from '@/modules/outfit/api/types'
+import type { OutfitDetail, OutfitListItem } from '@/modules/outfit/types/outfitTypes'
 
-import { mapOutfitListResponseData } from './mappers'
+import { mapOutfitDetailResponseData, mapOutfitListResponseData } from './mappers'
 import { getOccasionList } from './occasionList'
 
 export const getOutfitList = async (occasion?: Occasion): Promise<OutfitListItem[]> => {
@@ -27,4 +27,20 @@ export const getOutfitBaseline = async (): Promise<OutfitBaseline> => {
     outfitList,
     occasionsList,
   }
+}
+
+
+export const getOutfitDetail = async (outfitId: string): Promise<OutfitDetail> => {
+  const response = await apiClient<ApiResponse<OutfitDetailResponseEnvelope>>({
+    endpoint: `/api/outfit/${outfitId}`,
+    method: 'GET',
+  })
+
+  const detail = mapOutfitDetailResponseData(response.data)
+
+  if (!detail) {
+    throw new Error('無法取得穿搭詳情')
+  }
+
+  return detail
 }
