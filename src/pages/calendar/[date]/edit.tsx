@@ -12,7 +12,7 @@ import { CalendarOccasionChangeDialog } from '@/modules/calendar/components/Cale
 import { CalendarSuccessDialog } from '@/modules/calendar/components/CalendarSuccessDialog'
 import { useCalendarOutfits } from '@/modules/calendar/hooks/useCalendarOutfits'
 import { useCalendarServerEntries, useCalendarStore } from '@/modules/calendar/hooks/useCalendarStore'
-import type { CalendarEntriesBaseline, CalendarEntry, CalendarFormDraft, CalendarSelectedOutfitDraft } from '@/modules/calendar/types'
+import type { CalendarEntriesBaseline, CalendarFormDraft, CalendarSelectedOutfitDraft } from '@/modules/calendar/types'
 import {
   clearCalendarFlowDrafts,
   clearCalendarFormDraft,
@@ -32,18 +32,6 @@ type CalendarEditPageProps = {
   entryServerId: string
   routeDate: string
 }
-
-type CalendarEditFormState = {
-  occasionKey: Occasion | null
-  date: string
-  selectedOutfitId: string | null
-}
-
-const buildBaseFormState = (entry: CalendarEntry): CalendarEditFormState => ({
-  occasionKey: entry.occasionKey,
-  date: entry.date,
-  selectedOutfitId: entry.selectedOutfitId,
-})
 
 const getMatchingEditDraft = (entryId: string): CalendarFormDraft | null => {
   const draft = getCalendarFormDraft()
@@ -286,15 +274,11 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
     if (!entry || !occasionKey || !date || isSubmitting) return
     if (isDateDisabled(date)) return
 
-    const isTryingToRemovePersistedOutfit =
-      Boolean(entry.serverOutfitPreview) &&
-      !selectedOutfitId &&
+    const hasPersistedSelectedOutfit = Boolean(entry.serverOutfitPreview)
+    const shouldClearSelectedOutfit =
+      hasPersistedSelectedOutfit &&
+      selectedOutfitId === null &&
       (hasSelectedOutfitDraftOverride || occasionKey !== entry.occasionKey)
-
-    if (isTryingToRemovePersistedOutfit) {
-      showToast.error('目前尚不支援直接移除已選穿搭，請改選其他穿搭或先保留原本穿搭')
-      return
-    }
 
     const nextUpdateInput: {
       date?: string
@@ -312,6 +296,8 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
 
     if (selectedOutfitId) {
       nextUpdateInput.selectedOutfitId = selectedOutfitId
+    } else if (shouldClearSelectedOutfit) {
+      nextUpdateInput.selectedOutfitId = ''
     }
 
     if (Object.keys(nextUpdateInput).length === 0) {
