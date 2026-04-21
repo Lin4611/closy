@@ -24,7 +24,11 @@ import {
   saveCalendarFormDraft,
 } from '@/modules/calendar/utils/calendarDraftStorage'
 import { buildCalendarSelectOutfitReturnTo, buildCalendarSelectOutfitRoute, parseCalendarEditDateParam } from '@/modules/calendar/utils/calendarNavigation'
-import { mapResolvedOutfitToPreviewModel, mapServerOutfitPreviewToPreviewModel } from '@/modules/calendar/utils/calendarOutfitAdapter'
+import {
+  mapResolvedOutfitToPreviewModel,
+  mapServerOutfitPreviewToPreviewModel,
+  resolveCalendarEntryOutfitDetailId,
+} from '@/modules/calendar/utils/calendarOutfitAdapter'
 import { EMPTY_CALENDAR_GOOGLE_EVENTS, canEditCalendarDate, getNearestAvailableCalendarDate, isCalendarDateBlocked, isCalendarDateDisabled, shouldResetSelectedOutfit } from '@/modules/calendar/utils/calendarRules'
 import { AppShell } from '@/modules/common/components/AppShell'
 import type { Occasion } from '@/modules/common/types/occasion'
@@ -183,6 +187,28 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
     setHasRestoredDraftState(true)
   }, [entry])
 
+  const { outfits, getOutfitStateById } = useCalendarOutfits(occasionKey, { source: 'api' })
+
+  const effectiveSelectedOutfitId = useMemo(() => {
+    if (!entry) {
+      return null
+    }
+
+    if (selectedOutfitId) {
+      return selectedOutfitId
+    }
+
+    if (hasSelectedOutfitDraftOverride || occasionKey !== entry.occasionKey) {
+      return null
+    }
+
+    return resolveCalendarEntryOutfitDetailId({
+      resolvedOutfit: getOutfitStateById(selectedOutfitId),
+      serverOutfitPreview: entry.serverOutfitPreview,
+      selectableOutfits: outfits,
+    })
+  }, [entry, getOutfitStateById, hasSelectedOutfitDraftOverride, occasionKey, outfits, selectedOutfitId])
+
   useEffect(() => {
     if (!entry || !hasRestoredDraftState) {
       return
@@ -192,23 +218,21 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
       mode: 'edit',
       date,
       occasionKey,
-      selectedOutfitId,
+      selectedOutfitId: effectiveSelectedOutfitId,
       sourceEntryId: entry.id,
       returnTo: `/calendar/${routeDate}/edit`,
     })
-  }, [date, entry, hasRestoredDraftState, occasionKey, routeDate, selectedOutfitId])
-
-  const { getOutfitStateById } = useCalendarOutfits(occasionKey, { source: 'api' })
+  }, [date, effectiveSelectedOutfitId, entry, hasRestoredDraftState, occasionKey, routeDate])
 
   const selectedOutfit = useMemo(() => {
     if (!entry) {
       return null
     }
 
-    if (selectedOutfitId) {
+    if (effectiveSelectedOutfitId) {
       return mapResolvedOutfitToPreviewModel({
-        resolvedOutfit: getOutfitStateById(selectedOutfitId),
-        outfitId: selectedOutfitId,
+        resolvedOutfit: getOutfitStateById(effectiveSelectedOutfitId),
+        outfitId: effectiveSelectedOutfitId,
         occasionKey,
       })
     }
@@ -222,7 +246,7 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
     }
 
     return null
-  }, [entry, getOutfitStateById, hasSelectedOutfitDraftOverride, occasionKey, selectedOutfitId])
+  }, [effectiveSelectedOutfitId, entry, getOutfitStateById, hasSelectedOutfitDraftOverride, occasionKey])
 
   const disabledDates = useMemo(() => {
     if (!entry) {
@@ -268,7 +292,7 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
       return
     }
 
-    const hasPersistedSelectedOutfit = Boolean(selectedOutfitId || entry.serverOutfitPreview)
+    const hasPersistedSelectedOutfit = Boolean(selectedOutfit)
 
     if (hasPersistedSelectedOutfit && shouldResetSelectedOutfit(occasionKey, nextOccasionKey)) {
       setOccasionChangeCandidate(nextOccasionKey)
@@ -290,7 +314,7 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
       mode: 'edit',
       date,
       occasionKey,
-      selectedOutfitId,
+      selectedOutfitId: effectiveSelectedOutfitId,
       sourceEntryId: entry.id,
       returnTo: `/calendar/${routeDate}/edit`,
     })
