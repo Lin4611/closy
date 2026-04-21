@@ -103,26 +103,26 @@ const CalendarNewPage = ({ initialEntries }: InferGetServerSidePropsType<typeof 
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  useEffect(() => {
-    saveCalendarFormDraft({
-      mode: 'new',
-      date,
-      occasionKey,
-      selectedOutfitId,
-      selectedOutfitPreview: null,
-      selectionStatus,
-      sourceEntryId: null,
-      returnTo: '/calendar/new',
-    })
-  }, [date, occasionKey, selectedOutfitId, selectionStatus])
-
-
   const { getOutfitStateById } = useCalendarOutfits(occasionKey, { source: 'api' })
   const selectedOutfit = mapResolvedOutfitToPreviewModel({
     resolvedOutfit: getOutfitStateById(selectedOutfitId),
     outfitId: selectedOutfitId,
     occasionKey,
   })
+
+  useEffect(() => {
+    saveCalendarFormDraft({
+      mode: 'new',
+      date,
+      occasionKey,
+      selectedOutfitId,
+      selectedOutfitPreview: selectedOutfit,
+      selectionStatus,
+      sourceEntryId: null,
+      returnTo: '/calendar/new',
+    })
+  }, [date, occasionKey, selectedOutfit, selectedOutfitId, selectionStatus])
+
   const disabledDates = useMemo(() => {
     return entries
       .filter((entry) => isCalendarDateBlocked({ date: entry.date, entries, googleEvents: EMPTY_CALENDAR_GOOGLE_EVENTS }))
@@ -161,7 +161,7 @@ const CalendarNewPage = ({ initialEntries }: InferGetServerSidePropsType<typeof 
       date,
       occasionKey,
       selectedOutfitId,
-      selectedOutfitPreview: null,
+      selectedOutfitPreview: selectedOutfit,
       selectionStatus,
       sourceEntryId: null,
       returnTo: '/calendar/new',

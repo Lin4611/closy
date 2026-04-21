@@ -93,6 +93,12 @@ export const buildCreateCalendarEntryRequest = ({
   return request
 }
 
+const createInvalidCalendarUpdateRequestError = (message: string) => {
+  const error = new Error(message)
+  error.name = 'InvalidCalendarUpdateRequestError'
+  return error
+}
+
 export const buildUpdateCalendarEntryRequest = ({
   date,
   occasionKey,
@@ -114,14 +120,14 @@ export const buildUpdateCalendarEntryRequest = ({
 
   if (selectedOutfitId !== undefined) {
     if (selectedOutfitId === null) {
-      throw new Error('selectedOutfitId 若要清除已選穿搭，請明確傳入空字串')
+      throw createInvalidCalendarUpdateRequestError('selectedOutfitId 若要清除已選穿搭，請明確傳入空字串')
     }
 
     request.outfitId = selectedOutfitId
   }
 
   if (Object.keys(request).length === 0) {
-    throw new Error('請提供至少一個可更新的欄位')
+    throw createInvalidCalendarUpdateRequestError('請提供至少一個可更新的欄位')
   }
 
   return request

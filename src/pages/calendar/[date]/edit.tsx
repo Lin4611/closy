@@ -33,7 +33,7 @@ type CalendarEditPageProps = {
 const getMatchingCalendarEditDraft = (entryId: string) => {
   const draft = getCalendarFormDraft()
 
-  if (!draft || draft.mode != 'edit' || draft.sourceEntryId != entryId) {
+  if (!draft || draft.mode !== 'edit' || draft.sourceEntryId !== entryId) {
     return null
   }
 
