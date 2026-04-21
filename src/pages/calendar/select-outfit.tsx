@@ -13,6 +13,7 @@ import { useCalendarOutfits } from '@/modules/calendar/hooks/useCalendarOutfits'
 import { useCalendarServerEntries } from '@/modules/calendar/hooks/useCalendarStore'
 import type { CalendarEntriesBaseline } from '@/modules/calendar/types'
 import {
+  clearCalendarSelectedOutfitDraft,
   getCalendarFormDraft,
   saveCalendarFormDraft,
   saveCalendarSelectedOutfitDraft,
@@ -109,6 +110,7 @@ const CalendarSelectOutfitPage = ({ initialEntries }: InferGetServerSidePropsTyp
   }
 
   const handleLeaveWithoutSubmit = () => {
+    clearCalendarSelectedOutfitDraft()
     void router.push(returnTo)
   }
 
@@ -119,7 +121,7 @@ const CalendarSelectOutfitPage = ({ initialEntries }: InferGetServerSidePropsTyp
   return (
     <AppShell showBottomNav={false}>
       <div className="flex min-h-screen flex-col">
-        <CalendarHeader title="選擇穿搭" backHref={returnTo} />
+        <CalendarHeader title="選擇穿搭" backHref={returnTo} onBackClick={handleLeaveWithoutSubmit} />
         {isLoading ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 px-8 text-center">
             <Spinner className="size-8 text-neutral-700" />

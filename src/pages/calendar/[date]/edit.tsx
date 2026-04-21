@@ -284,6 +284,8 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
       return
     }
 
+    clearCalendarSelectedOutfitDraft()
+
     saveCalendarFormDraft({
       mode: 'edit',
       date,
