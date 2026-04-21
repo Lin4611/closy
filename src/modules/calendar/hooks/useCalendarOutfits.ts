@@ -9,7 +9,6 @@ import type {
 import {
   buildSelectableOutfitSummaryMap,
   filterSelectableOutfitSummariesByOccasion,
-  getSelectableOutfitSummaries,
   mapOutfitItemsToSelectableOutfitSummaries,
   resolveSelectableOutfitById,
 } from '@/modules/calendar/utils/calendarOutfitAdapter'
@@ -94,11 +93,9 @@ export const useCalendarOutfits = (
     }
   }, [occasionKey, currentRequestKey, source])
 
-  const mockOutfits = useMemo(() => getSelectableOutfitSummaries(occasionKey), [occasionKey])
-
   const status = useMemo<CalendarOutfitCollectionStatus>(() => {
     if (source !== 'api') {
-      return mockOutfits.length > 0 ? 'ready' : 'empty'
+      return 'empty'
     }
 
     if (apiState.requestKey !== currentRequestKey) {
@@ -106,14 +103,13 @@ export const useCalendarOutfits = (
     }
 
     return apiState.status
-  }, [apiState.requestKey, apiState.status, currentRequestKey, mockOutfits.length, source])
+  }, [apiState.requestKey, apiState.status, currentRequestKey, source])
 
-  const outfits = source === 'api' ? apiState.outfits : mockOutfits
   const errorMessage = source === 'api' ? apiState.errorMessage : null
-  const filteredOutfits = useMemo(
-    () => filterSelectableOutfitSummariesByOccasion(outfits, occasionKey),
-    [occasionKey, outfits],
-  )
+  const filteredOutfits = useMemo(() => {
+    const outfits = source === 'api' ? apiState.outfits : []
+    return filterSelectableOutfitSummariesByOccasion(outfits, occasionKey)
+  }, [source, apiState.outfits, occasionKey])
   const outfitsById = useMemo(() => buildSelectableOutfitSummaryMap(filteredOutfits), [filteredOutfits])
 
   const getOutfitById = (outfitId: string) => {
