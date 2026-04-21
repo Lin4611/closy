@@ -333,10 +333,6 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
     if (isDateDisabled(date)) return
 
     const hasPersistedSelectedOutfit = Boolean(entry.serverOutfitPreview)
-    const shouldClearSelectedOutfit =
-      hasPersistedSelectedOutfit &&
-      selectedOutfitId === null &&
-      selectionStatus === 'explicit-empty'
 
     const nextUpdateInput: {
       date?: string
@@ -352,10 +348,14 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
       nextUpdateInput.occasionKey = occasionKey
     }
 
-    if (selectedOutfitId) {
-      nextUpdateInput.selectedOutfitId = selectedOutfitId
-    } else if (shouldClearSelectedOutfit) {
-      nextUpdateInput.selectedOutfitId = ''
+    if (selectionStatus === 'selected') {
+      if (selectedOutfitId) {
+        nextUpdateInput.selectedOutfitId = selectedOutfitId
+      }
+    } else if (selectionStatus === 'explicit-empty') {
+      if (hasPersistedSelectedOutfit) {
+        nextUpdateInput.selectedOutfitId = ''
+      }
     }
 
     if (Object.keys(nextUpdateInput).length === 0) {
