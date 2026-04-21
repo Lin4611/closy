@@ -109,11 +109,11 @@ const sanitizeEntry = (value: unknown): CalendarEntry | null => {
     createdAt:
       typeof candidate.createdAt === 'number' && Number.isFinite(candidate.createdAt)
         ? candidate.createdAt
-        : Date.now(),
+        : 0,
     updatedAt:
       typeof candidate.updatedAt === 'number' && Number.isFinite(candidate.updatedAt)
         ? candidate.updatedAt
-        : Date.now(),
+        : 0,
     serverOutfitPreview: sanitizeServerOutfitPreview(candidate.serverOutfitPreview),
     serverCreatedAt: sanitizeServerTimestamp(candidate.serverCreatedAt),
     serverUpdatedAt: sanitizeServerTimestamp(candidate.serverUpdatedAt),
@@ -314,9 +314,15 @@ export const useCalendarStore = () => {
   const syncEntryFromServer = useCallback((entry: CalendarServerEntry) => {
     const normalizedEntry = normalizeEntry(entry)
     const currentEntries = getWritableStoredEntriesBase()
-    const existingIndex = currentEntries.findIndex(
-      (storedEntry) => storedEntry.id === normalizedEntry.id || storedEntry.serverId === normalizedEntry.serverId,
-    )
+    const existingIndex = currentEntries.findIndex((storedEntry) => {
+      const matchesId = storedEntry.id === normalizedEntry.id
+      const matchesServerId =
+        normalizedEntry.serverId !== null &&
+        storedEntry.serverId !== null &&
+        storedEntry.serverId === normalizedEntry.serverId
+
+      return matchesId || matchesServerId
+    })
 
     if (existingIndex === -1) {
       writeStoredEntries([normalizedEntry, ...currentEntries])
