@@ -17,9 +17,7 @@ import type { CalendarEntriesBaseline } from '@/modules/calendar/types'
 import {
   clearCalendarFlowDrafts,
   clearCalendarFormDraft,
-  clearCalendarSelectedOutfitDraft,
   getCalendarFormDraft,
-  getCalendarSelectedOutfitDraft,
   saveCalendarFormDraft,
 } from '@/modules/calendar/utils/calendarDraftStorage'
 import { buildCalendarSelectOutfitReturnTo, buildCalendarSelectOutfitRoute } from '@/modules/calendar/utils/calendarNavigation'
@@ -86,21 +84,21 @@ const CalendarNewPage = ({ initialEntries }: InferGetServerSidePropsType<typeof 
   const { hydrateEntriesFromServer } = useCalendarStore()
   const entries = useCalendarServerEntries(initialEntries)
   const initialDraft = useMemo(() => getCalendarFormDraft(), [])
-  const selectedOutfitDraft = useMemo(() => getCalendarSelectedOutfitDraft(), [])
   const initialDate = useMemo(() => {
-    const draftDate = selectedOutfitDraft?.date || initialDraft?.date || ''
+    const draftDate = initialDraft?.date || ''
 
     if (draftDate && !isCalendarDateDisabled({ date: draftDate, entries, googleEvents: EMPTY_CALENDAR_GOOGLE_EVENTS })) {
       return draftDate
     }
 
     return getNearestAvailableCalendarDate({ entries, googleEvents: EMPTY_CALENDAR_GOOGLE_EVENTS })
-  }, [entries, initialDraft?.date, selectedOutfitDraft?.date])
-  const [occasionKey, setOccasionKey] = useState<Occasion | null>(selectedOutfitDraft?.occasionKey ?? initialDraft?.occasionKey ?? null)
+  }, [entries, initialDraft?.date])
+  const [occasionKey, setOccasionKey] = useState<Occasion | null>(initialDraft?.occasionKey ?? null)
   const [date, setDate] = useState(initialDate)
-  const [selectedOutfitId, setSelectedOutfitId] = useState<string | null>(selectedOutfitDraft?.selectedOutfitId ?? initialDraft?.selectedOutfitId ?? null)
+  const [selectedOutfitId, setSelectedOutfitId] = useState<string | null>(initialDraft?.selectedOutfitId ?? null)
+  const [selectionStatus, setSelectionStatus] = useState(initialDraft?.selectionStatus ?? 'unchanged')
   const [pendingOccasionKey, setPendingOccasionKey] = useState<Occasion | null>(null)
-  const [isOccasionDialogOpen, setIsOccasionDialogOpen] = useState(!(selectedOutfitDraft?.occasionKey ?? initialDraft?.occasionKey))
+  const [isOccasionDialogOpen, setIsOccasionDialogOpen] = useState(!initialDraft?.occasionKey)
   const [isOccasionChangeDialogOpen, setIsOccasionChangeDialogOpen] = useState(false)
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -111,16 +109,13 @@ const CalendarNewPage = ({ initialEntries }: InferGetServerSidePropsType<typeof 
       date,
       occasionKey,
       selectedOutfitId,
+      selectedOutfitPreview: null,
+      selectionStatus,
       sourceEntryId: null,
       returnTo: '/calendar/new',
     })
-  }, [date, occasionKey, selectedOutfitId])
+  }, [date, occasionKey, selectedOutfitId, selectionStatus])
 
-  useEffect(() => {
-    if (selectedOutfitDraft) {
-      clearCalendarSelectedOutfitDraft()
-    }
-  }, [selectedOutfitDraft])
 
   const { getOutfitStateById } = useCalendarOutfits(occasionKey, { source: 'api' })
   const selectedOutfit = mapResolvedOutfitToPreviewModel({
@@ -166,6 +161,8 @@ const CalendarNewPage = ({ initialEntries }: InferGetServerSidePropsType<typeof 
       date,
       occasionKey,
       selectedOutfitId,
+      selectedOutfitPreview: null,
+      selectionStatus,
       sourceEntryId: null,
       returnTo: '/calendar/new',
     })
@@ -189,7 +186,6 @@ const CalendarNewPage = ({ initialEntries }: InferGetServerSidePropsType<typeof 
         const nextEntries = await requestCalendarEntries()
         hydrateEntriesFromServer(nextEntries)
         clearCalendarFormDraft()
-        clearCalendarSelectedOutfitDraft()
         setIsSuccessDialogOpen(true)
       } catch (error) {
         showToast.error(getCreateErrorMessage(error))
@@ -247,11 +243,14 @@ const CalendarNewPage = ({ initialEntries }: InferGetServerSidePropsType<typeof 
               date,
               occasionKey: pendingOccasionKey,
               selectedOutfitId: null,
+              selectedOutfitPreview: null,
+              selectionStatus: 'explicit-empty',
               sourceEntryId: null,
               returnTo: '/calendar/new',
             })
             setOccasionKey(pendingOccasionKey)
             setSelectedOutfitId(null)
+            setSelectionStatus('explicit-empty')
             setPendingOccasionKey(null)
             setIsOccasionChangeDialogOpen(false)
             const returnTo = buildCalendarSelectOutfitReturnTo({ mode: 'new' })

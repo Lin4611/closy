@@ -82,22 +82,19 @@ export type CalendarEntryCardViewModel = {
   hasSelectedOutfit: boolean
 }
 
+export type CalendarOutfitSelectionStatus = 'unchanged' | 'selected' | 'explicit-empty'
+
 export type CalendarFormDraft = {
   mode: CalendarFormMode
   date: string
   occasionKey: Occasion | null
   selectedOutfitId: string | null
+  selectedOutfitPreview: CalendarSelectedOutfitPreviewModel | null
+  selectionStatus: CalendarOutfitSelectionStatus
   sourceEntryId: string | null
   returnTo: string | null
 }
 
-export type CalendarSelectedOutfitDraft = {
-  selectedOutfitId: string | null
-  returnTo: string | null
-  sourceEntryId: string | null
-  occasionKey: Occasion | null
-  date: string
-}
 
 export type SelectableOutfitSummary = {
   id: string

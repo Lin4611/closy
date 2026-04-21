@@ -49,7 +49,7 @@ export const mapCalendarApiEntryToCalendarServerEntry = (entry: CalendarApiEntry
     serverId: entry._id,
     date: toCalendarDashedDate(entry.scheduleDate),
     occasionKey: entry.calendarEventOccasion,
-    selectedOutfitId: null,
+    selectedOutfitId: entry.outfitId ?? null,
     sourceType: 'local',
     googleEventId: null,
     createdAt: Number.isFinite(createdAtTime) ? createdAtTime : 0,
@@ -113,8 +113,8 @@ export const buildUpdateCalendarEntryRequest = ({
   }
 
   if (selectedOutfitId !== undefined) {
-    if (selectedOutfitId === null || selectedOutfitId === '') {
-      throw new Error('目前不能直接用更新 API 清除已選穿搭')
+    if (selectedOutfitId === null) {
+      throw new Error('selectedOutfitId 若要清除已選穿搭，請明確傳入空字串')
     }
 
     request.outfitId = selectedOutfitId
