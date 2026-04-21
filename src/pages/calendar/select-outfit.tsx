@@ -1,6 +1,6 @@
 import type { GetServerSideProps, InferGetServerSidePropsType } from 'next'
 import { useRouter } from 'next/router'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
@@ -108,8 +108,13 @@ const CalendarSelectOutfitPage = ({ initialEntries }: InferGetServerSidePropsTyp
     void router.push(returnTo)
   }
 
+  useEffect(() => {
+    if (!formDraft?.occasionKey) {
+      void router.replace('/calendar/new')
+    }
+  }, [formDraft?.occasionKey, router])
+
   if (!formDraft?.occasionKey) {
-    void router.replace('/calendar/new')
     return null
   }
 
