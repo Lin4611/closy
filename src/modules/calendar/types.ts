@@ -5,6 +5,7 @@ export type CalendarFormMode = 'new' | 'edit'
 
 export type CalendarEntry = {
   id: string
+  serverId?: string | null
   date: string
   occasionKey: Occasion
   selectedOutfitId: string | null
@@ -12,10 +13,14 @@ export type CalendarEntry = {
   googleEventId: string | null
   createdAt: number
   updatedAt: number
+  serverOutfitPreview?: CalendarServerOutfitPreview | null
+  serverCreatedAt?: string | null
+  serverUpdatedAt?: string | null
 }
 
 export type CalendarEntryInput = {
   id?: string
+  serverId?: string | null
   date: string
   occasionKey: Occasion
   selectedOutfitId?: string | null
@@ -23,6 +28,31 @@ export type CalendarEntryInput = {
   googleEventId?: string | null
   createdAt?: number
   updatedAt?: number
+  serverOutfitPreview?: CalendarServerOutfitPreview | null
+  serverCreatedAt?: string | null
+  serverUpdatedAt?: string | null
+}
+
+
+export type CalendarServerOutfitPreviewItem = {
+  imageUrl: string
+  name: string
+  brand: string
+  category: string
+}
+
+export type CalendarServerOutfitPreview = {
+  imageUrl: string
+  occasionKey: Occasion
+  savedAt: string | null
+  items: CalendarServerOutfitPreviewItem[]
+}
+
+export type CalendarServerEntry = CalendarEntry & {
+  serverId: string
+  serverOutfitPreview: CalendarServerOutfitPreview | null
+  serverCreatedAt: string
+  serverUpdatedAt: string
 }
 
 export type CalendarGoogleEvent = {
