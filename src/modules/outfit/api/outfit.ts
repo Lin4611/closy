@@ -1,15 +1,18 @@
 import { apiClient } from '@/lib/api/client'
 import type { ApiResponse } from '@/lib/api/types'
 import type { Occasion } from '@/modules/common/types/occasion'
-import type { OutfitItem } from '@/modules/outfit/types/outfitTypes'
+import type { OutfitListResponseData } from '@/modules/outfit/api/types'
+import type { OutfitListItem } from '@/modules/outfit/types/outfitTypes'
 
-export const getOutfitList = async (occasion?: Occasion): Promise<OutfitItem[]> => {
+import { mapOutfitListResponseData } from './mappers'
+
+export const getOutfitList = async (occasion?: Occasion): Promise<OutfitListItem[]> => {
   const endpoint = occasion ? `/api/outfit?occasion=${occasion}` : '/api/outfit'
 
-  const response = await apiClient<ApiResponse<{ list: OutfitItem[] }>>({
+  const response = await apiClient<ApiResponse<OutfitListResponseData>>({
     endpoint,
     method: 'GET',
   })
 
-  return response.data.list
+  return mapOutfitListResponseData(response.data)
 }

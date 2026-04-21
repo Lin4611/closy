@@ -1,10 +1,13 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 
-import type { OutfitItem, SummaryList } from '@/modules/outfit/types/outfitTypes'
+import type {
+  OutfitListItem,
+  OutfitOccasionSummary,
+} from '@/modules/outfit/types/outfitTypes'
 
 type OutfitState = {
-  outfitList: OutfitItem[]
-  occasionsList: SummaryList[]
+  outfitList: OutfitListItem[]
+  occasionsList: OutfitOccasionSummary[]
 }
 
 const initialState: OutfitState = {
@@ -16,10 +19,10 @@ const outfitSlice = createSlice({
   name: 'outfit',
   initialState,
   reducers: {
-    setOutfitList: (state, action: PayloadAction<OutfitItem[]>) => {
+    setOutfitList: (state, action: PayloadAction<OutfitListItem[]>) => {
       state.outfitList = action.payload
     },
-    setOccasionsList: (state, action: PayloadAction<SummaryList[]>) => {
+    setOccasionsList: (state, action: PayloadAction<OutfitOccasionSummary[]>) => {
       state.occasionsList = action.payload
     },
     clearOutfitCache: (state) => {
