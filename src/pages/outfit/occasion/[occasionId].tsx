@@ -1,82 +1,98 @@
 import { ChevronLeft } from 'lucide-react'
+import type { GetServerSideProps, InferGetServerSidePropsType } from 'next'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useEffect, useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 
 import { showToast } from '@/components/ui/sonner'
+import { ApiError } from '@/lib/api/client'
+import { fetchOutfitBaseline, type OutfitBaseline } from '@/lib/api/outfit/shared'
 import { AppShell } from '@/modules/common/components/AppShell'
 import { ConfirmAlertDialog } from '@/modules/common/components/ConfirmAlertDialog'
 import { occasionMetaMap } from '@/modules/common/types/occasion'
-import type { Occasion } from '@/modules/common/types/occasion'
 import { deleteOutfit } from '@/modules/outfit/api/delOutfit'
-import { getOccasionList } from '@/modules/outfit/api/occasionList'
-import { getOutfitList } from '@/modules/outfit/api/outfit'
+import { getOutfitBaseline } from '@/modules/outfit/api/outfit'
 import { OutfitGridSkeleton } from '@/modules/outfit/components/OutfitCardSkeleton'
 import { OutfitEmptyOverView } from '@/modules/outfit/components/OutfitEmptyOverView'
 import { OutfitsOverview } from '@/modules/outfit/components/OutfitsOverview'
-import type { OutfitItem } from '@/modules/outfit/types/outfitTypes'
-import { useAppDispatch, useAppSelector } from '@/store/hooks'
-import { setOccasionsList, setOutfitList as setOutfitListCache } from '@/store/slices/outfitSlice'
+import { useOutfitServerBaseline } from '@/modules/outfit/hooks/useOutfitServerBaseline'
+import { useAppDispatch } from '@/store/hooks'
+import { hydrateOutfitBaseline } from '@/store/slices/outfitSlice'
 
 const isValidOccasionId = (value: string) => {
   return occasionMetaMap.some((item) => item.key === value)
 }
 
-const OutfitOccasionDetail = () => {
+export const getServerSideProps: GetServerSideProps<{ initialBaseline: OutfitBaseline }> = async ({ req }) => {
+  const accessToken = req.cookies.accessToken
+
+  if (!accessToken) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    }
+  }
+
+  try {
+    const initialBaseline = await fetchOutfitBaseline(accessToken)
+
+    return {
+      props: {
+        initialBaseline,
+      },
+    }
+  } catch (error) {
+    if (error instanceof ApiError && error.statusCode === 401) {
+      return {
+        redirect: {
+          destination: '/',
+          permanent: false,
+        },
+      }
+    }
+
+    throw error
+  }
+}
+
+const OutfitOccasionDetail = ({ initialBaseline }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const dispatch = useAppDispatch()
-  const cachedOutfitList = useAppSelector((state) => state.outfit.outfitList)
+  const { outfitList } = useOutfitServerBaseline(initialBaseline)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [dialogMode, setDialogMode] = useState<'confirm' | 'success'>('confirm')
   const [selectedOutfitId, setSelectedOutfitId] = useState<string | null>(null)
-
-  const [outfitList, setOutfitList] = useState<OutfitItem[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-
+  const [isDeleting, setIsDeleting] = useState(false)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
   const router = useRouter()
   const { occasionId } = router.query
 
-  const fetchOutfitList = async (occasionKey: Occasion) => {
-    setIsLoading(true)
-    try {
-      const list = await getOutfitList(occasionKey)
-      setOutfitList(list)
-    } catch {
-      showToast.error('取得穿搭失敗')
-    } finally {
-      setIsLoading(false)
+  const occasionOutfits = useMemo(() => {
+    if (typeof occasionId !== 'string' || !isValidOccasionId(occasionId)) {
+      return []
     }
+
+    return outfitList.filter((item) => item.occasion === occasionId)
+  }, [occasionId, outfitList])
+
+  const replaceWithCanonicalBaseline = async () => {
+    const nextBaseline = await getOutfitBaseline()
+    dispatch(hydrateOutfitBaseline(nextBaseline))
   }
 
   const delOutfit = async (id: string) => {
-    setIsLoading(true)
     try {
+      setIsDeleting(true)
       await deleteOutfit(id)
       setDialogMode('success')
-      const [list, summaryList] = await Promise.all([
-        getOutfitList(occasionId as Occasion),
-        getOccasionList(),
-      ])
-      setOutfitList(list)
-      dispatch(setOutfitListCache(cachedOutfitList.filter((item) => item._id !== id)))
-      dispatch(setOccasionsList(summaryList))
+      await replaceWithCanonicalBaseline()
     } catch {
       showToast.error('刪除穿搭失敗')
     } finally {
-      setIsLoading(false)
+      setIsDeleting(false)
     }
   }
-
-  useEffect(() => {
-    if (!router.isReady) return
-    const occasion = occasionMetaMap.find((item) => item.key === occasionId)
-    if (!occasion) return
-    const load = async () => {
-      await fetchOutfitList(occasion.key)
-    }
-    load()
-  }, [router.isReady, occasionId])
 
   if (typeof occasionId !== 'string') {
     return null
@@ -89,11 +105,15 @@ const OutfitOccasionDetail = () => {
   }
 
   const handleConfirmDelete = async () => {
-    if (!selectedOutfitId) return
+    if (!selectedOutfitId || isDeleting) return
     await delOutfit(selectedOutfitId)
   }
 
   const handleCloseDialog = () => {
+    if (isDeleting) {
+      return
+    }
+
     setIsDialogOpen(false)
     if (timerRef.current) clearTimeout(timerRef.current)
     timerRef.current = setTimeout(() => {
@@ -106,7 +126,7 @@ const OutfitOccasionDetail = () => {
     return (
       <AppShell activeTab="outfit">
         <div className="flex min-h-0 flex-1 flex-col">
-          <header className="sticky top-0 z-10 bg-white px-4 py-[18px]">
+          <header className="sticky top-0 z-10 bg-white px-4 py-4.5">
             <div className="relative flex items-center justify-center">
               <Link
                 href="/outfit"
@@ -148,11 +168,11 @@ const OutfitOccasionDetail = () => {
         </header>
 
         <div className="flex min-h-0 flex-1 flex-col py-4">
-          {isLoading ? (
+          {isDeleting ? (
             <OutfitGridSkeleton />
-          ) : outfitList.length > 0 ? (
+          ) : occasionOutfits.length > 0 ? (
             <OutfitsOverview
-              outfits={outfitList}
+              outfits={occasionOutfits}
               onDelete={handleClickDelete}
               tab="groupByOccasion"
               returnTo={`/outfit/occasion/${occasionId}`}
