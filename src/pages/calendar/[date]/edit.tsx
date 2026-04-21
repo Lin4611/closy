@@ -307,7 +307,7 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
     const shouldClearSelectedOutfit =
       hasPersistedSelectedOutfit &&
       selectedOutfitId === null &&
-      (hasSelectedOutfitDraftOverride || occasionKey !== entry.occasionKey)
+      hasSelectedOutfitDraftOverride
 
     const nextUpdateInput: {
       date?: string
@@ -340,11 +340,14 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
       try {
         setIsSubmitting(true)
         await requestUpdatedCalendarEntry(entry.serverId ?? entry.id, nextUpdateInput)
+        setOccasionKey(occasionKey)
+        setDate(date)
+        setSelectedOutfitId(selectedOutfitId)
+        setHasSelectedOutfitDraftOverride(false)
         const nextEntries = await requestCalendarEntries()
         hydrateEntriesFromServer(nextEntries)
         clearCalendarFormDraft()
         clearCalendarSelectedOutfitDraft()
-        setHasSelectedOutfitDraftOverride(false)
         setIsSuccessDialogOpen(true)
       } catch (error) {
         showToast.error(getUpdateErrorMessage(error))
