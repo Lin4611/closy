@@ -42,6 +42,14 @@ const isCalendarServerFirstRoute = (pathname: string) => {
   )
 }
 
+const isOutfitServerFirstRoute = (pathname: string) => {
+  return (
+    pathname === '/outfit' ||
+    pathname === '/outfit/[outfitId]' ||
+    pathname === '/outfit/occasion/[occasionId]'
+  )
+}
+
 type AppRouteKind = 'server-first-protected' | 'client-first-protected' | 'public'
 
 const getAppRouteKind = (pathname: string): AppRouteKind => {
@@ -52,7 +60,8 @@ const getAppRouteKind = (pathname: string): AppRouteKind => {
   if (
     isWardrobeServerFirstRoute(pathname) ||
     isSettingsServerFirstRoute(pathname) ||
-    isCalendarServerFirstRoute(pathname)
+    isCalendarServerFirstRoute(pathname) ||
+    isOutfitServerFirstRoute(pathname)
   ) {
     return 'server-first-protected'
   }
