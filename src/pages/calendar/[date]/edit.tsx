@@ -133,7 +133,7 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
   const [date, setDate] = useState(entry?.date ?? '')
   const [selectedOutfitId, setSelectedOutfitId] = useState<string | null>(entry?.selectedOutfitId ?? null)
   const [hasSelectedOutfitDraftOverride, setHasSelectedOutfitDraftOverride] = useState(false)
-  const [pendingOccasionKey, setPendingOccasionKey] = useState<Occasion | null>(null)
+  const [occasionChangeCandidate, setOccasionChangeCandidate] = useState<Occasion | null>(null)
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false)
   const [isOccasionChangeDialogOpen, setIsOccasionChangeDialogOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -246,7 +246,7 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
     const hasPersistedSelectedOutfit = Boolean(selectedOutfitId || entry.serverOutfitPreview)
 
     if (hasPersistedSelectedOutfit && shouldResetSelectedOutfit(occasionKey, nextOccasionKey)) {
-      setPendingOccasionKey(nextOccasionKey)
+      setOccasionChangeCandidate(nextOccasionKey)
       setIsOccasionChangeDialogOpen(true)
       return
     }
@@ -367,27 +367,26 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
         <CalendarOccasionChangeDialog
           open={isOccasionChangeDialogOpen}
           onClose={() => {
-            setPendingOccasionKey(null)
+            setOccasionChangeCandidate(null)
             setIsOccasionChangeDialogOpen(false)
           }}
           onConfirm={() => {
-            if (!pendingOccasionKey) return
+            if (!occasionChangeCandidate) return
 
+            clearCalendarSelectedOutfitDraft()
             saveCalendarFormDraft({
               mode: 'edit',
               date,
-              occasionKey: pendingOccasionKey,
+              occasionKey: occasionChangeCandidate,
               selectedOutfitId: null,
               sourceEntryId: entry.id,
               returnTo: `/calendar/${routeDate}/edit`,
             })
-            setOccasionKey(pendingOccasionKey)
+            setOccasionKey(occasionChangeCandidate)
             setSelectedOutfitId(null)
-            setPendingOccasionKey(null)
+            setOccasionChangeCandidate(null)
             setHasSelectedOutfitDraftOverride(true)
             setIsOccasionChangeDialogOpen(false)
-            const returnTo = buildCalendarSelectOutfitReturnTo({ mode: 'edit', date: routeDate })
-            void router.push(buildCalendarSelectOutfitRoute({ returnTo, date }))
           }}
         />
         <CalendarSuccessDialog
