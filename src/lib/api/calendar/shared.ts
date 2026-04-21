@@ -15,7 +15,7 @@ import type {
   UpdateCalendarEntryRequest,
   UpdateCalendarEntryResponseData,
 } from '@/modules/calendar/api/types'
-import type { CalendarServerEntry } from '@/modules/calendar/types'
+import type { CalendarEntriesBaseline, CalendarServerEntry } from '@/modules/calendar/types'
 import { isCalendarDashedDate, isCalendarSlashedDate } from '@/modules/calendar/utils/calendarDate'
 import type { Occasion } from '@/modules/common/types/occasion'
 
@@ -168,6 +168,10 @@ export const fetchCalendarServerEntries = async (accessToken: string): Promise<C
   const response = await fetchCalendarList(accessToken)
 
   return mapGetCalendarListResponseToCalendarEntries(response.data)
+}
+
+export const fetchCalendarEntriesBaseline = async (accessToken: string): Promise<CalendarEntriesBaseline> => {
+  return fetchCalendarServerEntries(accessToken)
 }
 
 export const createCalendarServerEntry = async (

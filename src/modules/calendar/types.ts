@@ -55,6 +55,9 @@ export type CalendarServerEntry = CalendarEntry & {
   serverUpdatedAt: string
 }
 
+
+export type CalendarEntriesBaseline = CalendarServerEntry[]
+
 export type CalendarGoogleEvent = {
   id: string
   date: string
