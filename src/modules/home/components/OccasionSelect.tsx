@@ -5,6 +5,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useAppSelector } from '@/store/hooks'
 
 import { occasionOptions } from '../data/occasionOptions'
 import type { OccasionOption } from '../data/occasionOptions'
@@ -15,12 +16,16 @@ type OccasionSelectProps = {
   onValueChange?: (value: string) => void
   placeholder?: string
 }
+
 export const OccasionSelect = ({
   options = occasionOptions,
   value,
   onValueChange,
   placeholder = '場合',
 }: OccasionSelectProps) => {
+  const defaultOccasion = useAppSelector(
+    (state) => state.user.user?.preferences.occasions ?? 'socialGathering',
+  )
   return (
     <Select value={value} onValueChange={onValueChange}>
       <SelectTrigger className="font-paragraph-sm h-10 min-w-20 rounded-[20px] border-none bg-neutral-100 px-4 py-2 text-neutral-500">
@@ -37,6 +42,7 @@ export const OccasionSelect = ({
             className="h-9 rounded-[8px] border border-white px-2 data-[state=checked]:bg-neutral-300 data-[state=checked]:text-neutral-800"
           >
             {option.label}
+            {option.value === defaultOccasion ? '（預設）' : ''}
           </SelectItem>
         ))}
       </SelectContent>

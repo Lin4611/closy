@@ -6,7 +6,7 @@ import type { ClothingItem, DayRecommendation } from '@/modules/home/types/dayRe
 type DayCache = {
   dayRecommendation: DayRecommendation
   outfitImgUrl: string
-  occasion?: Occasion
+  occasion: Occasion
   isSaved?: boolean
 }
 
@@ -36,17 +36,22 @@ const homeSlice = createSlice({
     },
     updateDayImageUrl: (
       state,
-      action: PayloadAction<{
-        day: 'today' | 'tomorrow'
-        outfitImgUrl: string
-        occasion: Occasion
-      }>,
+      action: PayloadAction<{ day: 'today' | 'tomorrow'; outfitImgUrl: string }>,
     ) => {
       const dayState = state[action.payload.day]
       if (dayState) {
         dayState.outfitImgUrl = action.payload.outfitImgUrl
-        dayState.occasion = action.payload.occasion
       }
+    },
+    setDayOccasion: (
+      state,
+      action: PayloadAction<{ day: 'today' | 'tomorrow'; occasion: Occasion }>,
+    ) => {
+      const dayState = state[action.payload.day]
+      if (!dayState) return
+      dayState.occasion = action.payload.occasion
+      dayState.dayRecommendation.recommendation.occasion = action.payload.occasion
+      dayState.isSaved = false
     },
     updateDayAdjustResult: (
       state,
@@ -83,5 +88,6 @@ export const {
   updateDayImageUrl,
   updateDayAdjustResult,
   markDaySaved,
+  setDayOccasion,
 } = homeSlice.actions
 export default homeSlice.reducer

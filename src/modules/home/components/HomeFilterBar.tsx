@@ -1,43 +1,21 @@
-import { useState } from 'react'
-
-import { showToast } from '@/components/ui/sonner'
-import { ApiError } from '@/lib/api/client'
 import { cn } from '@/lib/utils'
-import { updateOccasion } from '@/modules/common/api/occasion'
-import { defaultOccasion, type Occasion } from '@/modules/common/types/occasion'
-import { useAppDispatch, useAppSelector } from '@/store/hooks'
-import { updateUserOccasion } from '@/store/slices/userSlice'
+import { type Occasion } from '@/modules/common/types/occasion'
 
 import { DaySwitch } from './DaySwitch'
 import { OccasionSelect } from './OccasionSelect'
 type HomeFilterBarProps = {
   className?: string
+  selectedOccasion: Occasion
   onDayChange?: (day: 'today' | 'tomorrow') => void
-  onOccasionChange?: () => void
+  onOccasionChange?: (occasion: Occasion) => void
 }
 
-export const HomeFilterBar = ({ className, onDayChange, onOccasionChange }: HomeFilterBarProps) => {
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const selectedOccasion = useAppSelector((state) => state.user.user?.preferences.occasions ?? defaultOccasion)
-  const dispatch = useAppDispatch()
-  const handleOccasionChange = async (value: string) => {
-    if (isSubmitting || value === selectedOccasion) return
-
-    try {
-      setIsSubmitting(true)
-      await updateOccasion(value as Occasion)
-      dispatch(updateUserOccasion(value as Occasion))
-      onOccasionChange?.()
-    } catch (error) {
-      if (error instanceof ApiError) {
-        showToast.error(error.message)
-      } else {
-        showToast.error('更新場合失敗，請稍後再試')
-      }
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
+export const HomeFilterBar = ({
+  className,
+  selectedOccasion,
+  onDayChange,
+  onOccasionChange,
+}: HomeFilterBarProps) => {
   return (
     <div
       className={cn(
@@ -47,7 +25,10 @@ export const HomeFilterBar = ({ className, onDayChange, onOccasionChange }: Home
     >
       <DaySwitch onDayChange={onDayChange} />
       <div id="occasion-trigger">
-        <OccasionSelect value={selectedOccasion} onValueChange={handleOccasionChange} />
+        <OccasionSelect
+          value={selectedOccasion}
+          onValueChange={(value) => onOccasionChange?.(value as Occasion)}
+        />
       </div>
     </div>
   )

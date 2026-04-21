@@ -6,6 +6,8 @@ import { useEffect } from 'react'
 import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
 import { AppShell } from '@/modules/common/components/AppShell'
+import { type Occasion } from '@/modules/common/types/occasion'
+import { defaultOccasion } from '@/modules/common/types/occasion'
 import { addOutfit } from '@/modules/home/api/addOutfit'
 import { getHomeRecommendation } from '@/modules/home/api/home'
 import { generateOutfit } from '@/modules/home/api/outfit'
@@ -22,6 +24,7 @@ import {
   markDaySaved,
   updateDayAdjustResult,
   updateDayImageUrl,
+  setDayOccasion,
 } from '@/store/slices/homeSlice'
 
 const HomeOnboardingGate = dynamic(
@@ -44,8 +47,17 @@ const Home = () => {
   const [activeDay, setActiveDay] = useState<'today' | 'tomorrow'>('today')
 
   const addLikeRef = useRef(false)
+  const user = useAppSelector((state) => state.user.user)
+  const fallbackOccasion = user?.preferences.occasions ?? defaultOccasion
+  const currentOccasion = homeState[activeDay]?.occasion ?? fallbackOccasion
 
-  const fetchDayOutfit = async (day: 'today' | 'tomorrow', force = false) => {
+  const fetchDayOutfit = async (
+    day: 'today' | 'tomorrow',
+    options?: { force?: boolean; occasion?: Occasion },
+  ) => {
+    const force = options?.force ?? false
+    const targetOccasion = options?.occasion ?? homeState[day]?.occasion ?? fallbackOccasion
+
     if (homeState[day] && !force) {
       setIsLoading(false)
       return
@@ -53,17 +65,26 @@ const Home = () => {
 
     setIsLoading(true)
     try {
-      const res = await getHomeRecommendation(day)
-      dispatch(setDayCache({ day, cache: { dayRecommendation: res, outfitImgUrl: '' } }))
+      const res = await getHomeRecommendation(day, targetOccasion)
+
+      dispatch(
+        setDayCache({
+          day,
+          cache: {
+            dayRecommendation: res,
+            outfitImgUrl: '',
+            occasion: targetOccasion,
+            isSaved: false,
+          },
+        }),
+      )
       setIsLoading(false)
       setIsImageLoading(true)
       const result = await generateOutfit({
         selectedItems: res.recommendation.selectedItems,
-        occasion: res.recommendation.occasion,
+        occasion: targetOccasion,
       })
-      dispatch(
-        updateDayImageUrl({ day, outfitImgUrl: result.outfitImgUrl, occasion: result.occasion }),
-      )
+      dispatch(updateDayImageUrl({ day, outfitImgUrl: result.outfitImgUrl }))
     } catch (e) {
       if (e instanceof ApiError) {
         if (e.statusCode === 503) {
@@ -82,7 +103,7 @@ const Home = () => {
     const today = new Date().toISOString().split('T')[0]
     const isStale = homeState.cacheDate !== today
     if (isStale) dispatch(clearDayCache())
-    fetchDayOutfit('today', isStale)
+    fetchDayOutfit('today', { force: isStale })
   }, [])
 
   const handleDayChange = (day: 'today' | 'tomorrow') => {
@@ -138,9 +159,9 @@ const Home = () => {
     }
   }
 
-  const handleOccasionChange = () => {
-    dispatch(clearDayCache())
-    fetchDayOutfit(activeDay, true)
+  const handleOccasionChange = async (nextOccasion: Occasion) => {
+    dispatch(setDayOccasion({ day: activeDay, occasion: nextOccasion }))
+    await fetchDayOutfit(activeDay, { force: true, occasion: nextOccasion })
   }
 
   const setHideTimer = (duration: number) => {
@@ -207,7 +228,11 @@ const Home = () => {
     <>
       <AppShell activeTab="home">
         <div className="sticky top-0 z-10">
-          <HomeFilterBar onDayChange={handleDayChange} onOccasionChange={handleOccasionChange} />
+          <HomeFilterBar
+            onDayChange={handleDayChange}
+            onOccasionChange={handleOccasionChange}
+            selectedOccasion={currentOccasion}
+          />
         </div>
         <div className="relative">
           <HomePreviewTopBar
