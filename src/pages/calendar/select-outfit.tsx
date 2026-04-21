@@ -77,29 +77,13 @@ const CalendarSelectOutfitPage = ({ initialEntries }: InferGetServerSidePropsTyp
   )
   const [selectedOutfitId, setSelectedOutfitId] = useState<string | null>(resolveInitialSelectedOutfitId(formDraft))
 
-  const matchedPreviewOutfitId = useMemo(() => {
-    if (selectedOutfitId || formDraft?.selectionStatus !== 'unchanged' || formDraft?.selectedOutfitId) {
-      return null
-    }
-
-    const previewImageUrl = formDraft?.selectedOutfitPreview?.imageUrl
-
-    if (!previewImageUrl || outfits.length === 0) {
-      return null
-    }
-
-    return outfits.find((outfit) => outfit.imageUrl === previewImageUrl)?.id ?? null
-  }, [formDraft?.selectedOutfitId, formDraft?.selectedOutfitPreview?.imageUrl, formDraft?.selectionStatus, outfits, selectedOutfitId])
-
   const resolvedSelectedOutfitId = useMemo(() => {
-    const effectiveSelectedOutfitId = selectedOutfitId ?? matchedPreviewOutfitId
-
-    if (!effectiveSelectedOutfitId) {
+    if (!selectedOutfitId) {
       return null
     }
 
-    return outfits.some((outfit) => outfit.id === effectiveSelectedOutfitId) ? effectiveSelectedOutfitId : null
-  }, [matchedPreviewOutfitId, outfits, selectedOutfitId])
+    return outfits.some((outfit) => outfit.id === selectedOutfitId) ? selectedOutfitId : null
+  }, [outfits, selectedOutfitId])
 
   const handleSubmitSelection = (nextOutfitId: string | null) => {
     if (formDraft) {
@@ -164,7 +148,7 @@ const CalendarSelectOutfitPage = ({ initialEntries }: InferGetServerSidePropsTyp
                   key={outfit.id}
                   outfit={outfit}
                   selected={resolvedSelectedOutfitId === outfit.id}
-                  onSelect={() => setSelectedOutfitId((currentId) => ((currentId ?? matchedPreviewOutfitId) === outfit.id ? null : outfit.id))}
+                  onSelect={() => setSelectedOutfitId((currentId) => (currentId === outfit.id ? null : outfit.id))}
                 />
               ))}
             </div>
