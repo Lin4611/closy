@@ -213,13 +213,23 @@ export const getSelectableOutfitSummaryById = (outfitId: string) => {
 
 export const mapResolvedOutfitToEntryDisplayModel = ({
   resolvedOutfit,
+  serverOutfitPreview,
 }: {
   resolvedOutfit: CalendarResolvedOutfit
+  serverOutfitPreview?: CalendarServerOutfitPreview | null
 }): CalendarEntryOutfitDisplayModel => {
   if (resolvedOutfit.status === 'ready' && resolvedOutfit.outfit) {
     return {
       status: 'resolved',
       imageUrl: resolvedOutfit.outfit.imageUrl,
+      message: null,
+    }
+  }
+
+  if (serverOutfitPreview?.imageUrl) {
+    return {
+      status: 'resolved',
+      imageUrl: serverOutfitPreview.imageUrl,
       message: null,
     }
   }

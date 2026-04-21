@@ -179,8 +179,9 @@ const CalendarPage = ({ initialEntries }: InferGetServerSidePropsType<typeof get
             visibleEntries.map((entry) => {
               const outfitDisplay = mapResolvedOutfitToEntryDisplayModel({
                 resolvedOutfit: getOutfitStateById(entry.selectedOutfitId),
+                serverOutfitPreview: entry.serverOutfitPreview,
               })
-              const canPreviewOutfit = outfitDisplay.status === 'resolved' && Boolean(entry.selectedOutfitId)
+              const canPreviewOutfit = Boolean(entry.selectedOutfitId) && outfitDisplay.status === 'resolved'
 
               return (
                 <CalendarEntryCard
