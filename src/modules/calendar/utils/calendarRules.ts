@@ -35,6 +35,8 @@ export const getCalendarEntryCapabilities = (entry: CalendarEntry): CalendarEntr
   }
 }
 
+export const EMPTY_CALENDAR_GOOGLE_EVENTS: CalendarGoogleEvent[] = []
+
 export const getCalendarEventsByDate = (date: string, events: CalendarGoogleEvent[]) => {
   return events.filter((event) => event.date === date)
 }

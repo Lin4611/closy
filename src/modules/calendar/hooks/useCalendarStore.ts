@@ -1,22 +1,82 @@
-import { useCallback, useMemo, useSyncExternalStore } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 
 import {
   CALENDAR_ENTRIES_STORAGE_KEY,
   CALENDAR_ENTRIES_UPDATED_EVENT,
 } from '@/modules/calendar/constants/storage'
-import { mockCalendarEntries } from '@/modules/calendar/data/mockCalendarEntries'
-import type { CalendarEntry, CalendarEntryInput } from '@/modules/calendar/types'
+import type { CalendarEntriesBaseline, CalendarEntry, CalendarEntryInput, CalendarServerEntry } from '@/modules/calendar/types'
 import { sortCalendarEntriesByDateDesc } from '@/modules/calendar/utils/calendarRules'
 
 const calendarOccasions = ['socialGathering', 'campusCasual', 'businessCasual', 'professional'] as const
 const calendarSources = ['local', 'google'] as const
+const EMPTY_CALENDAR_ENTRIES: CalendarEntry[] = []
 
-let cachedEntriesSnapshot: CalendarEntry[] = mockCalendarEntries
+let cachedEntriesSnapshot: CalendarEntry[] = EMPTY_CALENDAR_ENTRIES
 let cachedEntriesStorageValue: string | null | undefined = undefined
+let cachedEntriesRevision = 0
 
 const sanitizeNullableString = (value: unknown) => {
   if (typeof value !== 'string') return null
   return value.length > 0 ? value : null
+}
+
+const sanitizeServerTimestamp = (value: unknown) => {
+  if (typeof value !== 'string') return null
+
+  const trimmedValue = value.trim()
+
+  return trimmedValue.length > 0 ? trimmedValue : null
+}
+
+const sanitizeServerOutfitPreview = (value: unknown): CalendarEntry['serverOutfitPreview'] => {
+  if (typeof value !== 'object' || value === null) {
+    return null
+  }
+
+  const candidate = value as Record<string, unknown>
+  const imageUrl = typeof candidate.imageUrl === 'string' ? candidate.imageUrl : null
+  const occasionKey = calendarOccasions.includes(candidate.occasionKey as (typeof calendarOccasions)[number])
+    ? (candidate.occasionKey as CalendarEntry['occasionKey'])
+    : null
+  const savedAt = sanitizeNullableString(candidate.savedAt)
+  const items = Array.isArray(candidate.items)
+    ? candidate.items
+        .map((item) => {
+          if (typeof item !== 'object' || item === null) {
+            return null
+          }
+
+          const entry = item as Record<string, unknown>
+
+          if (
+            typeof entry.imageUrl !== 'string' ||
+            typeof entry.name !== 'string' ||
+            typeof entry.brand !== 'string' ||
+            typeof entry.category !== 'string'
+          ) {
+            return null
+          }
+
+          return {
+            imageUrl: entry.imageUrl,
+            name: entry.name,
+            brand: entry.brand,
+            category: entry.category,
+          }
+        })
+        .filter((item): item is NonNullable<CalendarEntry['serverOutfitPreview']>['items'][number] => item !== null)
+    : null
+
+  if (!imageUrl || !occasionKey || !items) {
+    return null
+  }
+
+  return {
+    imageUrl,
+    occasionKey,
+    savedAt,
+    items,
+  }
 }
 
 const sanitizeEntry = (value: unknown): CalendarEntry | null => {
@@ -40,6 +100,7 @@ const sanitizeEntry = (value: unknown): CalendarEntry | null => {
 
   return {
     id,
+    serverId: sanitizeNullableString(candidate.serverId),
     date,
     occasionKey,
     selectedOutfitId: sanitizeNullableString(candidate.selectedOutfitId),
@@ -48,22 +109,35 @@ const sanitizeEntry = (value: unknown): CalendarEntry | null => {
     createdAt:
       typeof candidate.createdAt === 'number' && Number.isFinite(candidate.createdAt)
         ? candidate.createdAt
-        : Date.now(),
+        : 0,
     updatedAt:
       typeof candidate.updatedAt === 'number' && Number.isFinite(candidate.updatedAt)
         ? candidate.updatedAt
-        : Date.now(),
+        : 0,
+    serverOutfitPreview: sanitizeServerOutfitPreview(candidate.serverOutfitPreview),
+    serverCreatedAt: sanitizeServerTimestamp(candidate.serverCreatedAt),
+    serverUpdatedAt: sanitizeServerTimestamp(candidate.serverUpdatedAt),
   }
 }
 
+const normalizeEntry = (entry: CalendarEntry): CalendarEntry => ({
+  ...entry,
+  serverId: entry.serverId ?? null,
+  selectedOutfitId: entry.selectedOutfitId ?? null,
+  googleEventId: entry.googleEventId ?? null,
+  serverOutfitPreview: entry.serverOutfitPreview ?? null,
+  serverCreatedAt: entry.serverCreatedAt ?? null,
+  serverUpdatedAt: entry.serverUpdatedAt ?? null,
+})
+
 const safeParseEntries = (value: string | null) => {
-  if (!value) return mockCalendarEntries
+  if (!value) return EMPTY_CALENDAR_ENTRIES
 
   try {
     const parsed = JSON.parse(value) as unknown
 
     if (!Array.isArray(parsed)) {
-      return mockCalendarEntries
+      return EMPTY_CALENDAR_ENTRIES
     }
 
     const sanitizedEntries = parsed
@@ -72,13 +146,25 @@ const safeParseEntries = (value: string | null) => {
 
     return sortCalendarEntriesByDateDesc(sanitizedEntries)
   } catch {
-    return mockCalendarEntries
+    return EMPTY_CALENDAR_ENTRIES
   }
+}
+
+const getCalendarEntrySignature = (entry: CalendarEntry | null) => {
+  if (!entry) {
+    return ''
+  }
+
+  return `${entry.id}:${entry.serverId ?? ''}:${entry.updatedAt}`
+}
+
+const getCalendarEntriesSignature = (entries: CalendarEntry[]) => {
+  return entries.map((entry) => getCalendarEntrySignature(entry)).join('|')
 }
 
 const getStoredEntriesSnapshot = () => {
   if (typeof window === 'undefined') {
-    return mockCalendarEntries
+    return EMPTY_CALENDAR_ENTRIES
   }
 
   const storageValue = window.localStorage.getItem(CALENDAR_ENTRIES_STORAGE_KEY)
@@ -93,6 +179,22 @@ const getStoredEntriesSnapshot = () => {
   return cachedEntriesSnapshot
 }
 
+const getServerStoredEntriesSnapshot = (): CalendarEntry[] => EMPTY_CALENDAR_ENTRIES
+
+const getWritableStoredEntriesBase = (): CalendarEntry[] => {
+  if (typeof window === 'undefined') {
+    return EMPTY_CALENDAR_ENTRIES
+  }
+
+  const storageValue = window.localStorage.getItem(CALENDAR_ENTRIES_STORAGE_KEY)
+
+  if (!storageValue) {
+    return EMPTY_CALENDAR_ENTRIES
+  }
+
+  return safeParseEntries(storageValue)
+}
+
 const notifyCalendarEntriesChanged = () => {
   if (typeof window === 'undefined') return
 
@@ -102,13 +204,40 @@ const notifyCalendarEntriesChanged = () => {
 const writeStoredEntries = (entries: CalendarEntry[]) => {
   if (typeof window === 'undefined') return
 
-  const sortedEntries = sortCalendarEntriesByDateDesc(entries)
-  const nextStorageValue = JSON.stringify(sortedEntries)
+  const normalizedEntries = sortCalendarEntriesByDateDesc(entries.map(normalizeEntry))
+  const nextStorageValue = JSON.stringify(normalizedEntries)
+  const currentStorageValue = window.localStorage.getItem(CALENDAR_ENTRIES_STORAGE_KEY)
+
+  if (nextStorageValue === currentStorageValue) {
+    cachedEntriesStorageValue = currentStorageValue
+    cachedEntriesSnapshot = normalizedEntries
+    return
+  }
 
   cachedEntriesStorageValue = nextStorageValue
-  cachedEntriesSnapshot = sortedEntries
+  cachedEntriesSnapshot = normalizedEntries
+  cachedEntriesRevision += 1
 
   window.localStorage.setItem(CALENDAR_ENTRIES_STORAGE_KEY, nextStorageValue)
+  notifyCalendarEntriesChanged()
+}
+
+const clearStoredEntries = () => {
+  if (typeof window === 'undefined') return
+
+  const currentStorageValue = window.localStorage.getItem(CALENDAR_ENTRIES_STORAGE_KEY)
+
+  if (currentStorageValue === null) {
+    cachedEntriesStorageValue = null
+    cachedEntriesSnapshot = EMPTY_CALENDAR_ENTRIES
+    return
+  }
+
+  cachedEntriesStorageValue = null
+  cachedEntriesSnapshot = EMPTY_CALENDAR_ENTRIES
+  cachedEntriesRevision += 1
+
+  window.localStorage.removeItem(CALENDAR_ENTRIES_STORAGE_KEY)
   notifyCalendarEntriesChanged()
 }
 
@@ -135,11 +264,25 @@ const subscribeCalendarEntries = (onStoreChange: () => void) => {
   }
 }
 
+const useCalendarServerTakeover = (hydrateFromServer: () => void) => {
+  const hasHydratedFromServerRef = useRef(false)
+
+  useEffect(() => {
+    if (hasHydratedFromServerRef.current) {
+      return
+    }
+
+    hasHydratedFromServerRef.current = true
+    hydrateFromServer()
+  }, [hydrateFromServer])
+}
+
 const buildCalendarEntry = (input: CalendarEntryInput): CalendarEntry => {
   const timestamp = Date.now()
 
-  return {
-    id: input.id ?? `calendar-${input.sourceType}-${input.date}`,
+  return normalizeEntry({
+    id: input.id ?? input.serverId ?? `calendar-${input.sourceType}-${input.date}`,
+    serverId: input.serverId ?? null,
     date: input.date,
     occasionKey: input.occasionKey,
     selectedOutfitId: input.selectedOutfitId ?? null,
@@ -147,21 +290,59 @@ const buildCalendarEntry = (input: CalendarEntryInput): CalendarEntry => {
     googleEventId: input.googleEventId ?? null,
     createdAt: input.createdAt ?? timestamp,
     updatedAt: input.updatedAt ?? timestamp,
-  }
+    serverOutfitPreview: input.serverOutfitPreview ?? null,
+    serverCreatedAt: input.serverCreatedAt ?? null,
+    serverUpdatedAt: input.serverUpdatedAt ?? null,
+  })
 }
 
 export const useCalendarStore = () => {
   const entries = useSyncExternalStore(
     subscribeCalendarEntries,
     getStoredEntriesSnapshot,
-    () => mockCalendarEntries
+    getServerStoredEntriesSnapshot,
   )
   const isReady = typeof window !== 'undefined'
+  const entriesRevision = cachedEntriesRevision
+
+  const hydrateEntriesFromServer = useCallback((serverEntries: CalendarEntriesBaseline) => {
+    writeStoredEntries(serverEntries)
+
+    return serverEntries.map(normalizeEntry)
+  }, [])
+
+  const syncEntryFromServer = useCallback((entry: CalendarServerEntry) => {
+    const normalizedEntry = normalizeEntry(entry)
+    const currentEntries = getWritableStoredEntriesBase()
+    const existingIndex = currentEntries.findIndex((storedEntry) => {
+      const matchesId = storedEntry.id === normalizedEntry.id
+      const matchesServerId =
+        normalizedEntry.serverId !== null &&
+        storedEntry.serverId !== null &&
+        storedEntry.serverId === normalizedEntry.serverId
+
+      return matchesId || matchesServerId
+    })
+
+    if (existingIndex === -1) {
+      writeStoredEntries([normalizedEntry, ...currentEntries])
+      return normalizedEntry
+    }
+
+    const nextEntries = [...currentEntries]
+    nextEntries[existingIndex] = normalizedEntry
+    writeStoredEntries(nextEntries)
+
+    return normalizedEntry
+  }, [])
 
   const addEntry = useCallback((input: CalendarEntryInput) => {
     const nextEntry = buildCalendarEntry(input)
     const nextEntries = getStoredEntriesSnapshot().filter(
-      (entry) => entry.id !== nextEntry.id && entry.date !== nextEntry.date
+      (entry) =>
+        entry.id !== nextEntry.id &&
+        entry.date !== nextEntry.date &&
+        (!nextEntry.serverId || entry.serverId !== nextEntry.serverId),
     )
 
     writeStoredEntries([nextEntry, ...nextEntries])
@@ -179,12 +360,19 @@ export const useCalendarStore = () => {
     const updatedEntry = buildCalendarEntry({
       ...input,
       id: previousEntry.id,
+      serverId: input.serverId ?? previousEntry.serverId,
       createdAt: previousEntry.createdAt,
       updatedAt: Date.now(),
+      serverOutfitPreview: input.serverOutfitPreview ?? previousEntry.serverOutfitPreview,
+      serverCreatedAt: input.serverCreatedAt ?? previousEntry.serverCreatedAt,
+      serverUpdatedAt: input.serverUpdatedAt ?? previousEntry.serverUpdatedAt,
     })
 
     const nextEntries = getStoredEntriesSnapshot().filter(
-      (entry) => entry.id !== entryId && entry.date !== updatedEntry.date
+      (entry) =>
+        entry.id !== entryId &&
+        entry.date !== updatedEntry.date &&
+        (!updatedEntry.serverId || entry.serverId !== updatedEntry.serverId),
     )
 
     writeStoredEntries([updatedEntry, ...nextEntries])
@@ -200,6 +388,10 @@ export const useCalendarStore = () => {
     return entries.find((entry) => entry.id === entryId) ?? null
   }, [entries])
 
+  const getEntryByServerId = useCallback((serverId: string) => {
+    return entries.find((entry) => entry.serverId === serverId) ?? null
+  }, [entries])
+
   const getEntryByDate = useCallback((date: string) => {
     return entries.find((entry) => entry.date === date) ?? null
   }, [entries])
@@ -211,17 +403,21 @@ export const useCalendarStore = () => {
   }, [])
 
   const resetCalendar = useCallback(() => {
-    writeStoredEntries(mockCalendarEntries)
+    clearStoredEntries()
   }, [])
 
   return useMemo(
     () => ({
       isReady,
       entries,
+      entriesRevision,
+      hydrateEntriesFromServer,
+      syncEntryFromServer,
       addEntry,
       updateEntry,
       deleteEntry,
       getEntryById,
+      getEntryByServerId,
       getEntryByDate,
       replaceEntries,
       resetCalendar,
@@ -230,12 +426,38 @@ export const useCalendarStore = () => {
       addEntry,
       deleteEntry,
       entries,
+      entriesRevision,
       getEntryByDate,
       getEntryById,
+      getEntryByServerId,
+      hydrateEntriesFromServer,
       isReady,
       replaceEntries,
       resetCalendar,
+      syncEntryFromServer,
       updateEntry,
-    ]
+    ],
   )
+}
+
+export const useCalendarServerEntries = (initialEntries: CalendarEntriesBaseline) => {
+  const { entries, entriesRevision, hydrateEntriesFromServer, isReady } = useCalendarStore()
+  const [initialEntriesRevision] = useState(entriesRevision)
+  const initialEntriesSignature = useMemo(() => getCalendarEntriesSignature(initialEntries), [initialEntries])
+  const currentEntriesSignature = useMemo(() => getCalendarEntriesSignature(entries), [entries])
+
+  useCalendarServerTakeover(
+    useCallback(() => {
+      if (!isReady) {
+        return
+      }
+
+      hydrateEntriesFromServer(initialEntries)
+    }, [hydrateEntriesFromServer, initialEntries, isReady]),
+  )
+
+  const hasClientEntriesTakenOver =
+    entriesRevision !== initialEntriesRevision || currentEntriesSignature === initialEntriesSignature
+
+  return !isReady || !hasClientEntriesTakenOver ? initialEntries : entries
 }
