@@ -1,5 +1,5 @@
 import { CALENDAR_FORM_DRAFT_STORAGE_KEY } from '@/modules/calendar/constants/storage'
-import type { CalendarFormDraft, CalendarFormMode, CalendarOutfitSelectionStatus } from '@/modules/calendar/types'
+import type { CalendarFormDraft, CalendarFormMode, CalendarOutfitSelectionStatus, CalendarSelectedOutfitPreviewModel } from '@/modules/calendar/types'
 import type { Occasion } from '@/modules/common/types/occasion'
 
 const calendarFormModes: CalendarFormMode[] = ['new', 'edit']
@@ -35,6 +35,43 @@ const sanitizeReturnTo = (value: unknown) => {
   return value
 }
 
+
+const sanitizeCalendarSelectedOutfitPreview = (value: unknown): CalendarSelectedOutfitPreviewModel | null => {
+  if (typeof value !== 'object' || value === null) {
+    return null
+  }
+
+  const candidate = value as Record<string, unknown>
+
+  if (typeof candidate.id !== 'string' || typeof candidate.imageUrl !== 'string' || typeof candidate.savedAt !== 'string') {
+    return null
+  }
+
+  const occasionKey = sanitizeOccasion(candidate.occasionKey)
+
+  if (!occasionKey) {
+    return null
+  }
+
+  const itemNames = Array.isArray(candidate.itemNames)
+    ? candidate.itemNames.filter((item): item is string => typeof item === 'string')
+    : null
+
+  if (!itemNames) {
+    return null
+  }
+
+  return {
+    id: candidate.id,
+    imageUrl: candidate.imageUrl,
+    occasionKey,
+    savedAt: candidate.savedAt,
+    itemNames,
+    previewStatus: 'resolved',
+    previewMessage: null,
+  }
+}
+
 const sanitizeCalendarOutfitSelectionStatus = (value: unknown): CalendarOutfitSelectionStatus => {
   if (typeof value !== 'string') return 'unchanged'
   return calendarOutfitSelectionStatuses.includes(value as CalendarOutfitSelectionStatus)
@@ -61,6 +98,7 @@ const sanitizeCalendarFormDraft = (value: unknown): CalendarFormDraft | null => 
     date: sanitizeString(candidate.date),
     occasionKey: sanitizeOccasion(candidate.occasionKey),
     selectedOutfitId: sanitizeNullableString(candidate.selectedOutfitId),
+    selectedOutfitPreview: sanitizeCalendarSelectedOutfitPreview(candidate.selectedOutfitPreview),
     selectionStatus: sanitizeCalendarOutfitSelectionStatus(candidate.selectionStatus),
     sourceEntryId: sanitizeNullableString(candidate.sourceEntryId),
     returnTo: sanitizeReturnTo(candidate.returnTo),

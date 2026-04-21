@@ -1,6 +1,6 @@
 import type { GetServerSideProps, InferGetServerSidePropsType } from 'next'
 import { useRouter } from 'next/router'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
@@ -14,6 +14,7 @@ import { useCalendarServerEntries } from '@/modules/calendar/hooks/useCalendarSt
 import type { CalendarEntriesBaseline, CalendarFormDraft } from '@/modules/calendar/types'
 import { getCalendarFormDraft, saveCalendarFormDraft } from '@/modules/calendar/utils/calendarDraftStorage'
 import { normalizeCalendarReturnTo } from '@/modules/calendar/utils/calendarNavigation'
+import { mapSelectableOutfitSummaryToPreviewModel } from '@/modules/calendar/utils/calendarOutfitAdapter'
 import { AppShell } from '@/modules/common/components/AppShell'
 
 export const getServerSideProps: GetServerSideProps<{ initialEntries: CalendarEntriesBaseline }> = async ({ req }) => {
@@ -51,11 +52,7 @@ export const getServerSideProps: GetServerSideProps<{ initialEntries: CalendarEn
 }
 
 const resolveInitialSelectedOutfitId = (draft: CalendarFormDraft | null) => {
-  if (!draft) {
-    return null
-  }
-
-  if (draft.selectionStatus === 'explicit-empty') {
+  if (!draft || draft.selectionStatus === 'explicit-empty') {
     return null
   }
 
@@ -80,28 +77,41 @@ const CalendarSelectOutfitPage = ({ initialEntries }: InferGetServerSidePropsTyp
   )
   const [selectedOutfitId, setSelectedOutfitId] = useState<string | null>(resolveInitialSelectedOutfitId(formDraft))
 
-  useEffect(() => {
-    if (formDraft?.occasionKey) {
-      return
-    }
-
-    void router.replace('/calendar/new')
-  }, [formDraft?.occasionKey, router])
-
-  const resolvedSelectedOutfitId = useMemo(() => {
-    if (!selectedOutfitId) {
+  const matchedPreviewOutfitId = useMemo(() => {
+    if (selectedOutfitId || formDraft?.selectionStatus !== 'unchanged' || formDraft?.selectedOutfitId) {
       return null
     }
 
-    return outfits.some((outfit) => outfit.id === selectedOutfitId) ? selectedOutfitId : null
-  }, [outfits, selectedOutfitId])
+    const previewImageUrl = formDraft?.selectedOutfitPreview?.imageUrl
+
+    if (!previewImageUrl || outfits.length === 0) {
+      return null
+    }
+
+    return outfits.find((outfit) => outfit.imageUrl === previewImageUrl)?.id ?? null
+  }, [formDraft?.selectedOutfitId, formDraft?.selectedOutfitPreview?.imageUrl, formDraft?.selectionStatus, outfits, selectedOutfitId])
+
+  const resolvedSelectedOutfitId = useMemo(() => {
+    const effectiveSelectedOutfitId = selectedOutfitId ?? matchedPreviewOutfitId
+
+    if (!effectiveSelectedOutfitId) {
+      return null
+    }
+
+    return outfits.some((outfit) => outfit.id === effectiveSelectedOutfitId) ? effectiveSelectedOutfitId : null
+  }, [matchedPreviewOutfitId, outfits, selectedOutfitId])
 
   const handleSubmitSelection = (nextOutfitId: string | null) => {
     if (formDraft) {
+      const nextSelectedOutfit = nextOutfitId
+        ? outfits.find((outfit) => outfit.id === nextOutfitId) ?? null
+        : null
+
       saveCalendarFormDraft({
         ...formDraft,
         date: resolvedDate,
         selectedOutfitId: nextOutfitId,
+        selectedOutfitPreview: nextSelectedOutfit ? mapSelectableOutfitSummaryToPreviewModel(nextSelectedOutfit) : null,
         selectionStatus: nextOutfitId ? 'selected' : 'explicit-empty',
         returnTo,
       })
@@ -115,6 +125,7 @@ const CalendarSelectOutfitPage = ({ initialEntries }: InferGetServerSidePropsTyp
   }
 
   if (!formDraft?.occasionKey) {
+    void router.replace('/calendar/new')
     return null
   }
 
@@ -153,7 +164,7 @@ const CalendarSelectOutfitPage = ({ initialEntries }: InferGetServerSidePropsTyp
                   key={outfit.id}
                   outfit={outfit}
                   selected={resolvedSelectedOutfitId === outfit.id}
-                  onSelect={() => setSelectedOutfitId((currentId) => (currentId === outfit.id ? null : outfit.id))}
+                  onSelect={() => setSelectedOutfitId((currentId) => ((currentId ?? matchedPreviewOutfitId) === outfit.id ? null : outfit.id))}
                 />
               ))}
             </div>

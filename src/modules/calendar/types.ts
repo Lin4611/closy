@@ -89,6 +89,7 @@ export type CalendarFormDraft = {
   date: string
   occasionKey: Occasion | null
   selectedOutfitId: string | null
+  selectedOutfitPreview: CalendarSelectedOutfitPreviewModel | null
   selectionStatus: CalendarOutfitSelectionStatus
   sourceEntryId: string | null
   returnTo: string | null

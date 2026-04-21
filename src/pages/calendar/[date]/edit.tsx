@@ -51,6 +51,7 @@ const buildInitialCalendarEditDraft = ({
   date: entry.date,
   occasionKey: entry.occasionKey,
   selectedOutfitId: entry.selectedOutfitId,
+  selectedOutfitPreview: entry.serverOutfitPreview ? mapServerOutfitPreviewToPreviewModel(entry.serverOutfitPreview) : null,
   selectionStatus: 'unchanged',
   sourceEntryId: entry.id,
   returnTo: `/calendar/${routeDate}/edit`,
@@ -134,6 +135,9 @@ const CalendarEditPage = ({ initialEntries, initialEntry, routeDate }: InferGetS
   const [occasionKey, setOccasionKey] = useState<Occasion | null>(entry.occasionKey)
   const [date, setDate] = useState(entry.date)
   const [selectedOutfitId, setSelectedOutfitId] = useState<string | null>(entry.selectedOutfitId ?? null)
+  const [selectedOutfitPreview, setSelectedOutfitPreview] = useState<CalendarSelectedOutfitPreviewModel | null>(
+    entry.serverOutfitPreview ? mapServerOutfitPreviewToPreviewModel(entry.serverOutfitPreview) : null,
+  )
   const [selectionStatus, setSelectionStatus] = useState<CalendarOutfitSelectionStatus>('unchanged')
   const [occasionChangeCandidate, setOccasionChangeCandidate] = useState<Occasion | null>(null)
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false)
@@ -151,6 +155,7 @@ const CalendarEditPage = ({ initialEntries, initialEntry, routeDate }: InferGetS
       setOccasionKey(matchingDraft.occasionKey)
       setDate(matchingDraft.date)
       setSelectedOutfitId(matchingDraft.selectedOutfitId)
+      setSelectedOutfitPreview(matchingDraft.selectedOutfitPreview)
       setSelectionStatus(matchingDraft.selectionStatus)
       setHasRestoredDraftState(true)
       return
@@ -165,6 +170,7 @@ const CalendarEditPage = ({ initialEntries, initialEntry, routeDate }: InferGetS
     setOccasionKey(initialDraft.occasionKey)
     setDate(initialDraft.date)
     setSelectedOutfitId(initialDraft.selectedOutfitId)
+    setSelectedOutfitPreview(initialDraft.selectedOutfitPreview)
     setSelectionStatus(initialDraft.selectionStatus)
     setHasRestoredDraftState(true)
   }, [entry, routeDate])
@@ -178,24 +184,21 @@ const CalendarEditPage = ({ initialEntries, initialEntry, routeDate }: InferGetS
       mode: 'edit',
       date,
       occasionKey,
-      selectedOutfitId: selectedOutfitId,
+      selectedOutfitId,
+      selectedOutfitPreview,
       selectionStatus,
       sourceEntryId: entry.id,
       returnTo: `/calendar/${routeDate}/edit`,
     })
-  }, [date, selectedOutfitId, entry, hasRestoredDraftState, occasionKey, routeDate, selectionStatus])
+  }, [date, selectedOutfitId, selectedOutfitPreview, entry, hasRestoredDraftState, occasionKey, routeDate, selectionStatus])
 
   const selectedOutfit = useMemo<CalendarSelectedOutfitPreviewModel | null>(() => {
-    if (!hasRestoredDraftState || !selectedOutfitId) {
+    if (!hasRestoredDraftState) {
       return null
     }
 
-    if (entry.serverOutfitPreview && selectedOutfitId === entry.selectedOutfitId) {
-      return mapServerOutfitPreviewToPreviewModel(entry.serverOutfitPreview)
-    }
-
-    return null
-  }, [entry.selectedOutfitId, entry.serverOutfitPreview, hasRestoredDraftState, selectedOutfitId])
+    return selectedOutfitPreview
+  }, [hasRestoredDraftState, selectedOutfitPreview])
 
   const isOutfitPreviewLoading = !hasRestoredDraftState
 
@@ -256,7 +259,8 @@ const CalendarEditPage = ({ initialEntries, initialEntry, routeDate }: InferGetS
       mode: 'edit',
       date,
       occasionKey,
-      selectedOutfitId: selectedOutfitId,
+      selectedOutfitId,
+      selectedOutfitPreview,
       selectionStatus,
       sourceEntryId: entry.id,
       returnTo: `/calendar/${routeDate}/edit`,
@@ -361,12 +365,14 @@ const CalendarEditPage = ({ initialEntries, initialEntry, routeDate }: InferGetS
               date,
               occasionKey: occasionChangeCandidate,
               selectedOutfitId: null,
+              selectedOutfitPreview: null,
               selectionStatus: 'explicit-empty',
               sourceEntryId: entry.id,
               returnTo: `/calendar/${routeDate}/edit`,
             })
             setOccasionKey(occasionChangeCandidate)
             setSelectedOutfitId(null)
+            setSelectedOutfitPreview(null)
             setOccasionChangeCandidate(null)
             setSelectionStatus('explicit-empty')
             setIsOccasionChangeDialogOpen(false)
