@@ -12,11 +12,7 @@ import { SelectableOutfitEmptyState } from '@/modules/calendar/components/Select
 import { useCalendarOutfits } from '@/modules/calendar/hooks/useCalendarOutfits'
 import { useCalendarServerEntries } from '@/modules/calendar/hooks/useCalendarStore'
 import type { CalendarEntriesBaseline } from '@/modules/calendar/types'
-import {
-  getCalendarFormDraft,
-  saveCalendarFormDraft,
-  saveCalendarSelectedOutfitDraft,
-} from '@/modules/calendar/utils/calendarDraftStorage'
+import { getCalendarFormDraft, saveCalendarFormDraft } from '@/modules/calendar/utils/calendarDraftStorage'
 import { normalizeCalendarReturnTo } from '@/modules/calendar/utils/calendarNavigation'
 import { AppShell } from '@/modules/common/components/AppShell'
 
@@ -99,13 +95,6 @@ const CalendarSelectOutfitPage = ({ initialEntries }: InferGetServerSidePropsTyp
       })
     }
 
-    saveCalendarSelectedOutfitDraft({
-      selectedOutfitId: nextOutfitId,
-      returnTo,
-      sourceEntryId: formDraft?.sourceEntryId ?? null,
-      occasionKey: formDraft?.occasionKey ?? null,
-      date: resolvedDate,
-    })
     void router.push(returnTo)
   }
 

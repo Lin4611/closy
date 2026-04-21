@@ -94,13 +94,6 @@ export type CalendarFormDraft = {
   returnTo: string | null
 }
 
-export type CalendarSelectedOutfitDraft = {
-  selectedOutfitId: string | null
-  returnTo: string | null
-  sourceEntryId: string | null
-  occasionKey: Occasion | null
-  date: string
-}
 
 export type SelectableOutfitSummary = {
   id: string

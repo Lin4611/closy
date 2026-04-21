@@ -1,8 +1,5 @@
-import {
-  CALENDAR_FORM_DRAFT_STORAGE_KEY,
-  CALENDAR_SELECTED_OUTFIT_DRAFT_STORAGE_KEY,
-} from '@/modules/calendar/constants/storage'
-import type { CalendarFormDraft, CalendarSelectedOutfitDraft, CalendarFormMode, CalendarOutfitSelectionStatus } from '@/modules/calendar/types'
+import { CALENDAR_FORM_DRAFT_STORAGE_KEY } from '@/modules/calendar/constants/storage'
+import type { CalendarFormDraft, CalendarFormMode, CalendarOutfitSelectionStatus } from '@/modules/calendar/types'
 import type { Occasion } from '@/modules/common/types/occasion'
 
 const calendarFormModes: CalendarFormMode[] = ['new', 'edit']
@@ -38,7 +35,6 @@ const sanitizeReturnTo = (value: unknown) => {
   return value
 }
 
-
 const sanitizeCalendarOutfitSelectionStatus = (value: unknown): CalendarOutfitSelectionStatus => {
   if (typeof value !== 'string') return 'unchanged'
   return calendarOutfitSelectionStatuses.includes(value as CalendarOutfitSelectionStatus)
@@ -68,22 +64,6 @@ const sanitizeCalendarFormDraft = (value: unknown): CalendarFormDraft | null => 
     selectionStatus: sanitizeCalendarOutfitSelectionStatus(candidate.selectionStatus),
     sourceEntryId: sanitizeNullableString(candidate.sourceEntryId),
     returnTo: sanitizeReturnTo(candidate.returnTo),
-  }
-}
-
-const sanitizeCalendarSelectedOutfitDraft = (value: unknown): CalendarSelectedOutfitDraft | null => {
-  if (typeof value !== 'object' || value === null) {
-    return null
-  }
-
-  const candidate = value as Record<string, unknown>
-
-  return {
-    selectedOutfitId: sanitizeNullableString(candidate.selectedOutfitId),
-    returnTo: sanitizeReturnTo(candidate.returnTo),
-    sourceEntryId: sanitizeNullableString(candidate.sourceEntryId),
-    occasionKey: sanitizeOccasion(candidate.occasionKey),
-    date: sanitizeString(candidate.date),
   }
 }
 
@@ -121,12 +101,6 @@ export const clearCalendarFormDraft = () => {
   window.sessionStorage.removeItem(CALENDAR_FORM_DRAFT_STORAGE_KEY)
 }
 
-const getCalendarSelectedOutfitDraftRawValue = () => {
-  if (!isClient()) return null
-
-  return window.sessionStorage.getItem(CALENDAR_SELECTED_OUTFIT_DRAFT_STORAGE_KEY)
-}
-
 export const hasCalendarFormDraftSelectedOutfitValue = () => {
   const rawValue = isClient() ? window.sessionStorage.getItem(CALENDAR_FORM_DRAFT_STORAGE_KEY) : null
 
@@ -137,29 +111,6 @@ export const hasCalendarFormDraftSelectedOutfitValue = () => {
   return typeof parsed === 'object' && parsed !== null && Object.prototype.hasOwnProperty.call(parsed, 'selectedOutfitId')
 }
 
-export const hasCalendarSelectedOutfitDraft = () => {
-  return getCalendarSelectedOutfitDraftRawValue() !== null
-}
-
-export const getCalendarSelectedOutfitDraft = () => {
-  return sanitizeCalendarSelectedOutfitDraft(
-    safeParseJson(getCalendarSelectedOutfitDraftRawValue())
-  )
-}
-
-export const saveCalendarSelectedOutfitDraft = (draft: CalendarSelectedOutfitDraft) => {
-  if (!isClient()) return
-
-  window.sessionStorage.setItem(CALENDAR_SELECTED_OUTFIT_DRAFT_STORAGE_KEY, JSON.stringify(draft))
-}
-
-export const clearCalendarSelectedOutfitDraft = () => {
-  if (!isClient()) return
-
-  window.sessionStorage.removeItem(CALENDAR_SELECTED_OUTFIT_DRAFT_STORAGE_KEY)
-}
-
 export const clearCalendarFlowDrafts = () => {
   clearCalendarFormDraft()
-  clearCalendarSelectedOutfitDraft()
 }
