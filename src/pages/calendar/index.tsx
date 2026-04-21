@@ -19,7 +19,10 @@ import { useCalendarOutfits } from '@/modules/calendar/hooks/useCalendarOutfits'
 import { useCalendarServerEntries, useCalendarStore } from '@/modules/calendar/hooks/useCalendarStore'
 import type { CalendarEntriesBaseline, CalendarEntry } from '@/modules/calendar/types'
 import { buildOutfitDetailReturnTo, getCalendarEditRoute } from '@/modules/calendar/utils/calendarNavigation'
-import { mapResolvedOutfitToEntryDisplayModel } from '@/modules/calendar/utils/calendarOutfitAdapter'
+import {
+  mapResolvedOutfitToEntryDisplayModel,
+  resolveCalendarEntryOutfitDetailId,
+} from '@/modules/calendar/utils/calendarOutfitAdapter'
 import { sortCalendarEntriesForHome } from '@/modules/calendar/utils/calendarRules'
 import { AppShell } from '@/modules/common/components/AppShell'
 
@@ -81,7 +84,7 @@ const CalendarPage = ({ initialEntries }: InferGetServerSidePropsType<typeof get
   const router = useRouter()
   const { deleteEntry, hydrateEntriesFromServer } = useCalendarStore()
   const entries = useCalendarServerEntries(initialEntries)
-  const { getOutfitStateById } = useCalendarOutfits(undefined, { source: 'api' })
+  const { outfits, getOutfitStateById } = useCalendarOutfits(undefined, { source: 'api' })
   const [isSynced, setIsSynced] = useState(false)
   const [deletingEntry, setDeletingEntry] = useState<CalendarEntry | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -177,11 +180,16 @@ const CalendarPage = ({ initialEntries }: InferGetServerSidePropsType<typeof get
             <CalendarEmptyState />
           ) : (
             visibleEntries.map((entry) => {
+              const resolvedOutfit = getOutfitStateById(entry.selectedOutfitId)
               const outfitDisplay = mapResolvedOutfitToEntryDisplayModel({
-                resolvedOutfit: getOutfitStateById(entry.selectedOutfitId),
+                resolvedOutfit,
                 serverOutfitPreview: entry.serverOutfitPreview,
               })
-              const canPreviewOutfit = Boolean(entry.selectedOutfitId) && outfitDisplay.status === 'resolved'
+              const previewOutfitId = resolveCalendarEntryOutfitDetailId({
+                resolvedOutfit,
+                serverOutfitPreview: entry.serverOutfitPreview,
+                selectableOutfits: outfits,
+              })
 
               return (
                 <CalendarEntryCard
@@ -190,11 +198,11 @@ const CalendarPage = ({ initialEntries }: InferGetServerSidePropsType<typeof get
                   googleEvents={mockGoogleEvents}
                   outfitDisplay={outfitDisplay}
                   onPreviewOutfit={
-                    canPreviewOutfit
+                    previewOutfitId
                       ? () =>
                         void router.push(
                           buildOutfitDetailReturnTo({
-                            outfitId: entry.selectedOutfitId as string,
+                            outfitId: previewOutfitId,
                             returnTo: '/calendar',
                           })
                         )

@@ -211,6 +211,29 @@ export const getSelectableOutfitSummaryById = (outfitId: string) => {
 }
 
 
+
+export const resolveCalendarEntryOutfitDetailId = ({
+  resolvedOutfit,
+  serverOutfitPreview,
+  selectableOutfits,
+}: {
+  resolvedOutfit: CalendarResolvedOutfit
+  serverOutfitPreview?: CalendarServerOutfitPreview | null
+  selectableOutfits: SelectableOutfitSummary[]
+}) => {
+  if (resolvedOutfit.status === 'ready' && resolvedOutfit.outfit) {
+    return resolvedOutfit.outfit.id
+  }
+
+  if (!serverOutfitPreview?.imageUrl) {
+    return null
+  }
+
+  const matchedOutfit = selectableOutfits.find((outfit) => outfit.imageUrl === serverOutfitPreview.imageUrl) ?? null
+
+  return matchedOutfit?.id ?? null
+}
+
 export const mapResolvedOutfitToEntryDisplayModel = ({
   resolvedOutfit,
   serverOutfitPreview,
