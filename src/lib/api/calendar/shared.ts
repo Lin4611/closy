@@ -182,6 +182,14 @@ export const fetchCalendarEntriesBaseline = async (accessToken: string): Promise
   return fetchCalendarServerEntries(accessToken)
 }
 
+export const findCalendarEntryBaselineByDate = (
+  entries: CalendarEntriesBaseline,
+  date: string,
+): CalendarServerEntry | null => {
+  return entries.find((entry) => entry.date === date) ?? null
+}
+
+
 export const createCalendarServerEntry = async (
   accessToken: string,
   input: {
