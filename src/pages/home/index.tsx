@@ -126,7 +126,7 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
       )
       setIsLoading(false)
       setIsImageLoading(true)
-      const result = await generateOutfit({
+      const result = await generateOutfit(day, {
         selectedItems: res.recommendation.selectedItems,
         occasion: targetOccasion,
       })
