@@ -5,7 +5,7 @@ import { DaySwitch } from './DaySwitch'
 import { OccasionSelect } from './OccasionSelect'
 type HomeFilterBarProps = {
   className?: string
-  selectedOccasion: Occasion
+  selectedOccasion?: Occasion
   isBooked?: boolean
   onDayChange?: (day: 'today' | 'tomorrow') => void
   onOccasionChange?: (occasion: Occasion) => void
