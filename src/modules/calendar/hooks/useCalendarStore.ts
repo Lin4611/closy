@@ -155,7 +155,22 @@ const getCalendarEntrySignature = (entry: CalendarEntry | null) => {
     return ''
   }
 
-  return `${entry.id}:${entry.serverId ?? ''}:${entry.updatedAt}`
+  const previewSignature = entry.serverOutfitPreview
+    ? [
+        entry.serverOutfitPreview.imageUrl,
+        entry.serverOutfitPreview.occasionKey,
+        entry.serverOutfitPreview.savedAt ?? '',
+      ].join('~')
+    : ''
+
+  return [
+    entry.id,
+    entry.serverId ?? '',
+    entry.updatedAt,
+    entry.occasionKey,
+    entry.selectedOutfitId ?? '',
+    previewSignature,
+  ].join(':')
 }
 
 const getCalendarEntriesSignature = (entries: CalendarEntry[]) => {

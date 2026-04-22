@@ -24,6 +24,7 @@ export type CalendarApiEntry = {
   calendarEventOccasion: CalendarApiOccasion
   createdAt: string
   updatedAt: string
+  outfitId?: string | null
   outfit?: CalendarApiOutfitPreview | null
 }
 

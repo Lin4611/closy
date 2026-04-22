@@ -181,6 +181,15 @@ export const mapResolvedOutfitToPreviewModel = ({
 }
 
 
+
+export const mapSelectableOutfitSummaryToPreviewModel = (
+  outfit: SelectableOutfitSummary,
+): CalendarSelectedOutfitPreviewModel => ({
+  ...outfit,
+  previewStatus: 'resolved',
+  previewMessage: null,
+})
+
 export const mapServerOutfitPreviewToPreviewModel = (
   preview: CalendarServerOutfitPreview,
 ): CalendarSelectedOutfitPreviewModel => ({
