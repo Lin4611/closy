@@ -51,7 +51,9 @@ const normalizeSettingsProfile = (profile: UserInfo): SettingsServerProfile => {
   }
 }
 
-export const fetchSettingsServerProfile = async (accessToken: string): Promise<SettingsServerProfile> => {
+export const fetchSettingsServerProfile = async (
+  accessToken: string,
+): Promise<SettingsServerProfile> => {
   const response = await apiClient<ApiResponse<UserInfo>>({
     baseUrl: process.env.API_BASE_URL,
     endpoint: '/user/information',
@@ -64,11 +66,15 @@ export const fetchSettingsServerProfile = async (accessToken: string): Promise<S
   return normalizeSettingsProfile(response.data)
 }
 
-export const buildSettingsProfileBaseline = (profile: SettingsServerProfile): SettingsProfileBaseline => {
+export const buildSettingsProfileBaseline = (
+  profile: SettingsServerProfile,
+): SettingsProfileBaseline => {
   return profile
 }
 
-export const buildSettingsHydrationProfile = (profileBaseline: SettingsProfileBaseline): UserInfo => {
+export const buildSettingsHydrationProfile = (
+  profileBaseline: SettingsProfileBaseline,
+): UserInfo => {
   return {
     name: profileBaseline.name,
     picture: profileBaseline.picture,
@@ -79,6 +85,10 @@ export const buildSettingsHydrationProfile = (profileBaseline: SettingsProfileBa
       occasions: profileBaseline.preferences.occasions,
     },
     location: profileBaseline.location,
+    hasTodayCalendarEvent: profileBaseline.hasTodayCalendarEvent,
+    hasTomorrowCalendarEvent: profileBaseline.hasTomorrowCalendarEvent,
+    todayCalendarEventOccasion: profileBaseline.todayCalendarEventOccasion,
+    tomorrowCalendarEventOccasion: profileBaseline.tomorrowCalendarEventOccasion,
   }
 }
 

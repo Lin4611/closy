@@ -5,7 +5,7 @@ import type { ApiResponse } from '@/lib/api/types'
 import type { DayRecommendation } from '@/modules/home/types/dayRecommendationTypes'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'GET') return res.status(405).end()
+  if (req.method !== 'POST') return res.status(405).end()
 
   const accessToken = req.cookies.accessToken
 
@@ -14,15 +14,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const day = (req.query.day as string) ?? 'today'
-
+  const { occasion } = req.body
   try {
     const response = await apiClient<ApiResponse<DayRecommendation>>({
       baseUrl: process.env.API_BASE_URL,
       endpoint: `/home?day=${day}`,
-      method: 'GET',
+      method: 'POST',
       headers: {
         Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
       },
+      body: { occasion },
     })
     return res.status(200).json(response)
   } catch (error) {
