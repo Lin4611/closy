@@ -24,6 +24,7 @@ import type { AdjustStreamResult } from '@/modules/home/types/outfitAdjustChat'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import {
   clearDayCache,
+  promoteTomorrowToToday,
   setDayCache,
   markDaySaved,
   updateDayAdjustResult,
@@ -147,9 +148,26 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
 
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0]
-    const isStale = homeState.cacheDate !== today
-    if (isStale) dispatch(clearDayCache())
-    fetchDayOutfit('today', { force: isStale, occasion: getCalendarOccasion('today') })
+
+    if (homeState.cacheDate === today) {
+      fetchDayOutfit('today', { force: false, occasion: getCalendarOccasion('today') })
+      return
+    }
+
+    const yesterday = (() => {
+      const d = new Date()
+      d.setDate(d.getDate() - 1)
+      return d.toISOString().split('T')[0]
+    })()
+
+    if (homeState.cacheDate === yesterday && homeState.tomorrow) {
+      dispatch(promoteTomorrowToToday())
+      setIsLoading(false)
+      return
+    }
+
+    dispatch(clearDayCache())
+    fetchDayOutfit('today', { force: true, occasion: getCalendarOccasion('today') })
   }, [])
 
   const handleDayChange = (day: 'today' | 'tomorrow') => {
