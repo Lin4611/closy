@@ -3,49 +3,34 @@ import { useRouter } from 'next/router'
 import { useEffect, useMemo, useState } from 'react'
 
 import { showToast } from '@/components/ui/sonner'
-import { fetchCalendarEntriesBaseline } from '@/lib/api/calendar/shared'
+import { fetchCalendarEntriesBaseline, findCalendarEntryBaselineByDate } from '@/lib/api/calendar/shared'
 import { ApiError } from '@/lib/api/client'
 import { requestCalendarEntries, requestUpdatedCalendarEntry } from '@/modules/calendar/api/shared'
 import { CalendarForm } from '@/modules/calendar/components/CalendarForm'
 import { CalendarHeader } from '@/modules/calendar/components/CalendarHeader'
 import { CalendarOccasionChangeDialog } from '@/modules/calendar/components/CalendarOccasionChangeDialog'
 import { CalendarSuccessDialog } from '@/modules/calendar/components/CalendarSuccessDialog'
-import { useCalendarOutfits } from '@/modules/calendar/hooks/useCalendarOutfits'
-import { useCalendarServerEntries, useCalendarStore } from '@/modules/calendar/hooks/useCalendarStore'
-import type { CalendarEntriesBaseline, CalendarEntry, CalendarFormDraft, CalendarSelectedOutfitDraft } from '@/modules/calendar/types'
+import { useCalendarStore } from '@/modules/calendar/hooks/useCalendarStore'
+import type { CalendarEntriesBaseline, CalendarEntry, CalendarFormDraft, CalendarOutfitSelectionStatus, CalendarSelectedOutfitPreviewModel } from '@/modules/calendar/types'
 import {
   clearCalendarFlowDrafts,
   clearCalendarFormDraft,
-  clearCalendarSelectedOutfitDraft,
   getCalendarFormDraft,
-  getCalendarSelectedOutfitDraft,
   saveCalendarFormDraft,
 } from '@/modules/calendar/utils/calendarDraftStorage'
 import { buildCalendarSelectOutfitReturnTo, buildCalendarSelectOutfitRoute, parseCalendarEditDateParam } from '@/modules/calendar/utils/calendarNavigation'
-import { mapResolvedOutfitToPreviewModel, mapServerOutfitPreviewToPreviewModel } from '@/modules/calendar/utils/calendarOutfitAdapter'
+import { mapServerOutfitPreviewToPreviewModel } from '@/modules/calendar/utils/calendarOutfitAdapter'
 import { EMPTY_CALENDAR_GOOGLE_EVENTS, canEditCalendarDate, getNearestAvailableCalendarDate, isCalendarDateBlocked, isCalendarDateDisabled, shouldResetSelectedOutfit } from '@/modules/calendar/utils/calendarRules'
 import { AppShell } from '@/modules/common/components/AppShell'
 import type { Occasion } from '@/modules/common/types/occasion'
 
 type CalendarEditPageProps = {
   initialEntries: CalendarEntriesBaseline
-  entryServerId: string
+  initialEntry: CalendarEntry
   routeDate: string
 }
 
-type CalendarEditFormState = {
-  occasionKey: Occasion | null
-  date: string
-  selectedOutfitId: string | null
-}
-
-const buildBaseFormState = (entry: CalendarEntry): CalendarEditFormState => ({
-  occasionKey: entry.occasionKey,
-  date: entry.date,
-  selectedOutfitId: entry.selectedOutfitId,
-})
-
-const getMatchingEditDraft = (entryId: string): CalendarFormDraft | null => {
+const getMatchingCalendarEditDraft = (entryId: string) => {
   const draft = getCalendarFormDraft()
 
   if (!draft || draft.mode !== 'edit' || draft.sourceEntryId !== entryId) {
@@ -55,15 +40,23 @@ const getMatchingEditDraft = (entryId: string): CalendarFormDraft | null => {
   return draft
 }
 
-const getMatchingSelectedOutfitDraft = (entryId: string): CalendarSelectedOutfitDraft | null => {
-  const draft = getCalendarSelectedOutfitDraft()
+const buildInitialCalendarEditDraft = ({
+  entry,
+  routeDate,
+}: {
+  entry: CalendarEntry
+  routeDate: string
+}): CalendarFormDraft => ({
+  mode: 'edit',
+  date: entry.date,
+  occasionKey: entry.occasionKey,
+  selectedOutfitId: entry.selectedOutfitId,
+  selectedOutfitPreview: entry.serverOutfitPreview ? mapServerOutfitPreviewToPreviewModel(entry.serverOutfitPreview) : null,
+  selectionStatus: 'unchanged',
+  sourceEntryId: entry.id,
+  returnTo: `/calendar/${routeDate}/edit`,
+})
 
-  if (!draft || draft.sourceEntryId !== entryId) {
-    return null
-  }
-
-  return draft
-}
 
 const getUpdateErrorMessage = (error: unknown) => {
   if (error instanceof ApiError) {
@@ -101,7 +94,7 @@ export const getServerSideProps: GetServerSideProps<CalendarEditPageProps> = asy
 
   try {
     const initialEntries = await fetchCalendarEntriesBaseline(accessToken)
-    const matchedEntry = initialEntries.find((entry) => entry.date === routeDate) ?? null
+    const matchedEntry = findCalendarEntryBaselineByDate(initialEntries, routeDate)
 
     if (!matchedEntry) {
       return {
@@ -115,7 +108,7 @@ export const getServerSideProps: GetServerSideProps<CalendarEditPageProps> = asy
     return {
       props: {
         initialEntries,
-        entryServerId: matchedEntry.serverId,
+        initialEntry: matchedEntry,
         routeDate,
       },
     }
@@ -133,43 +126,57 @@ export const getServerSideProps: GetServerSideProps<CalendarEditPageProps> = asy
   }
 }
 
-const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+const CalendarEditPage = ({ initialEntries, initialEntry, routeDate }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const router = useRouter()
   const { hydrateEntriesFromServer } = useCalendarStore()
-  const entries = useCalendarServerEntries(initialEntries)
-  const entry = useMemo(() => {
-    return entries.find((item) => item.serverId === entryServerId) ?? initialEntries.find((item) => item.serverId === entryServerId) ?? null
-  }, [entries, entryServerId, initialEntries])
+  const entry = initialEntry
+  const entries = initialEntries
 
-  const [occasionKey, setOccasionKey] = useState<Occasion | null>(entry?.occasionKey ?? null)
-  const [date, setDate] = useState(entry?.date ?? '')
-  const [selectedOutfitId, setSelectedOutfitId] = useState<string | null>(entry?.selectedOutfitId ?? null)
-  const [hasSelectedOutfitDraftOverride, setHasSelectedOutfitDraftOverride] = useState(false)
-  const [pendingOccasionKey, setPendingOccasionKey] = useState<Occasion | null>(null)
+  const [occasionKey, setOccasionKey] = useState<Occasion | null>(entry.occasionKey)
+  const [date, setDate] = useState(entry.date)
+  const [selectedOutfitId, setSelectedOutfitId] = useState<string | null>(entry.selectedOutfitId ?? null)
+  const [selectedOutfitPreview, setSelectedOutfitPreview] = useState<CalendarSelectedOutfitPreviewModel | null>(
+    entry.serverOutfitPreview ? mapServerOutfitPreviewToPreviewModel(entry.serverOutfitPreview) : null,
+  )
+  const [selectionStatus, setSelectionStatus] = useState<CalendarOutfitSelectionStatus>('unchanged')
+  const [occasionChangeCandidate, setOccasionChangeCandidate] = useState<Occasion | null>(null)
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false)
   const [isOccasionChangeDialogOpen, setIsOccasionChangeDialogOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [hasRestoredDraftState, setHasRestoredDraftState] = useState(false)
+
+
+
 
   useEffect(() => {
-    if (!entry) {
+    const matchingDraft = getMatchingCalendarEditDraft(entry.id)
+
+    if (matchingDraft) {
+      setOccasionKey(matchingDraft.occasionKey)
+      setDate(matchingDraft.date)
+      setSelectedOutfitId(matchingDraft.selectedOutfitId)
+      setSelectedOutfitPreview(matchingDraft.selectedOutfitPreview)
+      setSelectionStatus(matchingDraft.selectionStatus)
+      setHasRestoredDraftState(true)
       return
     }
 
-    const formDraft = getMatchingEditDraft(entry.id)
-    const selectedOutfitDraft = getMatchingSelectedOutfitDraft(entry.id)
-    const nextOccasionKey = formDraft?.occasionKey ?? selectedOutfitDraft?.occasionKey ?? entry.occasionKey
-    const nextDate = formDraft?.date || selectedOutfitDraft?.date || entry.date
-    const nextSelectedOutfitId =
-      selectedOutfitDraft?.selectedOutfitId ?? formDraft?.selectedOutfitId ?? entry.selectedOutfitId
+    const initialDraft = buildInitialCalendarEditDraft({
+      entry,
+      routeDate,
+    })
 
-    setOccasionKey(nextOccasionKey)
-    setDate(nextDate)
-    setSelectedOutfitId(nextSelectedOutfitId)
-    setHasSelectedOutfitDraftOverride(selectedOutfitDraft !== null)
-  }, [entry])
+    saveCalendarFormDraft(initialDraft)
+    setOccasionKey(initialDraft.occasionKey)
+    setDate(initialDraft.date)
+    setSelectedOutfitId(initialDraft.selectedOutfitId)
+    setSelectedOutfitPreview(initialDraft.selectedOutfitPreview)
+    setSelectionStatus(initialDraft.selectionStatus)
+    setHasRestoredDraftState(true)
+  }, [entry, routeDate])
 
   useEffect(() => {
-    if (!entry) {
+    if (!entry || !hasRestoredDraftState) {
       return
     }
 
@@ -178,36 +185,22 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
       date,
       occasionKey,
       selectedOutfitId,
+      selectedOutfitPreview,
+      selectionStatus,
       sourceEntryId: entry.id,
       returnTo: `/calendar/${routeDate}/edit`,
     })
-  }, [date, entry, occasionKey, routeDate, selectedOutfitId])
+  }, [date, selectedOutfitId, selectedOutfitPreview, entry, hasRestoredDraftState, occasionKey, routeDate, selectionStatus])
 
-  const { getOutfitStateById } = useCalendarOutfits(occasionKey, { source: 'api' })
-
-  const selectedOutfit = useMemo(() => {
-    if (!entry) {
+  const selectedOutfit = useMemo<CalendarSelectedOutfitPreviewModel | null>(() => {
+    if (!hasRestoredDraftState) {
       return null
     }
 
-    if (selectedOutfitId) {
-      return mapResolvedOutfitToPreviewModel({
-        resolvedOutfit: getOutfitStateById(selectedOutfitId),
-        outfitId: selectedOutfitId,
-        occasionKey,
-      })
-    }
+    return selectedOutfitPreview
+  }, [hasRestoredDraftState, selectedOutfitPreview])
 
-    if (hasSelectedOutfitDraftOverride) {
-      return null
-    }
-
-    if (entry.serverOutfitPreview && occasionKey === entry.occasionKey) {
-      return mapServerOutfitPreviewToPreviewModel(entry.serverOutfitPreview)
-    }
-
-    return null
-  }, [entry, getOutfitStateById, hasSelectedOutfitDraftOverride, occasionKey, selectedOutfitId])
+  const isOutfitPreviewLoading = !hasRestoredDraftState
 
   const disabledDates = useMemo(() => {
     if (!entry) {
@@ -249,14 +242,10 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
   }
 
   const handleOccasionChange = (nextOccasionKey: Occasion) => {
-    if (!entry) {
-      return
-    }
-
-    const hasPersistedSelectedOutfit = Boolean(selectedOutfitId || entry.serverOutfitPreview)
+    const hasPersistedSelectedOutfit = Boolean(selectedOutfit)
 
     if (hasPersistedSelectedOutfit && shouldResetSelectedOutfit(occasionKey, nextOccasionKey)) {
-      setPendingOccasionKey(nextOccasionKey)
+      setOccasionChangeCandidate(nextOccasionKey)
       setIsOccasionChangeDialogOpen(true)
       return
     }
@@ -265,15 +254,14 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
   }
 
   const handleSelectOutfit = () => {
-    if (!entry) {
-      return
-    }
 
     saveCalendarFormDraft({
       mode: 'edit',
       date,
       occasionKey,
       selectedOutfitId,
+      selectedOutfitPreview,
+      selectionStatus,
       sourceEntryId: entry.id,
       returnTo: `/calendar/${routeDate}/edit`,
     })
@@ -283,18 +271,10 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
   }
 
   const handleSubmit = () => {
-    if (!entry || !occasionKey || !date || isSubmitting) return
+    if (!occasionKey || !date || isSubmitting) return
     if (isDateDisabled(date)) return
 
-    const isTryingToRemovePersistedOutfit =
-      Boolean(entry.serverOutfitPreview) &&
-      !selectedOutfitId &&
-      (hasSelectedOutfitDraftOverride || occasionKey !== entry.occasionKey)
-
-    if (isTryingToRemovePersistedOutfit) {
-      showToast.error('目前尚不支援直接移除已選穿搭，請改選其他穿搭或先保留原本穿搭')
-      return
-    }
+    const hasPersistedSelectedOutfit = Boolean(entry.serverOutfitPreview)
 
     const nextUpdateInput: {
       date?: string
@@ -310,13 +290,18 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
       nextUpdateInput.occasionKey = occasionKey
     }
 
-    if (selectedOutfitId) {
-      nextUpdateInput.selectedOutfitId = selectedOutfitId
+    if (selectionStatus === 'selected') {
+      if (selectedOutfitId) {
+        nextUpdateInput.selectedOutfitId = selectedOutfitId
+      }
+    } else if (selectionStatus === 'explicit-empty') {
+      if (hasPersistedSelectedOutfit) {
+        nextUpdateInput.selectedOutfitId = ''
+      }
     }
 
     if (Object.keys(nextUpdateInput).length === 0) {
       clearCalendarFormDraft()
-      clearCalendarSelectedOutfitDraft()
       setIsSuccessDialogOpen(true)
       return
     }
@@ -325,11 +310,13 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
       try {
         setIsSubmitting(true)
         await requestUpdatedCalendarEntry(entry.serverId ?? entry.id, nextUpdateInput)
+        setOccasionKey(occasionKey)
+        setDate(date)
+        setSelectedOutfitId(selectedOutfitId)
+        setSelectionStatus('unchanged')
         const nextEntries = await requestCalendarEntries()
         hydrateEntriesFromServer(nextEntries)
         clearCalendarFormDraft()
-        clearCalendarSelectedOutfitDraft()
-        setHasSelectedOutfitDraftOverride(false)
         setIsSuccessDialogOpen(true)
       } catch (error) {
         showToast.error(getUpdateErrorMessage(error))
@@ -339,20 +326,7 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
     })()
   }
 
-  if (!entry) {
     return (
-      <AppShell showBottomNav={false}>
-        <div className="flex min-h-screen flex-col">
-          <CalendarHeader title="編輯" backHref="/calendar" />
-          <div className="flex flex-1 items-center justify-center px-6 text-center">
-            <p className="font-paragraph-md text-neutral-400">找不到對應的行事曆資料</p>
-          </div>
-        </div>
-      </AppShell>
-    )
-  }
-
-  return (
     <AppShell showBottomNav={false}>
       <div className="flex min-h-screen flex-col">
         <CalendarHeader
@@ -367,6 +341,7 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
           occasionKey={occasionKey}
           date={date}
           outfit={selectedOutfit}
+          isOutfitLoading={isOutfitPreviewLoading}
           disabledDate={!canEditCalendarDate(entry)}
           disabledDates={disabledDates}
           initialDisplayDate={initialDisplayDate}
@@ -379,27 +354,28 @@ const CalendarEditPage = ({ initialEntries, entryServerId, routeDate }: InferGet
         <CalendarOccasionChangeDialog
           open={isOccasionChangeDialogOpen}
           onClose={() => {
-            setPendingOccasionKey(null)
+            setOccasionChangeCandidate(null)
             setIsOccasionChangeDialogOpen(false)
           }}
           onConfirm={() => {
-            if (!pendingOccasionKey) return
+            if (!occasionChangeCandidate) return
 
             saveCalendarFormDraft({
               mode: 'edit',
               date,
-              occasionKey: pendingOccasionKey,
+              occasionKey: occasionChangeCandidate,
               selectedOutfitId: null,
+              selectedOutfitPreview: null,
+              selectionStatus: 'explicit-empty',
               sourceEntryId: entry.id,
               returnTo: `/calendar/${routeDate}/edit`,
             })
-            setOccasionKey(pendingOccasionKey)
+            setOccasionKey(occasionChangeCandidate)
             setSelectedOutfitId(null)
-            setPendingOccasionKey(null)
-            setHasSelectedOutfitDraftOverride(true)
+            setSelectedOutfitPreview(null)
+            setOccasionChangeCandidate(null)
+            setSelectionStatus('explicit-empty')
             setIsOccasionChangeDialogOpen(false)
-            const returnTo = buildCalendarSelectOutfitReturnTo({ mode: 'edit', date: routeDate })
-            void router.push(buildCalendarSelectOutfitRoute({ returnTo, date }))
           }}
         />
         <CalendarSuccessDialog

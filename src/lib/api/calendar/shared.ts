@@ -110,7 +110,7 @@ export const isUpdateCalendarEntryRequest = (value: unknown): value is UpdateCal
   }
 
   if ('outfitId' in candidate) {
-    if (typeof candidate.outfitId !== 'string' || candidate.outfitId.length === 0) {
+    if (typeof candidate.outfitId !== 'string') {
       return false
     }
   }
@@ -181,6 +181,14 @@ export const fetchCalendarServerEntries = async (accessToken: string): Promise<C
 export const fetchCalendarEntriesBaseline = async (accessToken: string): Promise<CalendarEntriesBaseline> => {
   return fetchCalendarServerEntries(accessToken)
 }
+
+export const findCalendarEntryBaselineByDate = (
+  entries: CalendarEntriesBaseline,
+  date: string,
+): CalendarServerEntry | null => {
+  return entries.find((entry) => entry.date === date) ?? null
+}
+
 
 export const createCalendarServerEntry = async (
   accessToken: string,
