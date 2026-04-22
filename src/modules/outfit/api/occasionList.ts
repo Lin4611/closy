@@ -1,12 +1,15 @@
 import { apiClient } from '@/lib/api/client'
 import type { ApiResponse } from '@/lib/api/types'
+import type { OutfitOccasionSummary } from '@/modules/outfit/types/outfitTypes'
 
-import type { SummaryList } from '../types/outfitTypes'
+import { mapOutfitSummaryResponseData } from './mappers'
+import type { OutfitSummaryResponseData } from './types'
 
-export const getOccasionList = async (): Promise<SummaryList[]> => {
-  const res = await apiClient<ApiResponse<{ summaryList: SummaryList[] }>>({
-    endpoint: `/api/outfit/outfit-sum`,
+export const getOccasionList = async (): Promise<OutfitOccasionSummary[]> => {
+  const response = await apiClient<ApiResponse<OutfitSummaryResponseData>>({
+    endpoint: '/api/outfit/outfit-sum',
     method: 'GET',
   })
-  return res.data.summaryList
+
+  return mapOutfitSummaryResponseData(response.data)
 }
