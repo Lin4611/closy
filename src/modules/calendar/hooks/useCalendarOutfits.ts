@@ -44,7 +44,7 @@ export const useCalendarOutfits = (
 ) => {
   const source = options?.source ?? 'mock'
   const dispatch = useAppDispatch()
-  const { outfitList, occasionsList } = useAppSelector((state) => state.outfit)
+  const { outfitList, occasionsList, baselineResolved } = useAppSelector((state) => state.outfit)
   const [refreshKey, setRefreshKey] = useState(0)
   const [apiState, setApiState] = useState<ApiOutfitState>({
     status: 'idle',
@@ -54,7 +54,7 @@ export const useCalendarOutfits = (
 
   const currentRequestKey = useMemo(() => getRequestKey(occasionKey, refreshKey), [occasionKey, refreshKey])
   const cachedSelectableOutfits = useMemo(() => mapOutfitItemsToSelectableOutfitSummaries(outfitList), [outfitList])
-  const cachedBaselineAvailable = outfitList.length > 0 || occasionsList.length > 0
+  const cachedBaselineAvailable = baselineResolved || outfitList.length > 0 || occasionsList.length > 0
 
   useEffect(() => {
     if (source !== 'api') {

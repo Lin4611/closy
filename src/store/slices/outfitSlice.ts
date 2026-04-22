@@ -8,12 +8,14 @@ import type {
 type OutfitState = {
   outfitList: OutfitListItem[]
   occasionsList: OutfitOccasionSummary[]
+  baselineResolved: boolean
   cacheRevision: number
 }
 
 const initialState: OutfitState = {
   outfitList: [],
   occasionsList: [],
+  baselineResolved: false,
   cacheRevision: 0,
 }
 
@@ -48,11 +50,13 @@ const outfitSlice = createSlice({
     ) => {
       state.outfitList = action.payload.outfitList
       state.occasionsList = action.payload.occasionsList
+      state.baselineResolved = true
       state.cacheRevision += 1
     },
     clearOutfitCache: (state) => {
       state.outfitList = []
       state.occasionsList = []
+      state.baselineResolved = false
       state.cacheRevision += 1
     },
   },
