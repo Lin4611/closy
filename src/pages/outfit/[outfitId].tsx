@@ -1,15 +1,15 @@
 import { ChevronLeft } from 'lucide-react'
+import type { GetServerSideProps, InferGetServerSidePropsType } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useEffect, useState } from 'react'
 
+import { ApiError } from '@/lib/api/client'
+import { fetchOutfitServerDetail } from '@/lib/api/outfit/shared'
 import { cn } from '@/lib/utils'
 import { AppShell } from '@/modules/common/components/AppShell'
-import { getOutfitList } from '@/modules/outfit/api/outfit'
-import type { OutfitItem } from '@/modules/outfit/types/outfitTypes'
-import { useAppDispatch, useAppSelector } from '@/store/hooks'
-import { setOutfitList } from '@/store/slices/outfitSlice'
+import { useOutfitServerItem } from '@/modules/outfit/hooks/useOutfitServerItem'
+import type { OutfitDetail } from '@/modules/outfit/types/outfitTypes'
 
 const DEFAULT_BACK_HREF = '/outfit'
 
@@ -26,50 +26,61 @@ const resolveShowBottomNav = (hideBottomNav: string | string[] | undefined) => {
   return false
 }
 
-const OutfitDetailPage = () => {
-  const router = useRouter()
-  const { outfitId, returnTo, hideBottomNav } = router.query
-  const backHref = resolveBackHref(returnTo)
-  const showBottomNav = resolveShowBottomNav(hideBottomNav)
+export const getServerSideProps: GetServerSideProps<{ initialOutfit: OutfitDetail }> = async ({ params, req }) => {
+  const accessToken = req.cookies.accessToken
+  const outfitId = typeof params?.outfitId === 'string' ? params.outfitId : null
 
-  const dispatch = useAppDispatch()
-  const outfitList = useAppSelector((state) => state.outfit.outfitList)
-
-  const [outfit, setOutfit] = useState<OutfitItem | null>(null)
-  const [isFetching, setIsFetching] = useState(false)
-
-  const isLoading = !router.isReady || isFetching
-
-  useEffect(() => {
-    if (!router.isReady || typeof outfitId !== 'string') return
-
-    const cached = outfitList.find((item) => item._id === outfitId)
-    if (cached) {
-      setOutfit(cached)
-      return
+  if (!accessToken) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
     }
+  }
 
-    const fetchFallback = async () => {
-      setIsFetching(true)
-      try {
-        const list = await getOutfitList()
-        const found = list.find((item) => item._id === outfitId) ?? null
-        setOutfit(found)
-        dispatch(setOutfitList(list))
-      } catch {
-        setOutfit(null)
-      } finally {
-        setIsFetching(false)
+  if (!outfitId) {
+    return {
+      notFound: true,
+    }
+  }
+
+  try {
+    const initialOutfit = await fetchOutfitServerDetail(accessToken, outfitId)
+
+    return {
+      props: {
+        initialOutfit,
+      },
+    }
+  } catch (error) {
+    if (error instanceof ApiError) {
+      if (error.statusCode === 401) {
+        return {
+          redirect: {
+            destination: '/',
+            permanent: false,
+          },
+        }
+      }
+
+      if (error.statusCode === 404) {
+        return {
+          notFound: true,
+        }
       }
     }
 
-    const load = async () => {
-      await fetchFallback()
-    }
-    load()
-  }, [router.isReady, outfitId, outfitList])
+    throw error
+  }
+}
 
-  if (typeof outfitId !== 'string') return null
+const OutfitDetailPage = ({ initialOutfit }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+  const router = useRouter()
+  const { returnTo, hideBottomNav } = router.query
+  const backHref = resolveBackHref(returnTo)
+  const showBottomNav = resolveShowBottomNav(hideBottomNav)
+  const outfit = useOutfitServerItem(initialOutfit)
 
   const header = (
     <header className="sticky top-0 z-10 bg-white px-4 py-4.5">
@@ -88,32 +99,6 @@ const OutfitDetailPage = () => {
       </div>
     </header>
   )
-
-  if (isLoading) {
-    return (
-      <AppShell activeTab="outfit" showBottomNav={showBottomNav}>
-        <div className="flex min-h-0 flex-1 flex-col">
-          {header}
-          <div className="flex flex-1 items-center justify-center p-4">
-            <p className="font-label-md text-neutral-400">載入中...</p>
-          </div>
-        </div>
-      </AppShell>
-    )
-  }
-
-  if (!outfit) {
-    return (
-      <AppShell activeTab="outfit" showBottomNav={showBottomNav}>
-        <div className="flex min-h-0 flex-1 flex-col">
-          {header}
-          <div className="flex flex-1 items-center justify-center p-4 text-center">
-            <p className="font-label-md text-neutral-500">找不到這套穿搭</p>
-          </div>
-        </div>
-      </AppShell>
-    )
-  }
 
   return (
     <AppShell activeTab="outfit" showBottomNav={showBottomNav}>
