@@ -21,6 +21,10 @@ export type LoginUser = {
   preferences: LoginUserPreferences
   isProfileCompleted: boolean
   location: { longitude: number; latitude: number }
+  hasTodayCalendarEvent?: boolean
+  hasTomorrowCalendarEvent?: boolean
+  todayCalendarEventOccasion?: string
+  tomorrowCalendarEventOccasion?: string
 }
 
 export type GoogleLoginData = {

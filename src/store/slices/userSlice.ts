@@ -60,6 +60,10 @@ const userSlice = createSlice({
           occasions: action.payload.preferences.occasions as Occasion,
         },
         location: action.payload.location,
+        hasTodayCalendarEvent: action.payload.hasTodayCalendarEvent,
+        hasTomorrowCalendarEvent: action.payload.hasTomorrowCalendarEvent,
+        todayCalendarEventOccasion: action.payload.todayCalendarEventOccasion,
+        tomorrowCalendarEventOccasion: action.payload.tomorrowCalendarEventOccasion,
       }
       state.isLoggedIn = true
     },

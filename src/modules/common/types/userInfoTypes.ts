@@ -8,4 +8,8 @@ export type UserInfo = {
     occasions: string
   }
   location: { longitude: number; latitude: number }
+  hasTodayCalendarEvent: boolean
+  hasTomorrowCalendarEvent: boolean
+  todayCalendarEventOccasion: string
+  tomorrowCalendarEventOccasion: string
 }

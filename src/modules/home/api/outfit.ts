@@ -10,13 +10,14 @@ type GenerateOutfitPayload = {
 }
 
 export const generateOutfit = async (
+  day: 'today' | 'tomorrow',
   payload: GenerateOutfitPayload,
 ): Promise<{ outfitImgUrl: string; occasion: Occasion }> => {
   const res = await apiClient<
     ApiResponse<{ outfitImgUrl: string; occasion: Occasion }>,
     GenerateOutfitPayload
   >({
-    endpoint: '/api/home/generate-outfit',
+    endpoint: `/api/home/generate-outfit?day=${day}`,
     method: 'POST',
     body: payload,
   })
