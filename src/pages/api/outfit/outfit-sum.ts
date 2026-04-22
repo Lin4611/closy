@@ -1,8 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 
-import { ApiError, apiClient } from '@/lib/api/client'
-import type { ApiResponse } from '@/lib/api/types'
-import type { SummaryList } from '@/modules/outfit/types/outfitTypes'
+import { fetchOutfitSummaryResponse, getOutfitApiErrorResponse } from '@/lib/api/outfit/shared'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') return res.status(405).end()
@@ -14,20 +12,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const response = await apiClient<ApiResponse<{ summaryList: SummaryList[] }>>({
-      baseUrl: process.env.API_BASE_URL,
-      endpoint: `/outfit/summary`,
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    })
+    const response = await fetchOutfitSummaryResponse(accessToken)
     return res.status(200).json(response)
   } catch (error) {
-    if (error instanceof ApiError) {
-      return res.status(error.statusCode).json({ message: error.message })
-    }
+    const errorResponse = getOutfitApiErrorResponse(error, '取得場合資料失敗')
 
-    return res.status(500).json({ message: `取得場合資料失敗` })
+    return res.status(errorResponse.statusCode).json({ message: errorResponse.message })
   }
 }

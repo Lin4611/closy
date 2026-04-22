@@ -1,24 +1,81 @@
+import type { GetServerSideProps, InferGetServerSidePropsType } from 'next'
 import { useRouter } from 'next/router'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
+import { fetchCalendarEntriesBaseline } from '@/lib/api/calendar/shared'
+import { ApiError } from '@/lib/api/client'
 import { CalendarHeader } from '@/modules/calendar/components/CalendarHeader'
 import { SelectableOutfitCard } from '@/modules/calendar/components/SelectableOutfitCard'
 import { SelectableOutfitEmptyState } from '@/modules/calendar/components/SelectableOutfitEmptyState'
 import { useCalendarOutfits } from '@/modules/calendar/hooks/useCalendarOutfits'
-import { getCalendarFormDraft, saveCalendarSelectedOutfitDraft } from '@/modules/calendar/utils/calendarDraftStorage'
+import { useCalendarServerEntries } from '@/modules/calendar/hooks/useCalendarStore'
+import type { CalendarEntriesBaseline, CalendarFormDraft } from '@/modules/calendar/types'
+import { getCalendarFormDraft, saveCalendarFormDraft } from '@/modules/calendar/utils/calendarDraftStorage'
+import { normalizeCalendarReturnTo } from '@/modules/calendar/utils/calendarNavigation'
+import { mapSelectableOutfitSummaryToPreviewModel } from '@/modules/calendar/utils/calendarOutfitAdapter'
 import { AppShell } from '@/modules/common/components/AppShell'
 
-const CalendarSelectOutfitPage = () => {
+export const getServerSideProps: GetServerSideProps<{ initialEntries: CalendarEntriesBaseline }> = async ({ req }) => {
+  const accessToken = req.cookies.accessToken
+
+  if (!accessToken) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    }
+  }
+
+  try {
+    const initialEntries = await fetchCalendarEntriesBaseline(accessToken)
+
+    return {
+      props: {
+        initialEntries,
+      },
+    }
+  } catch (error) {
+    if (error instanceof ApiError && error.statusCode === 401) {
+      return {
+        redirect: {
+          destination: '/',
+          permanent: false,
+        },
+      }
+    }
+
+    throw error
+  }
+}
+
+const resolveInitialSelectedOutfitId = (draft: CalendarFormDraft | null) => {
+  if (!draft || draft.selectionStatus === 'explicit-empty') {
+    return null
+  }
+
+  return draft.selectedOutfitId
+}
+
+const CalendarSelectOutfitPage = ({ initialEntries }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const router = useRouter()
+  useCalendarServerEntries(initialEntries)
   const formDraft = useMemo(() => getCalendarFormDraft(), [])
-  const returnTo = typeof router.query.returnTo === 'string' ? router.query.returnTo : formDraft?.returnTo ?? '/calendar/new'
+  const returnTo = useMemo(() => {
+    const queryReturnTo = typeof router.query.returnTo === 'string' ? normalizeCalendarReturnTo(router.query.returnTo) : null
+
+    return queryReturnTo ?? formDraft?.returnTo ?? '/calendar/new'
+  }, [formDraft?.returnTo, router.query.returnTo])
+  const resolvedDate = useMemo(() => {
+    return typeof router.query.date === 'string' ? router.query.date : formDraft?.date ?? ''
+  }, [formDraft?.date, router.query.date])
   const { outfits, isEmpty, isError, isLoading, errorMessage, reload } = useCalendarOutfits(
     formDraft?.occasionKey ?? null,
     { source: 'api' },
   )
-  const [selectedOutfitId, setSelectedOutfitId] = useState<string | null>(formDraft?.selectedOutfitId ?? null)
+  const [selectedOutfitId, setSelectedOutfitId] = useState<string | null>(resolveInitialSelectedOutfitId(formDraft))
 
   const resolvedSelectedOutfitId = useMemo(() => {
     if (!selectedOutfitId) {
@@ -28,21 +85,43 @@ const CalendarSelectOutfitPage = () => {
     return outfits.some((outfit) => outfit.id === selectedOutfitId) ? selectedOutfitId : null
   }, [outfits, selectedOutfitId])
 
-  const handleComplete = (nextOutfitId: string | null) => {
-    saveCalendarSelectedOutfitDraft({
-      selectedOutfitId: nextOutfitId,
-      returnTo,
-      sourceEntryId: formDraft?.sourceEntryId ?? null,
-      occasionKey: formDraft?.occasionKey ?? null,
-      date: formDraft?.date ?? '',
-    })
+  const handleSubmitSelection = (nextOutfitId: string | null) => {
+    if (formDraft) {
+      const nextSelectedOutfit = nextOutfitId
+        ? outfits.find((outfit) => outfit.id === nextOutfitId) ?? null
+        : null
+
+      saveCalendarFormDraft({
+        ...formDraft,
+        date: resolvedDate,
+        selectedOutfitId: nextOutfitId,
+        selectedOutfitPreview: nextSelectedOutfit ? mapSelectableOutfitSummaryToPreviewModel(nextSelectedOutfit) : null,
+        selectionStatus: nextOutfitId ? 'selected' : 'explicit-empty',
+        returnTo,
+      })
+    }
+
     void router.push(returnTo)
+  }
+
+  const handleLeaveWithoutSubmit = () => {
+    void router.push(returnTo)
+  }
+
+  useEffect(() => {
+    if (!formDraft?.occasionKey) {
+      void router.replace('/calendar/new')
+    }
+  }, [formDraft?.occasionKey, router])
+
+  if (!formDraft?.occasionKey) {
+    return null
   }
 
   return (
     <AppShell showBottomNav={false}>
       <div className="flex min-h-screen flex-col">
-        <CalendarHeader title="選擇穿搭" backHref={returnTo} />
+        <CalendarHeader title="選擇穿搭" backHref={returnTo} onBackClick={handleLeaveWithoutSubmit} />
         {isLoading ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 px-8 text-center">
             <Spinner className="size-8 text-neutral-700" />
@@ -56,10 +135,10 @@ const CalendarSelectOutfitPage = () => {
             primaryLabel="重新整理"
             secondaryLabel="略過"
             onPrimary={reload}
-            onSecondary={() => handleComplete(null)}
+            onSecondary={handleLeaveWithoutSubmit}
           />
         ) : isEmpty ? (
-          <SelectableOutfitEmptyState onPrimary={() => void router.push('/home')} onSecondary={() => handleComplete(null)} />
+          <SelectableOutfitEmptyState onPrimary={() => void router.push('/home')} onSecondary={handleLeaveWithoutSubmit} />
         ) : (
           <>
             <div className="px-4 pb-6">
@@ -80,7 +159,7 @@ const CalendarSelectOutfitPage = () => {
             </div>
             <div className="fixed inset-x-0 bottom-0 z-10 px-4 py-4">
               <div className="mx-auto flex max-w-sm flex-col gap-3">
-                <Button type="button" variant="brand" size="xl" onClick={() => handleComplete(resolvedSelectedOutfitId)}>
+                <Button type="button" variant="brand" size="xl" onClick={() => handleSubmitSelection(resolvedSelectedOutfitId)}>
                   下一步
                 </Button>
                 <Button
@@ -88,7 +167,7 @@ const CalendarSelectOutfitPage = () => {
                   variant="outline"
                   size="xl"
                   className="border-neutral-300 bg-white text-neutral-700"
-                  onClick={() => handleComplete(null)}
+                  onClick={handleLeaveWithoutSubmit}
                 >
                   略過
                 </Button>

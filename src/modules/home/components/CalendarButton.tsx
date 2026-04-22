@@ -1,13 +1,14 @@
 import { CalendarDays } from 'lucide-react'
+import Link from 'next/link'
 
 import { Button } from '@/components/ui/button'
 
 type CalendarButtonProps = {
-  onClick?: () => void
   ariaLabel?: string
+  onClick?: () => void
 }
 
-export const CalendarButton = ({ onClick, ariaLabel = '行事曆' }: CalendarButtonProps) => {
+export const CalendarButton = ({ ariaLabel = '行事曆', onClick }: CalendarButtonProps) => {
   return (
     <Button
       onClick={onClick}
@@ -15,7 +16,9 @@ export const CalendarButton = ({ onClick, ariaLabel = '行事曆' }: CalendarBut
       id="calendarBtn"
       className="size-10 self-end rounded-full bg-white text-neutral-600 shadow-[0px_2px_8px_0px_#18181B1F] transition-all duration-300 ease-in-out"
     >
-      <CalendarDays className="size-6" strokeWidth={2} />
+      <Link href="/calendar">
+        <CalendarDays className="size-6" strokeWidth={2} />
+      </Link>
     </Button>
   )
 }

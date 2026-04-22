@@ -9,8 +9,7 @@ export type OutfitProduct = {
   cloudImgUrl: string
 }
 
-
-export type OutfitItem = {
+export type OutfitListItem = {
   _id: string
   outfitImgUrl: string
   occasion: Occasion
@@ -19,19 +18,24 @@ export type OutfitItem = {
   updatedAt: string
 }
 
+export type OutfitDetail = OutfitListItem
+
 export type AddOutfitItem = {
   outfitImgUrl: string
   occasion: Occasion
   selectedItems: OutfitProduct[]
 }
 
-export type SummaryList = {
+export type OutfitOccasionSummary = {
   occasionId: Occasion
   count: number
   recentDates: string[]
-} & {
   description: string
   imageUrl: string
 }
 
 export type OutfitDetailItem = OutfitProduct
+
+// Legacy aliases kept for current page / component boundaries.
+export type OutfitItem = OutfitListItem
+export type SummaryList = OutfitOccasionSummary

@@ -17,6 +17,7 @@ type CalendarFormProps = {
   disabledDates?: string[]
   isDateDisabled?: (value: string) => boolean
   submitLabel?: string
+  isOutfitLoading?: boolean
   onOccasionChange: (occasionKey: Occasion) => void
   onDateChange: (date: string) => void
   onSelectOutfit: () => void
@@ -32,6 +33,7 @@ export const CalendarForm = ({
   disabledDates = [],
   isDateDisabled,
   submitLabel = '確定',
+  isOutfitLoading = false,
   onOccasionChange,
   onDateChange,
   onSelectOutfit,
@@ -40,7 +42,7 @@ export const CalendarForm = ({
   return (
     <div className="flex flex-1 flex-col">
       <div className="pt-2">
-        <CalendarSelectedOutfitPreview outfit={outfit} onClick={onSelectOutfit} />
+        <CalendarSelectedOutfitPreview outfit={outfit} onClick={onSelectOutfit} isLoading={isOutfitLoading} />
       </div>
       <div className="flex flex-1 flex-col mt-4 rounded-t-[40px] bg-white px-4 py-5 shadow-[0_1px_16px_rgba(0,0,0,0.1)]">
         <div className="px-4">

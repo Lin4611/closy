@@ -19,12 +19,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(401).json({ message: '尚未登入' })
   }
 
+  const day = (req.query.day as string) ?? 'today'
   const { selectedItems, occasion } = req.body as GenerateOutfitBody
 
   try {
     const response = await apiClient<ApiResponse<{ outfitImgUrl: string; occasion: Occasion }>>({
       baseUrl: process.env.API_BASE_URL,
-      endpoint: `/home/outfit`,
+      endpoint: `/home/outfit?day=${day}`,
       method: 'POST',
       headers: {
         Authorization: `Bearer ${accessToken}`,

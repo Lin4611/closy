@@ -4,24 +4,23 @@ import type {
   CalendarOutfitCollectionStatus,
   CalendarOutfitDataSource,
   CalendarResolvedOutfit,
-  SelectableOutfitSummary,
 } from '@/modules/calendar/types'
 import {
   buildSelectableOutfitSummaryMap,
   filterSelectableOutfitSummariesByOccasion,
-  getSelectableOutfitSummaries,
   mapOutfitItemsToSelectableOutfitSummaries,
   resolveSelectableOutfitById,
 } from '@/modules/calendar/utils/calendarOutfitAdapter'
 import type { Occasion } from '@/modules/common/types/occasion'
-import { getOutfitList } from '@/modules/outfit/api/outfit'
+import { getOutfitBaseline } from '@/modules/outfit/api/outfit'
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
+import { hydrateOutfitBaseline } from '@/store/slices/outfitSlice'
 
 type UseCalendarOutfitsOptions = {
   source?: CalendarOutfitDataSource
 }
 
 type ApiOutfitState = {
-  outfits: SelectableOutfitSummary[]
   status: Exclude<CalendarOutfitCollectionStatus, 'loading'>
   errorMessage: string | null
   requestKey: string | null
@@ -44,15 +43,18 @@ export const useCalendarOutfits = (
   options?: UseCalendarOutfitsOptions,
 ) => {
   const source = options?.source ?? 'mock'
+  const dispatch = useAppDispatch()
+  const { outfitList, occasionsList, baselineResolved } = useAppSelector((state) => state.outfit)
   const [refreshKey, setRefreshKey] = useState(0)
   const [apiState, setApiState] = useState<ApiOutfitState>({
-    outfits: [],
     status: 'idle',
     errorMessage: null,
     requestKey: null,
   })
 
   const currentRequestKey = useMemo(() => getRequestKey(occasionKey, refreshKey), [occasionKey, refreshKey])
+  const cachedSelectableOutfits = useMemo(() => mapOutfitItemsToSelectableOutfitSummaries(outfitList), [outfitList])
+  const cachedBaselineAvailable = baselineResolved || outfitList.length > 0 || occasionsList.length > 0
 
   useEffect(() => {
     if (source !== 'api') {
@@ -61,16 +63,20 @@ export const useCalendarOutfits = (
 
     let isActive = true
 
-    void getOutfitList(occasionKey ?? undefined)
-      .then((outfitList) => {
+    void getOutfitBaseline()
+      .then((baseline) => {
         if (!isActive) {
           return
         }
 
-        const outfits = mapOutfitItemsToSelectableOutfitSummaries(outfitList)
+        dispatch(hydrateOutfitBaseline(baseline))
+
+        const outfits = filterSelectableOutfitSummariesByOccasion(
+          mapOutfitItemsToSelectableOutfitSummaries(baseline.outfitList),
+          occasionKey,
+        )
 
         setApiState({
-          outfits,
           status: outfits.length > 0 ? 'ready' : 'empty',
           errorMessage: null,
           requestKey: currentRequestKey,
@@ -82,7 +88,6 @@ export const useCalendarOutfits = (
         }
 
         setApiState({
-          outfits: [],
           status: 'error',
           errorMessage: getErrorMessage(error),
           requestKey: currentRequestKey,
@@ -92,28 +97,34 @@ export const useCalendarOutfits = (
     return () => {
       isActive = false
     }
-  }, [occasionKey, currentRequestKey, source])
+  }, [currentRequestKey, dispatch, occasionKey, source])
 
-  const mockOutfits = useMemo(() => getSelectableOutfitSummaries(occasionKey), [occasionKey])
+  const filteredOutfits = useMemo(() => {
+    const outfits = source === 'api' ? cachedSelectableOutfits : []
+    return filterSelectableOutfitSummariesByOccasion(outfits, occasionKey)
+  }, [source, cachedSelectableOutfits, occasionKey])
 
   const status = useMemo<CalendarOutfitCollectionStatus>(() => {
     if (source !== 'api') {
-      return mockOutfits.length > 0 ? 'ready' : 'empty'
+      return 'empty'
     }
 
     if (apiState.requestKey !== currentRequestKey) {
-      return 'loading'
+      if (!cachedBaselineAvailable) {
+        return 'loading'
+      }
+
+      return filteredOutfits.length > 0 ? 'ready' : 'empty'
+    }
+
+    if (apiState.status === 'error' && cachedBaselineAvailable) {
+      return filteredOutfits.length > 0 ? 'ready' : 'empty'
     }
 
     return apiState.status
-  }, [apiState.requestKey, apiState.status, currentRequestKey, mockOutfits.length, source])
+  }, [apiState.requestKey, apiState.status, cachedBaselineAvailable, currentRequestKey, filteredOutfits.length, source])
 
-  const outfits = source === 'api' ? apiState.outfits : mockOutfits
-  const errorMessage = source === 'api' ? apiState.errorMessage : null
-  const filteredOutfits = useMemo(
-    () => filterSelectableOutfitSummariesByOccasion(outfits, occasionKey),
-    [occasionKey, outfits],
-  )
+  const errorMessage = source === 'api' && !cachedBaselineAvailable ? apiState.errorMessage : null
   const outfitsById = useMemo(() => buildSelectableOutfitSummaryMap(filteredOutfits), [filteredOutfits])
 
   const getOutfitById = (outfitId: string) => {

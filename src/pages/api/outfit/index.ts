@@ -1,9 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 
-import { ApiError, apiClient } from '@/lib/api/client'
-import type { ApiResponse } from '@/lib/api/types'
-import type { Occasion } from '@/modules/common/types/occasion'
-import type { OutfitItem } from '@/modules/outfit/types/outfitTypes'
+import { fetchOutfitListResponse, getOutfitApiErrorResponse } from '@/lib/api/outfit/shared'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') return res.status(405).end()
@@ -14,24 +11,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(401).json({ message: '尚未登入' })
   }
 
-  const occasion = req.query.occasion as Occasion | undefined
+  const occasion = typeof req.query.occasion === 'string' ? req.query.occasion : undefined
 
   try {
-    const response = await apiClient<ApiResponse<{ list: OutfitItem[] }>>({
-      baseUrl: process.env.API_BASE_URL,
-      endpoint: occasion ? `/outfit?occasion=${occasion}` : `/outfit`,
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    })
+    const response = await fetchOutfitListResponse(accessToken, occasion)
     return res.status(200).json(response)
   } catch (error) {
-    if (error instanceof ApiError) {
-      return res.status(error.statusCode).json({ message: error.message })
-    }
+    const errorResponse = getOutfitApiErrorResponse(
+      error,
+      occasion ? `取得${occasion}穿搭失敗` : '取得穿搭列表失敗',
+    )
 
-    const errorMessage = occasion ? `取得${occasion}穿搭失敗` : '取得穿搭列表失敗'
-    return res.status(500).json({ message: errorMessage })
+    return res.status(errorResponse.statusCode).json({ message: errorResponse.message })
   }
 }

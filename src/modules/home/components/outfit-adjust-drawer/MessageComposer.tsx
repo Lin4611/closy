@@ -30,7 +30,7 @@ export const MessageComposer = ({
     <div className="flex w-full items-center gap-2 px-[11.5px]">
       <Input
         placeholder="會怕熱或怕冷嗎？告訴我你想怎麼調整..."
-        className="font-paragraph-sm placeholder:font-paragraph-sm rounded-[32px] border border-neutral-300 bg-white py-2.25 text-center text-neutral-800 placeholder:text-neutral-500"
+        className="font-paragraph-sm placeholder:font-paragraph-sm rounded-[32px] border border-neutral-300 bg-white py-2.25 text-center text-neutral-800 placeholder:text-neutral-500 focus:placeholder:text-transparent"
         onChange={(e) => onChange(e.target.value)}
         value={value}
         disabled={disabled}

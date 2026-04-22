@@ -1,60 +1,77 @@
-import { useEffect, useRef, useState } from 'react'
+import type { GetServerSideProps, InferGetServerSidePropsType } from 'next'
+import { useRef, useState } from 'react'
 
 import { showToast } from '@/components/ui/sonner'
+import { ApiError } from '@/lib/api/client'
+import { fetchOutfitBaseline, type OutfitBaseline } from '@/lib/api/outfit/shared'
 import { AppShell } from '@/modules/common/components/AppShell'
 import { ConfirmAlertDialog } from '@/modules/common/components/ConfirmAlertDialog'
 import { deleteOutfit } from '@/modules/outfit/api/delOutfit'
-import { getOccasionList } from '@/modules/outfit/api/occasionList'
-import { getOutfitList } from '@/modules/outfit/api/outfit'
+import { getOutfitBaseline } from '@/modules/outfit/api/outfit'
 import { OutfitsContentSection } from '@/modules/outfit/components/OutfitsContentSection'
-import { useAppDispatch, useAppSelector } from '@/store/hooks'
-import { setOccasionsList, setOutfitList } from '@/store/slices/outfitSlice'
+import { useOutfitServerBaseline } from '@/modules/outfit/hooks/useOutfitServerBaseline'
+import { useAppDispatch } from '@/store/hooks'
+import { hydrateOutfitBaseline } from '@/store/slices/outfitSlice'
 
-const Outfit = () => {
+export const getServerSideProps: GetServerSideProps<{ initialBaseline: OutfitBaseline }> = async ({ req }) => {
+  const accessToken = req.cookies.accessToken
+
+  if (!accessToken) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    }
+  }
+
+  try {
+    const initialBaseline = await fetchOutfitBaseline(accessToken)
+
+    return {
+      props: {
+        initialBaseline,
+      },
+    }
+  } catch (error) {
+    if (error instanceof ApiError && error.statusCode === 401) {
+      return {
+        redirect: {
+          destination: '/',
+          permanent: false,
+        },
+      }
+    }
+
+    throw error
+  }
+}
+
+const Outfit = ({ initialBaseline }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const dispatch = useAppDispatch()
-  const { outfitList, occasionsList } = useAppSelector((state) => state.outfit)
+  const { outfitList, occasionsList } = useOutfitServerBaseline(initialBaseline)
 
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [dialogMode, setDialogMode] = useState<'confirm' | 'success'>('confirm')
   const [selectedOutfitId, setSelectedOutfitId] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const fetchAll = async () => {
-    setIsLoading(true)
-    try {
-      const [list, summaryList] = await Promise.all([getOutfitList(), getOccasionList()])
-      dispatch(setOutfitList(list))
-      dispatch(setOccasionsList(summaryList))
-    } catch {
-      showToast.error('取得資料失敗')
-    } finally {
-      setIsLoading(false)
-    }
+  const replaceWithCanonicalBaseline = async () => {
+    const nextBaseline = await getOutfitBaseline()
+    dispatch(hydrateOutfitBaseline(nextBaseline))
   }
 
   const delOutfit = async (id: string) => {
-    setIsLoading(true)
     try {
       await deleteOutfit(id)
       setDialogMode('success')
-      const [list, summaryList] = await Promise.all([getOutfitList(), getOccasionList()])
-      dispatch(setOutfitList(list))
-      dispatch(setOccasionsList(summaryList))
+      await replaceWithCanonicalBaseline()
     } catch {
       showToast.error('刪除穿搭失敗')
     } finally {
-      setIsLoading(false)
     }
   }
-
-  useEffect(() => {
-    const load = async () => {
-      await fetchAll()
-    }
-    load()
-  }, [])
 
   const handleClickDelete = (outfitId: string) => {
     setSelectedOutfitId(outfitId)

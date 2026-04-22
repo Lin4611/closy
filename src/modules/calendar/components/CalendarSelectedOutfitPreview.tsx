@@ -7,16 +7,17 @@ import type { CalendarSelectedOutfitPreviewModel, SelectableOutfitSummary } from
 type CalendarSelectedOutfitPreviewProps = {
   outfit: CalendarSelectedOutfitPreviewModel | SelectableOutfitSummary | null
   onClick: () => void
+  isLoading?: boolean
 }
 
-export const CalendarSelectedOutfitPreview = ({ outfit, onClick }: CalendarSelectedOutfitPreviewProps) => {
-  const previewStatus = outfit && 'previewStatus' in outfit ? outfit.previewStatus : 'resolved'
-  const previewMessage = outfit && 'previewMessage' in outfit ? outfit.previewMessage : null
-  const shouldShowPlaceholder = Boolean(outfit && previewStatus !== 'resolved')
+export const CalendarSelectedOutfitPreview = ({ outfit, onClick, isLoading = false }: CalendarSelectedOutfitPreviewProps) => {
+  const previewStatus = isLoading ? 'loading' : outfit && 'previewStatus' in outfit ? outfit.previewStatus : 'resolved'
+  const previewMessage = isLoading ? '正在載入穿搭預覽' : outfit && 'previewMessage' in outfit ? outfit.previewMessage : null
+  const shouldShowPlaceholder = isLoading || Boolean(outfit && previewStatus !== 'resolved')
 
   return (
     <div className="relative mx-auto flex w-full max-w-85.75 min-h-83 flex-col items-center pb-2 pt-2">
-      {outfit ? (
+      {outfit && !isLoading ? (
         <Button
           type="button"
           variant="outline"
@@ -31,7 +32,7 @@ export const CalendarSelectedOutfitPreview = ({ outfit, onClick }: CalendarSelec
 
       {outfit && !shouldShowPlaceholder ? (
         <Image src={outfit.imageUrl} alt="已選穿搭" width={144} height={256} className="h-80 w-36 object-contain" />
-      ) : outfit && shouldShowPlaceholder ? (
+      ) : shouldShowPlaceholder ? (
         <div className="flex min-h-83 max-w-66.25 w-full flex-col items-center justify-center rounded-[20px] border border-neutral-200 bg-white px-6 text-center shadow-[0_1px_3px_rgba(0,0,0,0.12)]">
           {previewStatus === 'loading' ? <LoaderCircle className="mb-3 size-6 animate-spin text-primary-700" strokeWidth={1.75} /> : null}
           <p className="font-label-lg text-neutral-800">{previewStatus === 'loading' ? '載入中' : previewStatus === 'error' ? '載入失敗' : '穿搭不存在'}</p>

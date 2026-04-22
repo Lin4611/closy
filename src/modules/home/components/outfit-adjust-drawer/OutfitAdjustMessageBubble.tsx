@@ -17,7 +17,14 @@ export const OutfitAdjustMessageBubble = ({
   const isAssistantLoading = role === 'assistant' && status === 'loading'
   return (
     <div className={cn(baseClassName, role === 'user' ? userClassName : assistantClassName)}>
-      {isAssistantLoading ? <Spinner /> : <p>{text}</p>}
+      {isAssistantLoading ? (
+        <div className="flex items-center gap-2">
+          <Spinner />
+          <p>{text}</p>
+        </div>
+      ) : (
+        <p>{text}</p>
+      )}
     </div>
   )
 }

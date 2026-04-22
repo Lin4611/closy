@@ -23,7 +23,7 @@ const homePersistConfig = {
 const outfitPersistConfig = {
   key: 'outfit',
   storage,
-  whitelist: ['outfitList'],
+  whitelist: ['outfitList', 'occasionsList', 'baselineResolved'],
 }
 
 const persistConfig = {

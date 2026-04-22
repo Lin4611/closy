@@ -1,11 +1,17 @@
+import type { GetServerSideProps } from 'next'
+import type { InferGetServerSidePropsType } from 'next'
 import dynamic from 'next/dynamic'
-import { useRouter } from 'next/router'
 import { useRef, useState } from 'react'
 import { useEffect } from 'react'
 
 import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
+import { apiClient } from '@/lib/api/client'
+import type { ApiResponse } from '@/lib/api/types'
 import { AppShell } from '@/modules/common/components/AppShell'
+import { type Occasion } from '@/modules/common/types/occasion'
+import { defaultOccasion } from '@/modules/common/types/occasion'
+import type { UserInfo } from '@/modules/common/types/userInfoTypes'
 import { addOutfit } from '@/modules/home/api/addOutfit'
 import { getHomeRecommendation } from '@/modules/home/api/home'
 import { generateOutfit } from '@/modules/home/api/outfit'
@@ -16,8 +22,16 @@ import { HomePreviewTopBar } from '@/modules/home/components/HomePreviewTopBar'
 import { OutfitAdjustDrawer } from '@/modules/home/components/outfit-adjust-drawer/OutfitAdjustDrawer'
 import type { AdjustStreamResult } from '@/modules/home/types/outfitAdjustChat'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
-import { clearDayCache, setDayCache, updateDayAdjustResult, updateDayImageUrl } from '@/store/slices/homeSlice'
-
+import {
+  clearDayCache,
+  promoteTomorrowToToday,
+  setDayCache,
+  markDaySaved,
+  updateDayAdjustResult,
+  updateDayImageUrl,
+  setDayOccasion,
+} from '@/store/slices/homeSlice'
+import { mergeUserProfile } from '@/store/slices/userSlice'
 const HomeOnboardingGate = dynamic(
   () =>
     import('@/modules/home/components/onboarding/HomeOnboardingGate').then((m) => ({
@@ -26,8 +40,32 @@ const HomeOnboardingGate = dynamic(
   { ssr: false },
 )
 
-const Home = () => {
-  const router = useRouter()
+export const getServerSideProps: GetServerSideProps<{
+  profile: UserInfo
+}> = async (context) => {
+  const accessToken = context.req.cookies.accessToken
+
+  if (!accessToken) {
+    return { redirect: { destination: '/', permanent: false } }
+  }
+
+  try {
+    const res = await apiClient<ApiResponse<UserInfo>>({
+      baseUrl: process.env.API_BASE_URL,
+      endpoint: '/user/information',
+      method: 'GET',
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+    return { props: { profile: res.data } }
+  } catch (e) {
+    if (e instanceof ApiError && e.statusCode === 401) {
+      return { redirect: { destination: '/', permanent: false } }
+    }
+    throw e
+  }
+}
+
+const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const [isAdjustPromptOpen, setIsAdjustPromptOpen] = useState(false)
   const [isOnboardingVisible, setIsOnboardingVisible] = useState(false)
   const [isOutfitAdjustDrawerOpen, setIsOutfitAdjustDrawerOpen] = useState(false)
@@ -37,7 +75,36 @@ const Home = () => {
   const homeState = useAppSelector((state) => state.home)
   const [activeDay, setActiveDay] = useState<'today' | 'tomorrow'>('today')
 
-  const fetchDayOutfit = async (day: 'today' | 'tomorrow', force = false) => {
+  const addLikeRef = useRef(false)
+  const user = useAppSelector((state) => state.user.user)
+
+  const getCalendarOccasion = (day: 'today' | 'tomorrow'): Occasion | undefined => {
+    if (day === 'today') {
+      return profile.hasTodayCalendarEvent && profile.todayCalendarEventOccasion
+        ? (profile.todayCalendarEventOccasion as Occasion)
+        : undefined
+    }
+    return profile.hasTomorrowCalendarEvent && profile.tomorrowCalendarEventOccasion
+      ? (profile.tomorrowCalendarEventOccasion as Occasion)
+      : undefined
+  }
+  const fallbackOccasion = user?.preferences.occasions ?? defaultOccasion
+  const calendarOccasion = getCalendarOccasion(activeDay)
+  const currentOccasion = calendarOccasion ?? homeState[activeDay]?.occasion ?? fallbackOccasion
+
+  useEffect(() => {
+    dispatch(mergeUserProfile(profile))
+  }, [])
+
+  const fetchDayOutfit = async (
+    day: 'today' | 'tomorrow',
+    options?: { force?: boolean; occasion?: Occasion },
+  ) => {
+    const force = options?.force ?? false
+    const calendarOccasion = getCalendarOccasion(day)
+    const targetOccasion =
+      options?.occasion ?? calendarOccasion ?? homeState[day]?.occasion ?? fallbackOccasion
+
     if (homeState[day] && !force) {
       setIsLoading(false)
       return
@@ -45,19 +112,34 @@ const Home = () => {
 
     setIsLoading(true)
     try {
-      const res = await getHomeRecommendation(day)
-      dispatch(setDayCache({ day, cache: { dayRecommendation: res, outfitImgUrl: '' } }))
+      const res = await getHomeRecommendation(day, targetOccasion)
+
+      dispatch(
+        setDayCache({
+          day,
+          cache: {
+            dayRecommendation: res,
+            outfitImgUrl: '',
+            occasion: targetOccasion,
+            isSaved: false,
+          },
+        }),
+      )
       setIsLoading(false)
       setIsImageLoading(true)
-      const result = await generateOutfit({
+      const result = await generateOutfit(day, {
         selectedItems: res.recommendation.selectedItems,
-        occasion: res.recommendation.occasion,
+        occasion: targetOccasion,
       })
-      dispatch(
-        updateDayImageUrl({ day, outfitImgUrl: result.outfitImgUrl, occasion: result.occasion }),
-      )
+      dispatch(updateDayImageUrl({ day, outfitImgUrl: result.outfitImgUrl }))
     } catch (e) {
-      if (e instanceof ApiError) showToast.error(e.message)
+      if (e instanceof ApiError) {
+        if (e.statusCode === 503) {
+          showToast.error('目前 AI 繁忙中，請稍後重試')
+        } else {
+          showToast.error(e.message)
+        }
+      }
     } finally {
       setIsLoading(false)
       setIsImageLoading(false)
@@ -66,19 +148,44 @@ const Home = () => {
 
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0]
-    const isStale = homeState.cacheDate !== today
-    if (isStale) dispatch(clearDayCache())
-    fetchDayOutfit('today', isStale)
+
+    if (homeState.cacheDate === today) {
+      fetchDayOutfit('today', { force: false, occasion: getCalendarOccasion('today') })
+      return
+    }
+
+    const yesterday = (() => {
+      const d = new Date()
+      d.setDate(d.getDate() - 1)
+      return d.toISOString().split('T')[0]
+    })()
+
+    if (homeState.cacheDate === yesterday && homeState.tomorrow) {
+      dispatch(promoteTomorrowToToday())
+      setIsLoading(false)
+      return
+    }
+
+    dispatch(clearDayCache())
+    fetchDayOutfit('today', { force: true, occasion: getCalendarOccasion('today') })
   }, [])
 
   const handleDayChange = (day: 'today' | 'tomorrow') => {
     setActiveDay(day)
-    fetchDayOutfit(day)
+    fetchDayOutfit(day, { occasion: getCalendarOccasion(day) })
   }
 
+  const isBooked =
+    activeDay === 'today' ? profile.hasTodayCalendarEvent : profile.hasTomorrowCalendarEvent
+
   const addLikeOutfit = async () => {
+    if (addLikeRef.current) return
+    addLikeRef.current = true
     const recommendation = homeState[activeDay]?.dayRecommendation.recommendation
-    if (!recommendation) return
+    if (!recommendation) {
+      addLikeRef.current = false
+      return
+    }
 
     try {
       await addOutfit({
@@ -86,9 +193,12 @@ const Home = () => {
         selectedItems: recommendation.selectedItems,
         occasion: recommendation.occasion,
       })
-      showToast.success('已加入收藏')
+      dispatch(markDaySaved({ day: activeDay }))
+      showToast.info('已新增至我的穿搭', 1500)
     } catch (e) {
       if (e instanceof ApiError) showToast.error(e.message)
+    } finally {
+      addLikeRef.current = false
     }
   }
 
@@ -116,9 +226,9 @@ const Home = () => {
     }
   }
 
-  const handleOccasionChange = () => {
-    dispatch(clearDayCache())
-    fetchDayOutfit(activeDay, true)
+  const handleOccasionChange = async (nextOccasion: Occasion) => {
+    dispatch(setDayOccasion({ day: activeDay, occasion: nextOccasion }))
+    await fetchDayOutfit(activeDay, { force: true, occasion: nextOccasion })
   }
 
   const setHideTimer = (duration: number) => {
@@ -149,10 +259,12 @@ const Home = () => {
   }, [])
 
   const handleDislikeClick = () => {
+    showToast.info('已記錄偏好，重新推薦中', 1500)
     showAdjustPrompt(3000)
   }
 
   const currentData = homeState[activeDay]
+  const isSaved = currentData?.isSaved ?? false
 
   const handleConfirmAdjust = async (result: AdjustStreamResult) => {
     const occasion = currentData?.dayRecommendation.recommendation.occasion
@@ -164,13 +276,16 @@ const Home = () => {
         selectedItems: result.selectedItems,
         occasion,
       })
-      dispatch(updateDayAdjustResult({
-        day: activeDay,
-        outfitImgUrl: result.adjustedImageUrl,
-        selectedItems: result.selectedItems,
-        reasoning: result.text,
-      }))
-      showToast.success('已加入收藏')
+      dispatch(
+        updateDayAdjustResult({
+          day: activeDay,
+          outfitImgUrl: result.adjustedImageUrl,
+          selectedItems: result.selectedItems,
+          reasoning: result.text,
+        }),
+      )
+      dispatch(markDaySaved({ day: activeDay }))
+      showToast.info('已新增至我的穿搭', 1500)
     } catch (e) {
       if (e instanceof ApiError) showToast.error(e.message)
     }
@@ -180,7 +295,12 @@ const Home = () => {
     <>
       <AppShell activeTab="home">
         <div className="sticky top-0 z-10">
-          <HomeFilterBar onDayChange={handleDayChange} onOccasionChange={handleOccasionChange} />
+          <HomeFilterBar
+            onDayChange={handleDayChange}
+            onOccasionChange={handleOccasionChange}
+            selectedOccasion={currentOccasion}
+            isBooked={isBooked}
+          />
         </div>
         <div className="relative">
           <HomePreviewTopBar
@@ -188,7 +308,7 @@ const Home = () => {
             city={currentData?.dayRecommendation.city}
             expanded={isAdjustPromptOpen}
             onClick={() => setIsOutfitAdjustDrawerOpen(true)}
-            onCalendarClick={() => void router.push('/calendar')}
+            onCalendarClick={() => {}}
           />
           <div className="flex flex-col items-center justify-center pt-13">
             <HomeOutfitPreview
@@ -197,6 +317,7 @@ const Home = () => {
               isLoading={isLoading || isImageLoading || !currentData}
               onDislikeClick={handleDislikeClick}
               onLikeClick={addLikeOutfit}
+              disable={isSaved}
             />
           </div>
         </div>
