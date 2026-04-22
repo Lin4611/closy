@@ -75,6 +75,11 @@ const homeSlice = createSlice({
         dayState.isSaved = true
       }
     },
+    promoteTomorrowToToday: (state) => {
+      state.today = state.tomorrow
+      state.tomorrow = null
+      state.cacheDate = new Date().toISOString().split('T')[0]
+    },
     clearDayCache: (state) => {
       state.today = null
       state.tomorrow = null
@@ -84,6 +89,7 @@ const homeSlice = createSlice({
 
 export const {
   setDayCache,
+  promoteTomorrowToToday,
   clearDayCache,
   updateDayImageUrl,
   updateDayAdjustResult,
