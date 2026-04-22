@@ -5,6 +5,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { defaultOccasion as fallbackOccasion } from '@/modules/common/types/occasion'
 import { useAppSelector } from '@/store/hooks'
 
 import { occasionOptions } from '../data/occasionOptions'
@@ -26,7 +27,7 @@ export const OccasionSelect = ({
   placeholder = '場合',
 }: OccasionSelectProps) => {
   const defaultOccasion = useAppSelector(
-    (state) => state.user.user?.preferences.occasions ?? 'socialGathering',
+    (state) => state.user.user?.preferences.occasions ?? fallbackOccasion,
   )
   return (
     <Select value={value} onValueChange={onValueChange} disabled={disabled}>
