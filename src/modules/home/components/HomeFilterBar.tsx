@@ -6,6 +6,7 @@ import { OccasionSelect } from './OccasionSelect'
 type HomeFilterBarProps = {
   className?: string
   selectedOccasion: Occasion
+  isBooked?: boolean
   onDayChange?: (day: 'today' | 'tomorrow') => void
   onOccasionChange?: (occasion: Occasion) => void
 }
@@ -13,6 +14,7 @@ type HomeFilterBarProps = {
 export const HomeFilterBar = ({
   className,
   selectedOccasion,
+  isBooked,
   onDayChange,
   onOccasionChange,
 }: HomeFilterBarProps) => {
@@ -27,6 +29,7 @@ export const HomeFilterBar = ({
       <div id="occasion-trigger">
         <OccasionSelect
           value={selectedOccasion}
+          disabled={isBooked}
           onValueChange={(value) => onOccasionChange?.(value as Occasion)}
         />
       </div>

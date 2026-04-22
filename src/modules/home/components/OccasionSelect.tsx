@@ -13,6 +13,7 @@ import type { OccasionOption } from '../data/occasionOptions'
 type OccasionSelectProps = {
   options?: OccasionOption[]
   value?: string
+  disabled?: boolean
   onValueChange?: (value: string) => void
   placeholder?: string
 }
@@ -21,13 +22,14 @@ export const OccasionSelect = ({
   options = occasionOptions,
   value,
   onValueChange,
+  disabled,
   placeholder = '場合',
 }: OccasionSelectProps) => {
   const defaultOccasion = useAppSelector(
     (state) => state.user.user?.preferences.occasions ?? 'socialGathering',
   )
   return (
-    <Select value={value} onValueChange={onValueChange}>
+    <Select value={value} onValueChange={onValueChange} disabled={disabled}>
       <SelectTrigger className="font-paragraph-sm h-10 min-w-20 rounded-[20px] border-none bg-neutral-100 px-4 py-2 text-neutral-500">
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
