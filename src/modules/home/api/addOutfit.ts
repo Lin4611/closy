@@ -7,6 +7,7 @@ import type { ClothingItem } from '../types/dayRecommendationTypes'
 type AddOutfitPayload = {
   outfitImgUrl: string
   occasion: Occasion
+  outfitDate: string
   selectedItems: ClothingItem[]
 }
 
