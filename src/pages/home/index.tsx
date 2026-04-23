@@ -332,7 +332,8 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
               isLoading={isLoading || isImageLoading || !currentData}
               onDislikeClick={handleDislikeClick}
               onLikeClick={addLikeOutfit}
-              disable={isSaved}
+              isSaved={isSaved}
+              isBooked={isBooked}
             />
           </div>
         </div>
