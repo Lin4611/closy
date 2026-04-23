@@ -183,12 +183,12 @@ const WardrobeReviewPage = () => {
   return (
     <>
       <div className="relative bg-neutral-100">
-        <header className="relative flex items-center justify-center h-16 px-4 pt-5 pb-4">
-          <Link href={backHref} className="absolute left-4 flex size-10 items-center justify-center" aria-label="返回圖片確認頁">
+        <header className="sticky top-0 z-10 flex items-center justify-between w-full h-16 px-4 py-2.5 bg-neutral-100">
+          <Link href={backHref} className="flex size-10 items-center justify-center" aria-label="返回圖片確認頁">
             <ChevronLeft className="text-neutral-700" size={24} strokeWidth={2} />
           </Link>
-          <h1 className="absolute left-1/2 -translate-x-1/2 font-label-xxl text-neutral-900">編輯衣物資訊</h1>
-          <span className="w-10" />
+          <h1 className="font-label-xxl text-neutral-900">編輯衣物資訊</h1>
+          <span className="size-10" />
         </header>
 
         <WardrobeReviewForm
@@ -205,7 +205,7 @@ const WardrobeReviewPage = () => {
           }}
         />
 
-        <div className="fixed right-0 bottom-0 left-0 z-40 mx-auto w-full max-w-93.75 bg-neutral-100 px-4 py-4">
+        <div className="sticky right-0 bottom-0 left-0 z-10 mx-auto w-full bg-neutral-100 px-4 py-4">
           <button
             type="button"
             disabled={isDisabled}

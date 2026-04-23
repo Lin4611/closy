@@ -107,19 +107,19 @@ const WardrobeDetailPage = ({ initialItem }: InferGetServerSidePropsType<typeof 
   return (
     <AppShell activeTab="wardrobe">
       <div className="relative bg-neutral-100">
-        <header className="relative flex items-center justify-center h-16 px-4 pt-5 pb-2">
-          <Link href="/wardrobe" className="absolute left-4 flex size-10 items-center justify-center" aria-label="返回我的衣櫃">
+        <header className="sticky top-0 z-10 flex items-center justify-between w-full h-16 px-4 py-2.5 bg-neutral-100">
+          <Link href="/wardrobe" className="size-10 flex items-center justify-center" aria-label="返回我的衣櫃">
             <ChevronLeft className="text-neutral-700" size={24} strokeWidth={2} />
           </Link>
 
-          <div ref={menuRef} className="absolute right-4">
+          <div ref={menuRef} className="size-10 relative flex items-center justify-center">
             <button
               type="button"
               onClick={() => setIsMenuOpen((prev) => !prev)}
-              className="flex h-6 w-6 items-center justify-center text-neutral-700"
+              className="size-10 flex items-center justify-center text-neutral-700"
               aria-label="更多操作"
             >
-              <EllipsisVertical className="h-4 w-4" strokeWidth={2.1} />
+              <EllipsisVertical className="size-4" strokeWidth={2} />
             </button>
 
             <WardrobeItemMenu
@@ -139,13 +139,13 @@ const WardrobeDetailPage = ({ initialItem }: InferGetServerSidePropsType<typeof 
         <section className="px-4 pt-1 pb-3">
           <div className="mx-auto flex h-47 items-center justify-center overflow-hidden">
             {item.imageUrl ? (
-              <div className="relative h-full w-45">
+              <div className="relative h-full w-full">
                 <Image
                   src={item.imageUrl}
                   alt={item.name}
                   fill
-                  sizes="180px"
-                  className="object-contain"
+                  sizes="(max-width: 375px) 80vw, 220px"
+                  className="object-contain p-4"
                 />
               </div>
             ) : (
@@ -154,7 +154,7 @@ const WardrobeDetailPage = ({ initialItem }: InferGetServerSidePropsType<typeof 
           </div>
         </section>
 
-        <section className="min-h-[calc(100vh-248px)] rounded-t-[28px] bg-white px-4 pt-5 pb-10 shadow-[0_-2px_8px_rgba(15,23,42,0.04)]">
+        <section className="rounded-t-[28px] bg-white px-4 pt-5 pb-4 shadow-[0_-2px_8px_rgba(15,23,42,0.04)]">
           <div>
             <h1 className="text-h3 text-neutral-900">
               {item.brand} {item.name}

@@ -1,4 +1,5 @@
 import { ChevronLeft } from 'lucide-react'
+import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useEffect, useMemo, useState } from 'react'
 
@@ -113,19 +114,12 @@ const WardrobePreviewPage = () => {
 
   return (
     <div className="relative flex min-h-screen flex-col bg-neutral-100">
-      <header className="relative flex items-center justify-center h-16 px-4 pt-5 pb-4">
-        <button
-          type="button"
-          onClick={() => {
-            void handleReset()
-          }}
-          className="absolute left-4 flex size-10 items-center justify-center"
-          aria-label="返回上一頁"
-        >
+      <header className="sticky top-0 z-10 flex items-center justify-between w-full h-16 px-4 py-2.5 bg-neutral-100">
+        <Link href={fallbackHref} className="flex size-10 items-center justify-center" aria-label="返回上一頁">
           <ChevronLeft className="text-neutral-700" size={24} strokeWidth={2} />
-        </button>
-        <h1 className="absolute left-1/2 -translate-x-1/2 font-label-xxl text-neutral-900">{pageTitle}</h1>
-        <span className="w-10" />
+        </Link>
+        <h1 className="font-label-xxl text-neutral-900">{pageTitle}</h1>
+        <span className="size-10" />
       </header>
 
       <main className="flex flex-1 flex-col px-4 pb-24">

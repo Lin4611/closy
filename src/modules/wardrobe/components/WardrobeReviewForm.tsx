@@ -55,7 +55,7 @@ export const WardrobeReviewForm = ({ value, onChange, brandField }: WardrobeRevi
   }
 
   return (
-    <form className="px-4 pb-28">
+    <form className="px-4 pb-4">
       <section className="pb-5">
         <div className="mx-auto flex h-47 items-center justify-center overflow-hidden rounded-[12px] border border-neutral-200 bg-neutral-100">
           {value.imageUrl ? (
