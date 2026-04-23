@@ -21,6 +21,7 @@ import { HomeOutfitPreview } from '@/modules/home/components/HomeOutfitPreview'
 import { HomePreviewTopBar } from '@/modules/home/components/HomePreviewTopBar'
 import { OutfitAdjustDrawer } from '@/modules/home/components/outfit-adjust-drawer/OutfitAdjustDrawer'
 import type { AdjustStreamResult } from '@/modules/home/types/outfitAdjustChat'
+import { getTodayStorageDate } from '@/lib/date'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import {
   clearDayCache,
@@ -147,7 +148,7 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
   }
 
   useEffect(() => {
-    const today = new Date().toISOString().split('T')[0]
+    const today = getTodayStorageDate()
 
     if (homeState.cacheDate === today) {
       const todayCalOccasion = getCalendarOccasion('today')
@@ -159,7 +160,10 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
     const yesterday = (() => {
       const d = new Date()
       d.setDate(d.getDate() - 1)
-      return d.toISOString().split('T')[0]
+      const year = d.getFullYear()
+      const month = String(d.getMonth() + 1).padStart(2, '0')
+      const day = String(d.getDate()).padStart(2, '0')
+      return `${year}-${month}-${day}`
     })()
 
     if (homeState.cacheDate === yesterday && homeState.tomorrow) {
