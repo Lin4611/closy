@@ -70,10 +70,10 @@ const homeSlice = createSlice({
         dayState.dayRecommendation.recommendation.reasoning = action.payload.reasoning
       }
     },
-    markDaySaved: (state, action: PayloadAction<{ day: 'today' | 'tomorrow' }>) => {
+    markDaySaved: (state, action: PayloadAction<{ day: 'today' | 'tomorrow'; isSaved?: boolean }>) => {
       const dayState = state[action.payload.day]
       if (dayState) {
-        dayState.isSaved = true
+        dayState.isSaved = action.payload.isSaved ?? true
       }
     },
     promoteTomorrowToToday: (state) => {
