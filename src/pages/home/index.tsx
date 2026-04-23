@@ -150,7 +150,9 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
     const today = new Date().toISOString().split('T')[0]
 
     if (homeState.cacheDate === today) {
-      fetchDayOutfit('today', { force: false, occasion: getCalendarOccasion('today') })
+      const todayCalOccasion = getCalendarOccasion('today')
+      const force = profile.hasTodayCalendarEvent && todayCalOccasion !== homeState['today']?.occasion
+      fetchDayOutfit('today', { force, occasion: todayCalOccasion })
       return
     }
 
@@ -172,7 +174,10 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
 
   const handleDayChange = (day: 'today' | 'tomorrow') => {
     setActiveDay(day)
-    fetchDayOutfit(day, { occasion: getCalendarOccasion(day) })
+    const calOccasion = getCalendarOccasion(day)
+    const isBookedDay = day === 'today' ? profile.hasTodayCalendarEvent : profile.hasTomorrowCalendarEvent
+    const force = isBookedDay && calOccasion !== homeState[day]?.occasion
+    fetchDayOutfit(day, { force, occasion: calOccasion })
   }
 
   const isBooked =
