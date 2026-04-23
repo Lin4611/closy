@@ -7,7 +7,6 @@ import { fetchCalendarEntriesBaseline, findCalendarEntryBaselineByDate } from '@
 import { ApiError } from '@/lib/api/client'
 import { requestCalendarEntries, requestUpdatedCalendarEntry } from '@/modules/calendar/api/shared'
 import { CalendarForm } from '@/modules/calendar/components/CalendarForm'
-import { CalendarHeader } from '@/modules/calendar/components/CalendarHeader'
 import { CalendarOccasionChangeDialog } from '@/modules/calendar/components/CalendarOccasionChangeDialog'
 import { CalendarSuccessDialog } from '@/modules/calendar/components/CalendarSuccessDialog'
 import { useCalendarStore } from '@/modules/calendar/hooks/useCalendarStore'
@@ -22,6 +21,7 @@ import { buildCalendarSelectOutfitReturnTo, buildCalendarSelectOutfitRoute, pars
 import { mapServerOutfitPreviewToPreviewModel } from '@/modules/calendar/utils/calendarOutfitAdapter'
 import { EMPTY_CALENDAR_GOOGLE_EVENTS, canEditCalendarDate, getNearestAvailableCalendarDate, isCalendarDateBlocked, isCalendarDateDisabled, shouldResetSelectedOutfit } from '@/modules/calendar/utils/calendarRules'
 import { AppShell } from '@/modules/common/components/AppShell'
+import { SubPageHeader } from '@/modules/common/components/SubPageHeader'
 import type { Occasion } from '@/modules/common/types/occasion'
 
 type CalendarEditPageProps = {
@@ -326,12 +326,13 @@ const CalendarEditPage = ({ initialEntries, initialEntry, routeDate }: InferGetS
     })()
   }
 
-    return (
+  return (
     <AppShell showBottomNav={false}>
       <div className="flex min-h-screen flex-col">
-        <CalendarHeader
+        <SubPageHeader
           title="編輯"
           backHref="/calendar"
+          backLabel="返回行事曆"
           onBackClick={() => {
             clearCalendarFlowDrafts()
             void router.push('/calendar')

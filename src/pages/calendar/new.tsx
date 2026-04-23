@@ -7,7 +7,6 @@ import { fetchCalendarEntriesBaseline } from '@/lib/api/calendar/shared'
 import { ApiError } from '@/lib/api/client'
 import { requestCalendarEntries, requestCreatedCalendarEntry } from '@/modules/calendar/api/shared'
 import { CalendarForm } from '@/modules/calendar/components/CalendarForm'
-import { CalendarHeader } from '@/modules/calendar/components/CalendarHeader'
 import { CalendarOccasionChangeDialog } from '@/modules/calendar/components/CalendarOccasionChangeDialog'
 import { CalendarOccasionDialog } from '@/modules/calendar/components/CalendarOccasionDialog'
 import { CalendarSuccessDialog } from '@/modules/calendar/components/CalendarSuccessDialog'
@@ -31,6 +30,7 @@ import {
   shouldResetSelectedOutfit,
 } from '@/modules/calendar/utils/calendarRules'
 import { AppShell } from '@/modules/common/components/AppShell'
+import { SubPageHeader } from '@/modules/common/components/SubPageHeader'
 import type { Occasion } from '@/modules/common/types/occasion'
 
 const getCreateErrorMessage = (error: unknown) => {
@@ -198,9 +198,10 @@ const CalendarNewPage = ({ initialEntries }: InferGetServerSidePropsType<typeof 
   return (
     <AppShell showBottomNav={false}>
       <div className="flex min-h-screen flex-col">
-        <CalendarHeader
+        <SubPageHeader
           title="新增"
           backHref="/calendar"
+          backLabel="返回行事曆"
           onBackClick={() => {
             clearCalendarFlowDrafts()
             void router.push('/calendar')
