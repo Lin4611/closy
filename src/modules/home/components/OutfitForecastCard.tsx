@@ -1,4 +1,5 @@
-import { Sparkles } from 'lucide-react'
+import Image from 'next/image'
+
 type OutfitForecastCardProps = {
   content: string
 }
@@ -7,7 +8,7 @@ export const OutfitForecastCard = ({ content }: OutfitForecastCardProps) => {
     <section className="flex w-full max-w-[343px] flex-col items-start gap-2 rounded-[20px] border-[0.5px] border-neutral-300 bg-white p-4">
       <div className="flex w-full items-center justify-start gap-2 py-0.5">
         <span className="flex size-6 items-center justify-center">
-          <Sparkles size={16} strokeWidth={1.5} />
+          <Image src="/icons/outfit-forecast-icon.svg" alt="" width={20} height={20} />
         </span>
         <h3 className="font-label-xl text-neutral-800">穿搭預報</h3>
       </div>
