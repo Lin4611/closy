@@ -1,6 +1,6 @@
 import type { GetServerSideProps, InferGetServerSidePropsType } from 'next'
 import { useRouter } from 'next/router'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { showToast } from '@/components/ui/sonner'
 import { fetchCalendarEntriesBaseline } from '@/lib/api/calendar/shared'
@@ -102,6 +102,7 @@ const CalendarNewPage = ({ initialEntries }: InferGetServerSidePropsType<typeof 
   const [isOccasionChangeDialogOpen, setIsOccasionChangeDialogOpen] = useState(false)
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const hasCompletedCreateRef = useRef(false)
 
   const { getOutfitStateById } = useCalendarOutfits(occasionKey, { source: 'api' })
   const selectedOutfit = mapResolvedOutfitToPreviewModel({
@@ -111,6 +112,10 @@ const CalendarNewPage = ({ initialEntries }: InferGetServerSidePropsType<typeof 
   })
 
   useEffect(() => {
+    if (hasCompletedCreateRef.current || isSuccessDialogOpen) {
+      return
+    }
+
     saveCalendarFormDraft({
       mode: 'new',
       date,
@@ -121,7 +126,7 @@ const CalendarNewPage = ({ initialEntries }: InferGetServerSidePropsType<typeof 
       sourceEntryId: null,
       returnTo: '/calendar/new',
     })
-  }, [date, occasionKey, selectedOutfit, selectedOutfitId, selectionStatus])
+  }, [date, occasionKey, isSuccessDialogOpen, selectedOutfit, selectedOutfitId, selectionStatus])
 
   const disabledDates = useMemo(() => {
     return entries
@@ -183,6 +188,7 @@ const CalendarNewPage = ({ initialEntries }: InferGetServerSidePropsType<typeof 
           occasionKey,
           selectedOutfitId,
         })
+        hasCompletedCreateRef.current = true
         const nextEntries = await requestCalendarEntries()
         hydrateEntriesFromServer(nextEntries)
         clearCalendarFormDraft()
@@ -263,6 +269,7 @@ const CalendarNewPage = ({ initialEntries }: InferGetServerSidePropsType<typeof 
           title="新增成功"
           confirmButtonClassName="bg-primary-800 text-white"
           onClose={() => {
+            clearCalendarFormDraft()
             setIsSuccessDialogOpen(false)
             const targetMonth = date ? `${date.slice(0, 4)}年${date.slice(5, 7)}月` : null
             void router.push({
