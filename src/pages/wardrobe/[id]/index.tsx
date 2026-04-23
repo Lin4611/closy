@@ -1,7 +1,6 @@
-import { ChevronLeft, EllipsisVertical, Package } from 'lucide-react'
+import { EllipsisVertical, Package } from 'lucide-react'
 import type { GetServerSideProps, InferGetServerSidePropsType } from 'next'
 import Image from 'next/image'
-import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useEffect, useRef, useState } from 'react'
 
@@ -9,6 +8,7 @@ import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
 import { fetchWardrobeServerItem } from '@/lib/api/wardrobe/shared'
 import { AppShell } from '@/modules/common/components/AppShell'
+import { SubPageHeader } from '@/modules/common/components/SubPageHeader'
 import { SuccessAlertDialog } from '@/modules/common/components/SuccessAlertDialog'
 import { deleteClothes } from '@/modules/wardrobe/api/deleteClothes'
 import { DeleteClothingDialog } from '@/modules/wardrobe/components/DeleteClothingDialog'
@@ -107,34 +107,34 @@ const WardrobeDetailPage = ({ initialItem }: InferGetServerSidePropsType<typeof 
   return (
     <AppShell activeTab="wardrobe">
       <div className="relative bg-neutral-100">
-        <header className="sticky top-0 z-10 flex items-center justify-between w-full h-16 px-4 py-2.5 bg-neutral-100">
-          <Link href="/wardrobe" className="size-10 flex items-center justify-center" aria-label="返回我的衣櫃">
-            <ChevronLeft className="text-neutral-700" size={24} strokeWidth={2} />
-          </Link>
+        <SubPageHeader
+          backHref="/wardrobe"
+          backLabel="返回我的衣櫃"
+          rightSlot={
+            <div ref={menuRef} className="relative flex size-10 items-center justify-center">
+              <button
+                type="button"
+                onClick={() => setIsMenuOpen((prev) => !prev)}
+                className="flex size-10 items-center justify-center text-neutral-700"
+                aria-label="更多操作"
+              >
+                <EllipsisVertical className="size-4" strokeWidth={2} />
+              </button>
 
-          <div ref={menuRef} className="size-10 relative flex items-center justify-center">
-            <button
-              type="button"
-              onClick={() => setIsMenuOpen((prev) => !prev)}
-              className="size-10 flex items-center justify-center text-neutral-700"
-              aria-label="更多操作"
-            >
-              <EllipsisVertical className="size-4" strokeWidth={2} />
-            </button>
-
-            <WardrobeItemMenu
-              open={isMenuOpen}
-              onEdit={() => {
-                setIsMenuOpen(false)
-                void router.push(`/wardrobe/${item.id}/edit`)
-              }}
-              onDelete={() => {
-                setIsMenuOpen(false)
-                setIsDeleteOpen(true)
-              }}
-            />
-          </div>
-        </header>
+              <WardrobeItemMenu
+                open={isMenuOpen}
+                onEdit={() => {
+                  setIsMenuOpen(false)
+                  void router.push(`/wardrobe/${item.id}/edit`)
+                }}
+                onDelete={() => {
+                  setIsMenuOpen(false)
+                  setIsDeleteOpen(true)
+                }}
+              />
+            </div>
+          }
+        />
 
         <section className="px-4 pt-1 pb-3">
           <div className="mx-auto flex h-47 items-center justify-center overflow-hidden">

@@ -1,11 +1,10 @@
-import { ChevronLeft } from 'lucide-react'
-import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useEffect, useMemo, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { showToast } from '@/components/ui/sonner'
 import { PrimaryButton } from '@/modules/common/components/PrimaryButton'
+import { SubPageHeader } from '@/modules/common/components/SubPageHeader'
 import { RecognitionImagePreview } from '@/modules/wardrobe/components/RecognitionImagePreview'
 import { useWardrobeCreationFlow } from '@/modules/wardrobe/hooks/useWardrobeCreationFlow'
 import { confirmPendingRecognitionSource } from '@/modules/wardrobe/utils/confirmPendingRecognitionSource'
@@ -114,13 +113,7 @@ const WardrobePreviewPage = () => {
 
   return (
     <div className="relative flex min-h-screen flex-col bg-neutral-100">
-      <header className="sticky top-0 z-10 flex items-center justify-between w-full h-16 px-4 py-2.5 bg-neutral-100">
-        <Link href={fallbackHref} className="flex size-10 items-center justify-center" aria-label="返回上一頁">
-          <ChevronLeft className="text-neutral-700" size={24} strokeWidth={2} />
-        </Link>
-        <h1 className="font-label-xxl text-neutral-900">{pageTitle}</h1>
-        <span className="size-10" />
-      </header>
+      <SubPageHeader title={pageTitle} backHref={fallbackHref} backLabel="返回上一頁" />
 
       <main className="flex flex-1 flex-col px-4 pb-24">
         <section className="flex flex-1 items-center justify-center pb-6">

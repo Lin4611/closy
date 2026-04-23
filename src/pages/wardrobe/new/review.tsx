@@ -1,5 +1,3 @@
-import { ChevronLeft } from 'lucide-react'
-import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 
@@ -7,6 +5,7 @@ import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
 import { cn } from '@/lib/utils'
 import { ConfirmAlertDialog } from '@/modules/common/components/ConfirmAlertDialog'
+import { SubPageHeader } from '@/modules/common/components/SubPageHeader'
 import { getOnboardingAddFlow, setOnboardingAddFlow } from '@/modules/guide/utils/onboardingAddFlow'
 import { createClothes } from '@/modules/wardrobe/api/createClothes'
 import { WardrobeReviewForm } from '@/modules/wardrobe/components/WardrobeReviewForm'
@@ -183,13 +182,7 @@ const WardrobeReviewPage = () => {
   return (
     <>
       <div className="relative bg-neutral-100">
-        <header className="sticky top-0 z-10 flex items-center justify-between w-full h-16 px-4 py-2.5 bg-neutral-100">
-          <Link href={backHref} className="flex size-10 items-center justify-center" aria-label="返回圖片確認頁">
-            <ChevronLeft className="text-neutral-700" size={24} strokeWidth={2} />
-          </Link>
-          <h1 className="font-label-xxl text-neutral-900">編輯衣物資訊</h1>
-          <span className="size-10" />
-        </header>
+        <SubPageHeader title="編輯衣物資訊" backHref={backHref} backLabel="返回圖片確認頁" />
 
         <WardrobeReviewForm
           value={draft}

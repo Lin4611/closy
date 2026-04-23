@@ -1,12 +1,11 @@
-import { ChevronLeft } from 'lucide-react'
 import type { GetServerSideProps, InferGetServerSidePropsType } from 'next'
-import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
 
 import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
 import { fetchWardrobeServerItem } from '@/lib/api/wardrobe/shared'
+import { SubPageHeader } from '@/modules/common/components/SubPageHeader'
 import { updateClothes } from '@/modules/wardrobe/api/updateClothes'
 import { WardrobeReviewForm } from '@/modules/wardrobe/components/WardrobeReviewForm'
 import { useWardrobeLocalStore, useWardrobeServerItem } from '@/modules/wardrobe/hooks/useWardrobeLocalStore'
@@ -166,13 +165,7 @@ const WardrobeEditContent = ({ item }: WardrobeEditContentProps) => {
 
   return (
     <div className="relative bg-neutral-100">
-      <header className="sticky top-0 z-10 flex items-center justify-between w-full h-16 px-4 py-2.5 bg-neutral-100">
-        <Link href={`/wardrobe/${item.id}`} className="flex size-10 items-center justify-center" aria-label="返回衣物詳細頁">
-          <ChevronLeft className="text-neutral-700" size={24} strokeWidth={2} />
-        </Link>
-        <h1 className="font-label-xxl text-neutral-900">編輯衣物資訊</h1>
-        <span className="size-10" />
-      </header>
+      <SubPageHeader title="編輯衣物資訊" backHref={`/wardrobe/${item.id}`} backLabel="返回衣物詳細頁" />
 
       <WardrobeReviewForm
         value={draft}
