@@ -9,7 +9,6 @@ import { showToast } from '@/components/ui/sonner'
 import { useCameraPreview } from '@/modules/wardrobe/hooks/useCameraPreview'
 import { useWardrobeCreationFlow } from '@/modules/wardrobe/hooks/useWardrobeCreationFlow'
 import { getCreationFlowReturnRoute, resolveCreationFlowEntryScope } from '@/modules/wardrobe/utils/creationFlowNavigation'
-import { normalizeRecognitionImage } from '@/modules/wardrobe/utils/normalizeRecognitionImage'
 import { preparePendingRecognitionSource } from '@/modules/wardrobe/utils/preparePendingRecognitionSource'
 
 const WardrobeCameraPage = () => {
@@ -29,15 +28,12 @@ const WardrobeCameraPage = () => {
 
     try {
       const file = await capture()
-      const normalizedFile = await normalizeRecognitionImage(file, {
-        fileNamePrefix: 'closy-camera',
-      })
 
       await preparePendingRecognitionSource({
         router,
         origin: 'camera',
         entryScope,
-        file: normalizedFile,
+        file,
         clearFlow,
         setPendingSource,
       })

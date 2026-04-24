@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { captureVideoFrame } from '@/modules/wardrobe/utils/captureVideoFrame'
+import {
+  DEFAULT_RECOGNITION_IMAGE_MAX_DIMENSION,
+  DEFAULT_RECOGNITION_IMAGE_QUALITY,
+} from '@/modules/wardrobe/utils/normalizeRecognitionImage'
 
 export type CameraPreviewStatus = 'loading' | 'ready' | 'denied' | 'unsupported' | 'error'
 
@@ -87,6 +91,8 @@ export const useCameraPreview = () => {
 
     return captureVideoFrame(videoElement, {
       fileName: `closy-camera-${Date.now()}.jpg`,
+      maxDimension: DEFAULT_RECOGNITION_IMAGE_MAX_DIMENSION,
+      quality: DEFAULT_RECOGNITION_IMAGE_QUALITY,
     })
   }, [status])
 
