@@ -95,8 +95,10 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
 
   useEffect(() => {
     dispatch(mergeUserProfile(profile))
-    if (homeState.today) dispatch(markDaySaved({ day: 'today', isSaved: profile.hasOutfitGeneratedToday }))
-    if (homeState.tomorrow) dispatch(markDaySaved({ day: 'tomorrow', isSaved: profile.hasOutfitGeneratedTomorrow }))
+    if (homeState.today)
+      dispatch(markDaySaved({ day: 'today', isSaved: profile.hasOutfitGeneratedToday }))
+    if (homeState.tomorrow)
+      dispatch(markDaySaved({ day: 'tomorrow', isSaved: profile.hasOutfitGeneratedTomorrow }))
   }, [])
 
   const fetchDayOutfit = async (
@@ -124,7 +126,10 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
             dayRecommendation: res,
             outfitImgUrl: '',
             occasion: targetOccasion,
-            isSaved: day === 'today' ? profile.hasOutfitGeneratedToday : profile.hasOutfitGeneratedTomorrow,
+            isSaved:
+              day === 'today'
+                ? profile.hasOutfitGeneratedToday
+                : profile.hasOutfitGeneratedTomorrow,
           },
         }),
       )
@@ -160,14 +165,7 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
       return
     }
 
-    const yesterday = (() => {
-      const d = new Date()
-      d.setDate(d.getDate() - 1)
-      const year = d.getFullYear()
-      const month = String(d.getMonth() + 1).padStart(2, '0')
-      const day = String(d.getDate()).padStart(2, '0')
-      return `${year}-${month}-${day}`
-    })()
+    const yesterday = getStorageDate(-1)
 
     if (homeState.cacheDate === yesterday && homeState.tomorrow) {
       dispatch(promoteTomorrowToToday())
