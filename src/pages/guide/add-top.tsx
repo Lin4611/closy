@@ -83,7 +83,7 @@ const AddTopPage = () => {
         <div className="relative">
           <HomePreviewTopBar expanded={false} disabled />
           <div className="flex flex-col items-center justify-center pt-13">
-            <HomeOutfitPreview src="/home/model_man.webp" alt="model" disable />
+            <HomeOutfitPreview src="/home/model_man.webp" alt="model" isSaved={true} />
           </div>
         </div>
 
