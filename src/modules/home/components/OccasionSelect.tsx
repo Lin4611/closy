@@ -32,7 +32,9 @@ export const OccasionSelect = ({
   return (
     <Select value={value} onValueChange={onValueChange} disabled={disabled}>
       <SelectTrigger className="font-paragraph-sm h-10 min-w-20 rounded-[20px] border-none bg-neutral-100 px-4 py-2 text-neutral-500">
-        <SelectValue placeholder={placeholder} />
+        <SelectValue placeholder={placeholder}>
+          {options.find((o) => o.value === value)?.label ?? placeholder}
+        </SelectValue>
       </SelectTrigger>
       <SelectContent
         position="popper"
