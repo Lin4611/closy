@@ -23,9 +23,7 @@ const ogImageUrl = siteUrl ? `${siteUrl}/og-image.jpg` : '/og-image.jpg'
 const isGuideRoute = (pathname: string) => pathname === '/guide' || pathname.startsWith('/guide/')
 const isWardrobeServerFirstRoute = (pathname: string) => {
   return (
-    pathname === '/wardrobe' ||
-    pathname === '/wardrobe/[id]' ||
-    pathname === '/wardrobe/[id]/edit'
+    pathname === '/wardrobe' || pathname === '/wardrobe/[id]' || pathname === '/wardrobe/[id]/edit'
   )
 }
 
@@ -54,6 +52,9 @@ const isOutfitServerFirstRoute = (pathname: string) => {
     pathname === '/outfit/occasion/[occasionId]'
   )
 }
+const isHomeServerFirstRoute = (pathname: string) => {
+  return pathname === '/home'
+}
 
 type AppRouteKind = 'server-first-protected' | 'client-first-protected' | 'public'
 
@@ -66,7 +67,8 @@ const getAppRouteKind = (pathname: string): AppRouteKind => {
     isWardrobeServerFirstRoute(pathname) ||
     isSettingsServerFirstRoute(pathname) ||
     isCalendarServerFirstRoute(pathname) ||
-    isOutfitServerFirstRoute(pathname)
+    isOutfitServerFirstRoute(pathname) ||
+    isHomeServerFirstRoute(pathname)
   ) {
     return 'server-first-protected'
   }

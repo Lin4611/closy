@@ -9,7 +9,7 @@
 @layer base {
   body {
     color: var(--color-neutral-900);
-    @apply bg-background text-foreground;
+    @apply text-foreground bg-neutral-200;
   }
   * {
     @apply border-border outline-ring/50;

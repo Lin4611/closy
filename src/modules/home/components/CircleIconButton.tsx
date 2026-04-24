@@ -25,7 +25,7 @@ export const CircleIconButton = ({
 
   const enabledClassName =
     kind === 'like'
-      ? 'bg-white text-[#FF8B8B] active:bg-[#FF5656] active:text-white'
+      ? 'bg-white text-[#FF8B8B]'
       : 'bg-white text-neutral-900 active:bg-neutral-800 active:text-neutral-100'
 
   const savedClassName = 'bg-[#FF5656] text-white disabled:opacity-100'
@@ -49,8 +49,7 @@ export const CircleIconButton = ({
       <Icon
         className={cn(
           'size-[28px] transition-none',
-          kind === 'like' &&
-            (isActive ? 'fill-current' : 'fill-none group-active/button:fill-current'),
+          kind === 'like' && (isActive ? 'fill-current' : 'fill-none'),
         )}
         strokeWidth={2}
       />

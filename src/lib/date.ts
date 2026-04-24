@@ -6,4 +6,4 @@ export const getStorageDate = (offsetDays: number = 0) => {
   const day = String(d.getDate()).padStart(2, '0')
   return `${year}-${month}-${day}`
 }
-export const getTodayStorageDate = () => getStorageDate(1)
+export const getTodayStorageDate = () => getStorageDate()
