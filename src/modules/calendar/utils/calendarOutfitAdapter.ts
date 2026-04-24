@@ -1,4 +1,5 @@
 import type {
+  CalendarEntry,
   CalendarEntryOutfitDisplayModel,
   CalendarOutfitCollectionStatus,
   CalendarResolvedOutfit,
@@ -222,6 +223,40 @@ export const resolveCalendarEntryOutfitDetailId = ({
   const matchedOutfit = selectableOutfits.find((outfit) => outfit.imageUrl === serverOutfitPreview.imageUrl) ?? null
 
   return matchedOutfit?.id ?? null
+}
+
+export const mapCalendarEntryServerPreviewToDisplayModel = (
+  entry: CalendarEntry,
+): CalendarEntryOutfitDisplayModel => {
+  if (entry.serverOutfitPreview?.imageUrl) {
+    return {
+      status: 'resolved',
+      imageUrl: entry.serverOutfitPreview.imageUrl,
+      message: null,
+    }
+  }
+
+  if (entry.selectedOutfitId) {
+    return {
+      status: 'missing',
+      imageUrl: null,
+      message: '這套穿搭已不存在',
+    }
+  }
+
+  return {
+    status: 'none',
+    imageUrl: null,
+    message: null,
+  }
+}
+
+export const getCalendarEntryServerPreviewOutfitId = (entry: CalendarEntry) => {
+  if (!entry.selectedOutfitId || !entry.serverOutfitPreview?.imageUrl) {
+    return null
+  }
+
+  return entry.selectedOutfitId
 }
 
 export const mapResolvedOutfitToEntryDisplayModel = ({
