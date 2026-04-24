@@ -22,7 +22,9 @@ export type LoginUser = {
   isProfileCompleted: boolean
   location: { longitude: number; latitude: number }
   hasTodayCalendarEvent?: boolean
+  hasTodayCalendarEventWithoutOutfit?: boolean
   hasTomorrowCalendarEvent?: boolean
+  hasTomorrowCalendarEventWithoutOutfit?: boolean
   todayCalendarEventOccasion?: string
   tomorrowCalendarEventOccasion?: string
   hasOutfitGeneratedToday?: boolean
