@@ -14,13 +14,12 @@ import { CalendarEntryCard } from '@/modules/calendar/components/CalendarEntryCa
 import { CalendarHeader } from '@/modules/calendar/components/CalendarHeader'
 import { CalendarMonthBar } from '@/modules/calendar/components/CalendarMonthBar'
 import { CalendarSuccessDialog } from '@/modules/calendar/components/CalendarSuccessDialog'
-import { useCalendarOutfits } from '@/modules/calendar/hooks/useCalendarOutfits'
 import { useCalendarServerEntries, useCalendarStore } from '@/modules/calendar/hooks/useCalendarStore'
 import type { CalendarEntriesBaseline, CalendarEntry } from '@/modules/calendar/types'
 import { buildOutfitDetailReturnTo, getCalendarEditRoute } from '@/modules/calendar/utils/calendarNavigation'
 import {
-  mapResolvedOutfitToEntryDisplayModel,
-  resolveCalendarEntryOutfitDetailId,
+  getCalendarEntryServerPreviewOutfitId,
+  mapCalendarEntryServerPreviewToDisplayModel,
 } from '@/modules/calendar/utils/calendarOutfitAdapter'
 import { EMPTY_CALENDAR_GOOGLE_EVENTS, sortCalendarEntriesForHome } from '@/modules/calendar/utils/calendarRules'
 import { AppShell } from '@/modules/common/components/AppShell'
@@ -83,7 +82,6 @@ const CalendarPage = ({ initialEntries }: InferGetServerSidePropsType<typeof get
   const router = useRouter()
   const { deleteEntry, hydrateEntriesFromServer } = useCalendarStore()
   const entries = useCalendarServerEntries(initialEntries)
-  const { outfits, getOutfitStateById } = useCalendarOutfits(undefined, { source: 'api' })
   const [isSynced, setIsSynced] = useState(false)
   const [deletingEntry, setDeletingEntry] = useState<CalendarEntry | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -179,16 +177,8 @@ const CalendarPage = ({ initialEntries }: InferGetServerSidePropsType<typeof get
             <CalendarEmptyState />
           ) : (
             visibleEntries.map((entry) => {
-              const resolvedOutfit = getOutfitStateById(entry.selectedOutfitId)
-              const outfitDisplay = mapResolvedOutfitToEntryDisplayModel({
-                resolvedOutfit,
-                serverOutfitPreview: entry.serverOutfitPreview,
-              })
-              const previewOutfitId = resolveCalendarEntryOutfitDetailId({
-                resolvedOutfit,
-                serverOutfitPreview: entry.serverOutfitPreview,
-                selectableOutfits: outfits,
-              })
+              const outfitDisplay = mapCalendarEntryServerPreviewToDisplayModel(entry)
+              const previewOutfitId = getCalendarEntryServerPreviewOutfitId(entry)
 
               return (
                 <CalendarEntryCard

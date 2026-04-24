@@ -15,6 +15,12 @@ const normalizeItem = (item: WardrobeStoredItem): WardrobeStoredItem => ({
   ...item,
 })
 
+const serializeItems = (items: WardrobeStoredItem[]) => JSON.stringify(items.map(normalizeItem))
+
+const isSameStoredItem = (a: WardrobeStoredItem, b: WardrobeStoredItem) => {
+  return JSON.stringify(normalizeItem(a)) === JSON.stringify(normalizeItem(b))
+}
+
 const safeParseItems = (value: string | null): WardrobeStoredItem[] => {
   if (!value) return EMPTY_WARDROBE_ITEMS
 
@@ -62,19 +68,7 @@ const getStoredItemsSnapshot = (): WardrobeStoredItem[] => {
 
 const getServerStoredItemsSnapshot = (): WardrobeStoredItem[] => EMPTY_WARDROBE_ITEMS
 
-const getWritableStoredItemsBase = (): WardrobeStoredItem[] => {
-  if (typeof window === 'undefined') {
-    return EMPTY_WARDROBE_ITEMS
-  }
-
-  const storageValue = window.localStorage.getItem(WARDROBE_STORAGE_KEY)
-
-  if (!storageValue) {
-    return EMPTY_WARDROBE_ITEMS
-  }
-
-  return safeParseItems(storageValue)
-}
+const getWritableStoredItemsBase = (): WardrobeStoredItem[] => getStoredItemsSnapshot()
 
 const notifyWardrobeItemsChanged = () => {
   if (typeof window === 'undefined') return
@@ -86,7 +80,7 @@ const writeStoredItems = (items: WardrobeStoredItem[]) => {
   if (typeof window === 'undefined') return
 
   const normalizedItems = items.map(normalizeItem)
-  const nextStorageValue = JSON.stringify(normalizedItems)
+  const nextStorageValue = serializeItems(normalizedItems)
   const currentStorageValue = window.localStorage.getItem(WARDROBE_STORAGE_KEY)
 
   if (nextStorageValue === currentStorageValue) {
@@ -173,6 +167,12 @@ export const useWardrobeLocalStore = () => {
       return normalizedItem
     }
 
+    const existingItem = currentItems[existingIndex]
+
+    if (isSameStoredItem(existingItem, normalizedItem)) {
+      return normalizedItem
+    }
+
     const nextItems = [...currentItems]
     nextItems[existingIndex] = normalizedItem
     writeStoredItems(nextItems)
@@ -182,17 +182,36 @@ export const useWardrobeLocalStore = () => {
 
   const syncCreatedItemFromServer = useCallback((item: WardrobeItem) => {
     const normalizedItem = normalizeItem(item)
-    const currentItems = getWritableStoredItemsBase().filter((storedItem) => storedItem.id !== normalizedItem.id)
+    const storedItems = getWritableStoredItemsBase()
+    const existingIndex = storedItems.findIndex((storedItem) => storedItem.id === normalizedItem.id)
+    const hasDuplicateItem = storedItems.some(
+      (storedItem, index) => index !== existingIndex && storedItem.id === normalizedItem.id,
+    )
 
+    if (
+      existingIndex === 0 &&
+      !hasDuplicateItem &&
+      isSameStoredItem(storedItems[existingIndex], normalizedItem)
+    ) {
+      return normalizedItem
+    }
+
+    const currentItems = storedItems.filter((storedItem) => storedItem.id !== normalizedItem.id)
     writeStoredItems([normalizedItem, ...currentItems])
 
     return normalizedItem
   }, [])
 
   const hydrateItemsFromServer = useCallback((serverItems: WardrobeItem[]) => {
-    writeStoredItems(serverItems)
+    const normalizedItems = serverItems.map(normalizeItem)
 
-    return serverItems.map(normalizeItem)
+    if (serializeItems(getWritableStoredItemsBase()) === serializeItems(normalizedItems)) {
+      return normalizedItems
+    }
+
+    writeStoredItems(normalizedItems)
+
+    return normalizedItems
   }, [])
 
   const appendItem = useCallback((item: WardrobeItem) => syncCreatedItemFromServer(item), [syncCreatedItemFromServer])

@@ -116,8 +116,8 @@ const WardrobePreviewPage = () => {
       <SubPageHeader title={pageTitle} backHref={fallbackHref} backLabel="返回上一頁" />
 
       <main className="flex flex-1 flex-col px-4 pb-24">
-        <section className="flex flex-1 items-center justify-center pb-6">
-          <RecognitionImagePreview src={previewSrc || undefined} alt="待確認衣物圖片" />
+        <section className="flex items-center justify-center pb-6">
+          <RecognitionImagePreview src={previewSrc || undefined} alt="待確認衣物圖片" className="h-83" />
         </section>
 
         <div className="space-y-3 pt-4">

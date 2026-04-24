@@ -71,9 +71,10 @@ const CalendarSelectOutfitPage = ({ initialEntries }: InferGetServerSidePropsTyp
   const resolvedDate = useMemo(() => {
     return typeof router.query.date === 'string' ? router.query.date : formDraft?.date ?? ''
   }, [formDraft?.date, router.query.date])
+  const canFetchSelectableOutfits = Boolean(formDraft?.occasionKey)
   const { outfits, isEmpty, isError, isLoading, errorMessage, reload } = useCalendarOutfits(
     formDraft?.occasionKey ?? null,
-    { source: 'api' },
+    { source: canFetchSelectableOutfits ? 'api' : 'mock' },
   )
   const [selectedOutfitId, setSelectedOutfitId] = useState<string | null>(resolveInitialSelectedOutfitId(formDraft))
 
