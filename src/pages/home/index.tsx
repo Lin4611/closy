@@ -8,6 +8,7 @@ import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
 import { apiClient } from '@/lib/api/client'
 import type { ApiResponse } from '@/lib/api/types'
+import { getTodayStorageDate, getStorageDate } from '@/lib/date'
 import { AppShell } from '@/modules/common/components/AppShell'
 import { type Occasion } from '@/modules/common/types/occasion'
 import { defaultOccasion } from '@/modules/common/types/occasion'
@@ -94,6 +95,10 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
 
   useEffect(() => {
     dispatch(mergeUserProfile(profile))
+    if (homeState.today)
+      dispatch(markDaySaved({ day: 'today', isSaved: profile.hasOutfitGeneratedToday }))
+    if (homeState.tomorrow)
+      dispatch(markDaySaved({ day: 'tomorrow', isSaved: profile.hasOutfitGeneratedTomorrow }))
   }, [])
 
   const fetchDayOutfit = async (
@@ -121,7 +126,10 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
             dayRecommendation: res,
             outfitImgUrl: '',
             occasion: targetOccasion,
-            isSaved: false,
+            isSaved:
+              day === 'today'
+                ? profile.hasOutfitGeneratedToday
+                : profile.hasOutfitGeneratedTomorrow,
           },
         }),
       )
@@ -147,18 +155,17 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
   }
 
   useEffect(() => {
-    const today = new Date().toISOString().split('T')[0]
+    const today = getTodayStorageDate()
 
     if (homeState.cacheDate === today) {
-      fetchDayOutfit('today', { force: false, occasion: getCalendarOccasion('today') })
+      const todayCalOccasion = getCalendarOccasion('today')
+      const force =
+        profile.hasTodayCalendarEvent && todayCalOccasion !== homeState['today']?.occasion
+      fetchDayOutfit('today', { force, occasion: todayCalOccasion })
       return
     }
 
-    const yesterday = (() => {
-      const d = new Date()
-      d.setDate(d.getDate() - 1)
-      return d.toISOString().split('T')[0]
-    })()
+    const yesterday = getStorageDate(-1)
 
     if (homeState.cacheDate === yesterday && homeState.tomorrow) {
       dispatch(promoteTomorrowToToday())
@@ -172,7 +179,11 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
 
   const handleDayChange = (day: 'today' | 'tomorrow') => {
     setActiveDay(day)
-    fetchDayOutfit(day, { occasion: getCalendarOccasion(day) })
+    const calOccasion = getCalendarOccasion(day)
+    const isBookedDay =
+      day === 'today' ? profile.hasTodayCalendarEvent : profile.hasTomorrowCalendarEvent
+    const force = isBookedDay && calOccasion !== homeState[day]?.occasion
+    fetchDayOutfit(day, { force, occasion: calOccasion })
   }
 
   const isBooked =
@@ -192,6 +203,7 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
         outfitImgUrl: homeState[activeDay]?.outfitImgUrl || '/home/model_man.webp',
         selectedItems: recommendation.selectedItems,
         occasion: recommendation.occasion,
+        outfitDate: activeDay === 'today' ? getStorageDate() : getStorageDate(1),
       })
       dispatch(markDaySaved({ day: activeDay }))
       showToast.info('已新增至我的穿搭', 1500)
@@ -275,6 +287,7 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
         outfitImgUrl: result.adjustedImageUrl,
         selectedItems: result.selectedItems,
         occasion,
+        outfitDate: activeDay === 'today' ? getStorageDate() : getStorageDate(1),
       })
       dispatch(
         updateDayAdjustResult({
@@ -317,7 +330,8 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
               isLoading={isLoading || isImageLoading || !currentData}
               onDislikeClick={handleDislikeClick}
               onLikeClick={addLikeOutfit}
-              disable={isSaved}
+              isSaved={isSaved}
+              isBooked={isBooked}
             />
           </div>
         </div>

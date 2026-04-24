@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { Drawer, DrawerContent } from '@/components/ui/drawer'
+import { getTodayStorageDate } from '@/lib/date'
 import { getAdjustQuota } from '@/modules/home/api/adjustQuota'
 import { streamOutfitAdjust } from '@/modules/home/api/adjustStream'
 import type { ClothingItem } from '@/modules/home/types/dayRecommendationTypes'
@@ -32,14 +33,6 @@ type OutfitAdjustCountStorage = {
 
 const DAILY_OUTFIT_ADJUST_LIMIT = 3
 const OUTFIT_ADJUST_COUNT_STORAGE_KEY = 'closy:outfit-adjust-daily-count'
-
-const getTodayStorageDate = () => {
-  const now = new Date()
-  const year = now.getFullYear()
-  const month = String(now.getMonth() + 1).padStart(2, '0')
-  const day = String(now.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
-}
 
 const getInitialCount = (): number => {
   try {
@@ -227,14 +220,14 @@ export const OutfitAdjustDrawer = ({
 
   return (
     <Drawer open={open} onOpenChange={handleOpenChange} dismissible={dismissible}>
-      <DrawerContent className="mx-auto h-166.5 w-full max-w-93.75 gap-10 rounded-t-[40px] border-none bg-[#FFFEFE] px-4 pb-10 shadow-[0_1px_16px_rgba(0,0,0,0.1)]">
+      <DrawerContent className="mx-auto h-166.5 w-full max-w-93.75 gap-5 rounded-t-[40px] border-none bg-[#FFFEFE] px-4 pb-5 shadow-[0_1px_16px_rgba(0,0,0,0.1)]">
         {mode === 'initial' && (
           <>
             <div className="flex flex-col items-center justify-center text-center">
               <h4 className="font-h4 text-neutral-800">{name}</h4>
               <p className="font-h3 text-neutral-800">今天的穿搭需要調整嗎？</p>
             </div>
-            <div className="hide-scrollbar min-h-0 flex-1 overflow-y-auto px-4">
+            <div className="hide-scrollbar flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto px-4">
               <QuickAdjustOptions onSelectOption={handleQuickOptionClick} />
             </div>
           </>
@@ -244,6 +237,7 @@ export const OutfitAdjustDrawer = ({
         {mode === 'result' && result && (
           <OutfitAdjustResultView
             result={result}
+            remainingCount={count}
             onConfirm={handleConfirm}
             onRevert={handleRevert}
           />

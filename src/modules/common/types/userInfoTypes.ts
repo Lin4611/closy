@@ -12,4 +12,6 @@ export type UserInfo = {
   hasTomorrowCalendarEvent: boolean
   todayCalendarEventOccasion: string
   tomorrowCalendarEventOccasion: string
+  hasOutfitGeneratedToday: boolean
+  hasOutfitGeneratedTomorrow: boolean
 }

@@ -64,6 +64,8 @@ const userSlice = createSlice({
         hasTomorrowCalendarEvent: action.payload.hasTomorrowCalendarEvent,
         todayCalendarEventOccasion: action.payload.todayCalendarEventOccasion,
         tomorrowCalendarEventOccasion: action.payload.tomorrowCalendarEventOccasion,
+        hasOutfitGeneratedToday: action.payload.hasOutfitGeneratedToday,
+        hasOutfitGeneratedTomorrow: action.payload.hasOutfitGeneratedTomorrow,
       }
       state.isLoggedIn = true
     },
