@@ -1,3 +1,9 @@
+/**
+ * Calendar 主頁專用 header。
+ *
+ * 不作為跨模組流程頁 / 子頁共用 header 的抽取基底；
+ * 後續跨模組共用應另以 SubPageHeader 承接。
+ */
 import { ChevronLeft } from 'lucide-react'
 import Link from 'next/link'
 import type { MouseEvent } from 'react'

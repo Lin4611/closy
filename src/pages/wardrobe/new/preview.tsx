@@ -1,10 +1,10 @@
-import { ChevronLeft } from 'lucide-react'
 import { useRouter } from 'next/router'
 import { useEffect, useMemo, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { showToast } from '@/components/ui/sonner'
 import { PrimaryButton } from '@/modules/common/components/PrimaryButton'
+import { SubPageHeader } from '@/modules/common/components/SubPageHeader'
 import { RecognitionImagePreview } from '@/modules/wardrobe/components/RecognitionImagePreview'
 import { useWardrobeCreationFlow } from '@/modules/wardrobe/hooks/useWardrobeCreationFlow'
 import { confirmPendingRecognitionSource } from '@/modules/wardrobe/utils/confirmPendingRecognitionSource'
@@ -113,20 +113,7 @@ const WardrobePreviewPage = () => {
 
   return (
     <div className="relative flex min-h-screen flex-col bg-neutral-100">
-      <header className="relative flex items-center justify-center h-16 px-4 pt-5 pb-4">
-        <button
-          type="button"
-          onClick={() => {
-            void handleReset()
-          }}
-          className="absolute left-4 flex size-10 items-center justify-center"
-          aria-label="返回上一頁"
-        >
-          <ChevronLeft className="text-neutral-700" size={24} strokeWidth={2} />
-        </button>
-        <h1 className="absolute left-1/2 -translate-x-1/2 font-label-xxl text-neutral-900">{pageTitle}</h1>
-        <span className="w-10" />
-      </header>
+      <SubPageHeader title={pageTitle} backHref={fallbackHref} backLabel="返回上一頁" />
 
       <main className="flex flex-1 flex-col px-4 pb-24">
         <section className="flex flex-1 items-center justify-center pb-6">

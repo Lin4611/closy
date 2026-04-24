@@ -1,9 +1,10 @@
-import { ChevronLeft, ImagePlus } from 'lucide-react'
+import { ImagePlus } from 'lucide-react'
 import { useRouter } from 'next/router'
 import { useRef, useState, type ChangeEvent } from 'react'
 
 import { showToast } from '@/components/ui/sonner'
 import { PrimaryButton } from '@/modules/common/components/PrimaryButton'
+import { SubPageHeader } from '@/modules/common/components/SubPageHeader'
 import { useWardrobeCreationFlow } from '@/modules/wardrobe/hooks/useWardrobeCreationFlow'
 import { getCreationFlowReturnRoute, resolveCreationFlowEntryScope } from '@/modules/wardrobe/utils/creationFlowNavigation'
 import {
@@ -72,20 +73,7 @@ const WardrobeAlbumPage = () => {
 
   return (
     <div className="relative flex min-h-screen flex-col bg-neutral-100">
-      <header className="relative flex items-center justify-center h-16 px-4 pt-5 pb-4">
-        <button
-          type="button"
-          onClick={() => {
-            void router.push(backHref)
-          }}
-          className="absolute left-4 flex size-10 items-center justify-center text-neutral-500"
-          aria-label="返回上一頁"
-        >
-          <ChevronLeft className="text-neutral-700" size={24} strokeWidth={2} />
-        </button>
-        <h1 className="absolute left-1/2 -translate-x-1/2 font-label-xxl text-neutral-900">從相簿上傳</h1>
-        <span className="w-10" />
-      </header>
+      <SubPageHeader title="從相簿上傳" backHref={backHref} backLabel="返回上一頁" />
 
       <input
         ref={fileInputRef}

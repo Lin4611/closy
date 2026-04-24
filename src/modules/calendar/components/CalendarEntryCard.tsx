@@ -59,34 +59,29 @@ export const CalendarEntryCard = ({
         : 'bg-neutral-100 text-neutral-600'
 
   return (
-    <article
-      className={cn(
-        'rounded-[20px] bg-white p-4 shadow-[0_1px_4px_rgba(0,0,0,0.06)] transition-opacity',
-        isExpired && 'bg-neutral-100 text-neutral-400 opacity-90'
-      )}
-    >
+    <article className="rounded-[20px] bg-white px-4 py-3 shadow-[0_1px_4px_rgba(0,0,0,0.06)]">
       <div className="relative flex items-start gap-3">
         <button
           type="button"
           onClick={onPreviewOutfit}
-          disabled={!onPreviewOutfit}
-          className="relative flex h-16 w-12 shrink-0 items-center justify-center overflow-hidden rounded-[12px] disabled:pointer-events-none"
+          disabled={!onPreviewOutfit || isExpired}
+          className="relative flex h-18.75 w-16.5 shrink-0 items-center justify-center overflow-hidden rounded-[12px] disabled:pointer-events-none"
         >
           {hasResolvedOutfit && outfitDisplay.imageUrl ? (
             <Image
               src={outfitDisplay.imageUrl}
               alt="行事曆穿搭"
-              width={48}
-              height={64}
-              className={cn('h-16 w-12 object-contain', isExpired && 'opacity-60 grayscale')}
+              width={66}
+              height={75}
+              className="h-18.75 w-16.5 object-contain"
             />
           ) : (
             <Image
               src="/calendar/figure-silhouette.png"
               alt={hasOutfit ? '已選穿搭狀態' : '未選穿搭'}
-              width={48}
-              height={64}
-              className={cn('h-16 w-12 object-contain', isExpired && 'opacity-45')}
+              width={66}
+              height={75}
+              className="h-18.75 w-16.5 object-contain"
             />
           )}
           {showLoadingIndicator ? (
@@ -98,62 +93,38 @@ export const CalendarEntryCard = ({
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <p className={cn('font-h4 text-neutral-900', isExpired && 'text-neutral-400')}>{formatDateLabel(entry.date)}</p>
-            {isGoogleEntry ? (
-              <span className={cn('font-label-md text-neutral-700', isExpired && 'text-neutral-400')}>({events.length})</span>
-            ) : null}
-            {isGoogleEntry ? (
+            {isGoogleEntry ? <span className="font-label-md text-neutral-700">({events.length})</span> : null}
+            {isGoogleEntry && !isExpired ? (
               <button
                 type="button"
                 onClick={() => setIsExpanded((value) => !value)}
-                className={cn('text-neutral-700', isExpired && 'cursor-not-allowed text-neutral-400')}
-                disabled={isExpired}
-                aria-disabled={isExpired}
+                className="text-neutral-700"
+                aria-label={isExpanded ? '收合 Google 行程' : '展開 Google 行程'}
               >
                 {isExpanded ? <ChevronUp className="size-5" /> : <ChevronDown className="size-5" />}
               </button>
             ) : null}
           </div>
           <div className="flex flex-wrap items-center gap-2 pt-2">
-            <span
-              className={cn(
-                'rounded-full bg-primary-800 px-3 py-1 font-paragraph-sm text-white',
-                isExpired && 'bg-neutral-300 text-white'
-              )}
-            >
+            <span className="rounded-full bg-primary-800 px-2 py-1 font-paragraph-xs text-white">
               #{occasionLabelMap[entry.occasionKey]}
             </span>
-            <span
-              className={cn('rounded-full px-3 py-1 font-paragraph-sm', outfitStatusClassName, isExpired && 'bg-neutral-200 text-neutral-400')}
-            >
-              {outfitStatusLabel}
-            </span>
+            <span className={cn('rounded-full px-2 py-1 font-paragraph-xs', outfitStatusClassName)}>{outfitStatusLabel}</span>
           </div>
         </div>
-        {isGoogleEntry ? (
-          <button
-            type="button"
-            onClick={onEdit}
-            aria-label="編輯行事曆"
-            className={cn('pt-1 text-neutral-700', isExpired && 'cursor-not-allowed text-neutral-400')}
-            disabled={isExpired}
-            aria-disabled={isExpired}
-          >
+        {isExpired ? (
+          <span className="rounded-full bg-danger-300 px-2 py-0.5 font-paragraph-sm text-white">已過期</span>
+        ) : isGoogleEntry ? (
+          <button type="button" onClick={onEdit} aria-label="編輯行事曆" className="pt-1 text-neutral-700">
             <Pencil className="size-5" strokeWidth={2} />
           </button>
         ) : (
           <div className="relative">
-            <button
-              type="button"
-              onClick={() => setIsMenuOpen((value) => !value)}
-              aria-label="更多操作"
-              className={cn('pt-1 text-neutral-700', isExpired && 'cursor-not-allowed text-neutral-400')}
-              disabled={isExpired}
-              aria-disabled={isExpired}
-            >
+            <button type="button" onClick={() => setIsMenuOpen((value) => !value)} aria-label="更多操作" className="pt-1 text-neutral-700">
               <EllipsisVertical className="size-5" strokeWidth={2} />
             </button>
             <CalendarLocalEntryMenu
-              open={!isExpired && isMenuOpen}
+              open={isMenuOpen}
               onEdit={() => {
                 setIsMenuOpen(false)
                 onEdit()
