@@ -1,12 +1,11 @@
-import { ChevronLeft } from 'lucide-react'
 import type { GetServerSideProps, InferGetServerSidePropsType } from 'next'
-import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
 
 import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
 import { fetchWardrobeServerItem } from '@/lib/api/wardrobe/shared'
+import { SubPageHeader } from '@/modules/common/components/SubPageHeader'
 import { updateClothes } from '@/modules/wardrobe/api/updateClothes'
 import { WardrobeReviewForm } from '@/modules/wardrobe/components/WardrobeReviewForm'
 import { useWardrobeLocalStore, useWardrobeServerItem } from '@/modules/wardrobe/hooks/useWardrobeLocalStore'
@@ -165,14 +164,8 @@ const WardrobeEditContent = ({ item }: WardrobeEditContentProps) => {
   }
 
   return (
-    <div className="bg-neutral-100 ">
-      <header className="relative flex items-center justify-center h-16 px-4 pt-5 pb-4">
-        <Link href={`/wardrobe/${item.id}`} className="absolute left-4 flex size-10 items-center justify-center" aria-label="返回衣物詳細頁">
-          <ChevronLeft className="text-neutral-700" size={24} strokeWidth={2} />
-        </Link>
-        <h1 className="absolute left-1/2 -translate-x-1/2 font-label-xxl text-neutral-900">編輯衣物資訊</h1>
-        <span className="w-10" />
-      </header>
+    <div className="relative bg-neutral-100">
+      <SubPageHeader title="編輯衣物資訊" backHref={`/wardrobe/${item.id}`} backLabel="返回衣物詳細頁" />
 
       <WardrobeReviewForm
         value={draft}
@@ -188,7 +181,7 @@ const WardrobeEditContent = ({ item }: WardrobeEditContentProps) => {
         }}
       />
 
-      <div className="fixed right-0 bottom-0 left-0 z-40 mx-auto w-full max-w-93.75 bg-neutral-100 px-4 py-4">
+      <div className="sticky right-0 bottom-0 left-0 z-10 mx-auto w-full bg-neutral-100 px-4 py-4">
         <button
           type="button"
           disabled={isDisabled}
