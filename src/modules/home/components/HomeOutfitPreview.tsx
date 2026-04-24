@@ -25,7 +25,7 @@ export const HomeOutfitPreview = ({
   isBooked = false,
 }: HomeOutfitPreviewProps) => {
   const [isImageLoaded, setIsImageLoaded] = useState(false)
-  const isDisabled = isSaved || isBooked
+  const isDisabled = isSaved || isBooked || isLoading
 
   return (
     <div className="relative flex h-100 w-full flex-col items-center justify-center">
