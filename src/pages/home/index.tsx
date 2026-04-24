@@ -72,6 +72,7 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
   const [isOutfitAdjustDrawerOpen, setIsOutfitAdjustDrawerOpen] = useState(false)
   const [isImageLoading, setIsImageLoading] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [mounted, setMounted] = useState(false)
   const dispatch = useAppDispatch()
   const homeState = useAppSelector((state) => state.home)
   const [activeDay, setActiveDay] = useState<'today' | 'tomorrow'>('today')
@@ -97,6 +98,7 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
   const currentOccasion = calendarOccasion ?? homeState[activeDay]?.occasion ?? fallbackOccasion
 
   useEffect(() => {
+    setMounted(true)
     dispatch(mergeUserProfile(profile))
     if (homeState.today)
       dispatch(markDaySaved({ day: 'today', isSaved: profile.hasOutfitGeneratedToday }))
@@ -324,8 +326,8 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
         </div>
         <div className="relative">
           <HomePreviewTopBar
-            weather={currentData?.dayRecommendation.weather}
-            city={currentData?.dayRecommendation.city}
+            weather={mounted ? currentData?.dayRecommendation.weather : undefined}
+            city={mounted ? currentData?.dayRecommendation.city : undefined}
             expanded={isAdjustPromptOpen}
             onClick={() => setIsOutfitAdjustDrawerOpen(true)}
             onCalendarClick={() => {}}
@@ -343,7 +345,7 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
           </div>
         </div>
         <HomeInsightsSection
-          content={currentData?.dayRecommendation?.recommendation.reasoning ?? ''}
+          content={mounted ? (currentData?.dayRecommendation?.recommendation.reasoning ?? '') : ''}
         />
         <OutfitAdjustDrawer
           open={isOutfitAdjustDrawerOpen}
