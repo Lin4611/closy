@@ -49,9 +49,9 @@ export const OutfitAdjustResultView = ({
         >
           <p className="font-paragraph-md">繼續調整</p>
         </Button>
-        {remainingCount !== null && remainingCount > 0 && (
+        {remainingCount !== null && (
           <span className="font-paragraph-xs text-neutral-500">
-            今天還可以調整{remainingCount}次
+            {remainingCount > 0 ? '今天還可以調整' + remainingCount + '次' : '今日調整次數已達上限'}
           </span>
         )}
       </div>
