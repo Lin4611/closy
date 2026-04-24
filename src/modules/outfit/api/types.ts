@@ -39,6 +39,7 @@ export type DeleteOutfitResponseData = {
 export type AddOutfitRequest = {
   outfitImgUrl: string
   occasion: Occasion
+  outfitDate: string
   selectedItems: Array<{
     category: string
     name: string

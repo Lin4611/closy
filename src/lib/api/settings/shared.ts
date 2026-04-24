@@ -89,6 +89,8 @@ export const buildSettingsHydrationProfile = (
     hasTomorrowCalendarEvent: profileBaseline.hasTomorrowCalendarEvent,
     todayCalendarEventOccasion: profileBaseline.todayCalendarEventOccasion,
     tomorrowCalendarEventOccasion: profileBaseline.tomorrowCalendarEventOccasion,
+    hasOutfitGeneratedToday: profileBaseline.hasOutfitGeneratedToday,
+    hasOutfitGeneratedTomorrow: profileBaseline.hasOutfitGeneratedTomorrow,
   }
 }
 

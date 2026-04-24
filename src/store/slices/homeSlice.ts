@@ -1,5 +1,6 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 
+import { getTodayStorageDate } from '@/lib/date'
 import type { Occasion } from '@/modules/common/types/occasion'
 import type { ClothingItem, DayRecommendation } from '@/modules/home/types/dayRecommendationTypes'
 
@@ -32,7 +33,7 @@ const homeSlice = createSlice({
       } else {
         state.tomorrow = action.payload.cache
       }
-      state.cacheDate = new Date().toISOString().split('T')[0]
+      state.cacheDate = getTodayStorageDate()
     },
     updateDayImageUrl: (
       state,
@@ -69,16 +70,16 @@ const homeSlice = createSlice({
         dayState.dayRecommendation.recommendation.reasoning = action.payload.reasoning
       }
     },
-    markDaySaved: (state, action: PayloadAction<{ day: 'today' | 'tomorrow' }>) => {
+    markDaySaved: (state, action: PayloadAction<{ day: 'today' | 'tomorrow'; isSaved?: boolean }>) => {
       const dayState = state[action.payload.day]
       if (dayState) {
-        dayState.isSaved = true
+        dayState.isSaved = action.payload.isSaved ?? true
       }
     },
     promoteTomorrowToToday: (state) => {
       state.today = state.tomorrow
       state.tomorrow = null
-      state.cacheDate = new Date().toISOString().split('T')[0]
+      state.cacheDate = getTodayStorageDate()
     },
     clearDayCache: (state) => {
       state.today = null
