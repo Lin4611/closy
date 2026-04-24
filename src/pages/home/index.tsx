@@ -282,6 +282,7 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
   const handleDislikeClick = () => {
     showToast.info('已記錄偏好，重新推薦中', 1500)
     showAdjustPrompt(3000)
+    fetchDayOutfit(activeDay, { force: true, occasion: currentOccasion })
   }
 
   const currentData = homeState[activeDay]
