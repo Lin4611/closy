@@ -81,11 +81,14 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
 
   const getCalendarOccasion = (day: 'today' | 'tomorrow'): Occasion | undefined => {
     if (day === 'today') {
-      return profile.hasTodayCalendarEvent && profile.todayCalendarEventOccasion
+      const hasEvent = profile.hasTodayCalendarEvent || profile.hasTodayCalendarEventWithoutOutfit
+      return hasEvent && profile.todayCalendarEventOccasion
         ? (profile.todayCalendarEventOccasion as Occasion)
         : undefined
     }
-    return profile.hasTomorrowCalendarEvent && profile.tomorrowCalendarEventOccasion
+    const hasEvent =
+      profile.hasTomorrowCalendarEvent || profile.hasTomorrowCalendarEventWithoutOutfit
+    return hasEvent && profile.tomorrowCalendarEventOccasion
       ? (profile.tomorrowCalendarEventOccasion as Occasion)
       : undefined
   }
@@ -107,8 +110,9 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
   ) => {
     const force = options?.force ?? false
     const calendarOccasion = getCalendarOccasion(day)
-    const targetOccasion =
-      options?.occasion ?? calendarOccasion ?? homeState[day]?.occasion ?? fallbackOccasion
+    const targetOccasion = force
+      ? (options?.occasion ?? calendarOccasion ?? fallbackOccasion)
+      : (options?.occasion ?? calendarOccasion ?? homeState[day]?.occasion ?? fallbackOccasion)
 
     if (homeState[day] && !force) {
       setIsLoading(false)
@@ -130,6 +134,7 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
               day === 'today'
                 ? profile.hasOutfitGeneratedToday
                 : profile.hasOutfitGeneratedTomorrow,
+            calendarOccasion: getCalendarOccasion(day) ?? null,
           },
         }),
       )
@@ -159,8 +164,7 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
 
     if (homeState.cacheDate === today) {
       const todayCalOccasion = getCalendarOccasion('today')
-      const force =
-        profile.hasTodayCalendarEvent && todayCalOccasion !== homeState['today']?.occasion
+      const force = (todayCalOccasion ?? null) !== (homeState['today']?.calendarOccasion ?? null)
       fetchDayOutfit('today', { force, occasion: todayCalOccasion })
       return
     }
@@ -180,11 +184,14 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
   const handleDayChange = (day: 'today' | 'tomorrow') => {
     setActiveDay(day)
     const calOccasion = getCalendarOccasion(day)
-    const isBookedDay =
-      day === 'today' ? profile.hasTodayCalendarEvent : profile.hasTomorrowCalendarEvent
-    const force = isBookedDay && calOccasion !== homeState[day]?.occasion
+    const force = (calOccasion ?? null) !== (homeState[day]?.calendarOccasion ?? null)
     fetchDayOutfit(day, { force, occasion: calOccasion })
   }
+
+  const isOccasionLocked =
+    activeDay === 'today'
+      ? profile.hasTodayCalendarEvent || profile.hasTodayCalendarEventWithoutOutfit
+      : profile.hasTomorrowCalendarEvent || profile.hasTomorrowCalendarEventWithoutOutfit
 
   const isBooked =
     activeDay === 'today' ? profile.hasTodayCalendarEvent : profile.hasTomorrowCalendarEvent
@@ -312,7 +319,7 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
             onDayChange={handleDayChange}
             onOccasionChange={handleOccasionChange}
             selectedOccasion={currentOccasion}
-            isBooked={isBooked}
+            isBooked={isOccasionLocked}
           />
         </div>
         <div className="relative">
