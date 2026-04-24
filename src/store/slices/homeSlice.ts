@@ -9,6 +9,7 @@ type DayCache = {
   outfitImgUrl: string
   occasion: Occasion
   isSaved?: boolean
+  calendarOccasion: Occasion | null
 }
 
 type HomeState = {
