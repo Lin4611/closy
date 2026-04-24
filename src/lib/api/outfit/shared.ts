@@ -167,6 +167,7 @@ export const isAddOutfitItem = (value: unknown): value is AddOutfitItem => {
   return (
     typeof candidate.outfitImgUrl === 'string' &&
     typeof candidate.occasion === 'string' &&
+    typeof candidate.outfitDate === 'string' &&
     Array.isArray(candidate.selectedItems) &&
     candidate.selectedItems.every((item) => isOutfitProductRequest(item))
   )

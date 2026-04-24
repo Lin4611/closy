@@ -23,6 +23,7 @@ export type OutfitDetail = OutfitListItem
 export type AddOutfitItem = {
   outfitImgUrl: string
   occasion: Occasion
+  outfitDate: string
   selectedItems: OutfitProduct[]
 }
 
