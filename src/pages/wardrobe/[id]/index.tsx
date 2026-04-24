@@ -144,8 +144,9 @@ const WardrobeDetailPage = ({ initialItem }: InferGetServerSidePropsType<typeof 
                   src={item.imageUrl}
                   alt={item.name}
                   fill
-                  sizes="(max-width: 375px) 80vw, 220px"
+                  sizes="(max-width: 767px) calc(100vw - 32px), 220px"
                   className="object-contain p-4"
+                  priority
                 />
               </div>
             ) : (

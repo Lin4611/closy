@@ -89,7 +89,7 @@ const WardrobeAlbumPage = () => {
             type="button"
             disabled={isSubmitting}
             onClick={handleOpenAlbum}
-            className="flex min-h-[50vh] w-full flex-col items-center justify-center rounded-[12px] bg-neutral-50 px-6 text-center"
+            className="flex h-[332px] w-full flex-col items-center justify-center rounded-[12px] bg-neutral-50 px-6 text-center"
           >
             <div className="mb-6 text-neutral-900">
               <ImagePlus className="size-10" />
