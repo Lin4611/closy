@@ -10,6 +10,7 @@ export type CalendarApiOutfitItem = {
 }
 
 export type CalendarApiOutfitPreview = {
+  _id?: string | null
   outfitImgUrl: string
   occasion: CalendarApiOccasion
   selectedItems: CalendarApiOutfitItem[]
