@@ -15,10 +15,10 @@ const normalizeItem = (item: WardrobeStoredItem): WardrobeStoredItem => ({
   ...item,
 })
 
-const serializeItems = (items: WardrobeStoredItem[]) => JSON.stringify(items.map(normalizeItem))
+const serializeItems = (items: WardrobeStoredItem[]) => JSON.stringify(items)
 
 const isSameStoredItem = (a: WardrobeStoredItem, b: WardrobeStoredItem) => {
-  return JSON.stringify(normalizeItem(a)) === JSON.stringify(normalizeItem(b))
+  return JSON.stringify(a) === JSON.stringify(b)
 }
 
 const safeParseItems = (value: string | null): WardrobeStoredItem[] => {
