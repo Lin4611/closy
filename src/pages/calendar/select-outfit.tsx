@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import { fetchCalendarEntriesBaseline } from '@/lib/api/calendar/shared'
 import { ApiError } from '@/lib/api/client'
-import { CalendarHeader } from '@/modules/calendar/components/CalendarHeader'
 import { SelectableOutfitCard } from '@/modules/calendar/components/SelectableOutfitCard'
 import { SelectableOutfitEmptyState } from '@/modules/calendar/components/SelectableOutfitEmptyState'
 import { useCalendarOutfits } from '@/modules/calendar/hooks/useCalendarOutfits'
@@ -16,6 +15,7 @@ import { getCalendarFormDraft, saveCalendarFormDraft } from '@/modules/calendar/
 import { normalizeCalendarReturnTo } from '@/modules/calendar/utils/calendarNavigation'
 import { mapSelectableOutfitSummaryToPreviewModel } from '@/modules/calendar/utils/calendarOutfitAdapter'
 import { AppShell } from '@/modules/common/components/AppShell'
+import { SubPageHeader } from '@/modules/common/components/SubPageHeader'
 
 export const getServerSideProps: GetServerSideProps<{ initialEntries: CalendarEntriesBaseline }> = async ({ req }) => {
   const accessToken = req.cookies.accessToken
@@ -71,9 +71,10 @@ const CalendarSelectOutfitPage = ({ initialEntries }: InferGetServerSidePropsTyp
   const resolvedDate = useMemo(() => {
     return typeof router.query.date === 'string' ? router.query.date : formDraft?.date ?? ''
   }, [formDraft?.date, router.query.date])
+  const canFetchSelectableOutfits = Boolean(formDraft?.occasionKey)
   const { outfits, isEmpty, isError, isLoading, errorMessage, reload } = useCalendarOutfits(
     formDraft?.occasionKey ?? null,
-    { source: 'api' },
+    { source: canFetchSelectableOutfits ? 'api' : 'mock' },
   )
   const [selectedOutfitId, setSelectedOutfitId] = useState<string | null>(resolveInitialSelectedOutfitId(formDraft))
 
@@ -121,7 +122,12 @@ const CalendarSelectOutfitPage = ({ initialEntries }: InferGetServerSidePropsTyp
   return (
     <AppShell showBottomNav={false}>
       <div className="flex min-h-screen flex-col">
-        <CalendarHeader title="選擇穿搭" backHref={returnTo} onBackClick={handleLeaveWithoutSubmit} />
+        <SubPageHeader
+          title="選擇穿搭"
+          backHref={returnTo}
+          backLabel="返回行事曆表單"
+          onBackClick={handleLeaveWithoutSubmit}
+        />
         {isLoading ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 px-8 text-center">
             <Spinner className="size-8 text-neutral-700" />

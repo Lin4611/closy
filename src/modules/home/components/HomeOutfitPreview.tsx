@@ -8,7 +8,8 @@ import { HomeOutfitPreviewSkeleton } from './HomeOutfitPreviewSkeleton'
 type HomeOutfitPreviewProps = {
   src?: string
   alt: string
-  disable?: boolean
+  isSaved?: boolean
+  isBooked?: boolean
   isLoading?: boolean
   onDislikeClick?: () => void
   onLikeClick?: () => void
@@ -20,9 +21,11 @@ export const HomeOutfitPreview = ({
   onDislikeClick,
   onLikeClick,
   isLoading,
-  disable,
+  isSaved = false,
+  isBooked = false,
 }: HomeOutfitPreviewProps) => {
   const [isImageLoaded, setIsImageLoaded] = useState(false)
+  const isDisabled = isSaved || isBooked || isLoading
 
   return (
     <div className="relative flex h-100 w-full flex-col items-center justify-center">
@@ -48,14 +51,15 @@ export const HomeOutfitPreview = ({
           icon={X}
           onClick={onDislikeClick}
           ariaLabel="不喜歡這套穿搭"
-          disabled={disable}
+          disabled={isDisabled}
         />
         <CircleIconButton
           kind="like"
           icon={Heart}
           onClick={onLikeClick}
           ariaLabel="喜歡這套穿搭"
-          disabled={disable}
+          disabled={isDisabled}
+          isActive={isSaved && !isBooked}
         />
       </div>
     </div>

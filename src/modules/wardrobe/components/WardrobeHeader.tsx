@@ -1,3 +1,9 @@
+/**
+ * Wardrobe 主頁專用 header。
+ *
+ * 跨模組流程頁 / 子頁共用 header 應另以 SubPageHeader 承接。
+ * 是否於後續收斂到 MainPageHeader，現階段未確認。
+ */
 type WardrobeHeaderProps = {
   title?: string
 }

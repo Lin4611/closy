@@ -61,9 +61,13 @@ const userSlice = createSlice({
         },
         location: action.payload.location,
         hasTodayCalendarEvent: action.payload.hasTodayCalendarEvent,
+        hasTodayCalendarEventWithoutOutfit: action.payload.hasTodayCalendarEventWithoutOutfit,
         hasTomorrowCalendarEvent: action.payload.hasTomorrowCalendarEvent,
+        hasTomorrowCalendarEventWithoutOutfit: action.payload.hasTomorrowCalendarEventWithoutOutfit,
         todayCalendarEventOccasion: action.payload.todayCalendarEventOccasion,
         tomorrowCalendarEventOccasion: action.payload.tomorrowCalendarEventOccasion,
+        hasOutfitGeneratedToday: action.payload.hasOutfitGeneratedToday,
+        hasOutfitGeneratedTomorrow: action.payload.hasOutfitGeneratedTomorrow,
       }
       state.isLoggedIn = true
     },

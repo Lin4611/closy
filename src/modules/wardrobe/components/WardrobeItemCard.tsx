@@ -2,7 +2,7 @@ import { EllipsisVertical, Package } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import type { WardrobeItem } from '../types'
 import { WardrobeItemMenu } from './WardrobeItemMenu'
@@ -10,14 +10,19 @@ import { WardrobeItemMenu } from './WardrobeItemMenu'
 type WardrobeItemCardProps = {
   item: WardrobeItem
   onDelete: (id: string) => void
+  priority?: boolean
 }
 
-export const WardrobeItemCard = ({ item, onDelete }: WardrobeItemCardProps) => {
+const WardrobeItemCardComponent = ({ item, onDelete, priority = false }: WardrobeItemCardProps) => {
   const router = useRouter()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
+    if (!isMenuOpen) {
+      return
+    }
+
     const handleClickOutside = (event: MouseEvent) => {
       if (!menuRef.current?.contains(event.target as Node)) {
         setIsMenuOpen(false)
@@ -26,7 +31,21 @@ export const WardrobeItemCard = ({ item, onDelete }: WardrobeItemCardProps) => {
 
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [isMenuOpen])
+
+  const handleToggleMenu = useCallback(() => {
+    setIsMenuOpen((prev) => !prev)
   }, [])
+
+  const handleEdit = useCallback(() => {
+    setIsMenuOpen(false)
+    void router.push(`/wardrobe/${item.id}/edit`)
+  }, [item.id, router])
+
+  const handleDelete = useCallback(() => {
+    setIsMenuOpen(false)
+    onDelete(item.id)
+  }, [item.id, onDelete])
 
   const preview = useMemo(() => {
     if (item.imageUrl) {
@@ -35,14 +54,15 @@ export const WardrobeItemCard = ({ item, onDelete }: WardrobeItemCardProps) => {
           src={item.imageUrl}
           alt={item.name}
           fill
-          sizes="(max-width: 375px) 40vw, 156px"
+          sizes="(max-width: 767px) calc((100vw - 55px) / 2), 156px"
           className="object-contain"
+          priority={priority}
         />
       )
     }
 
     return <Package className="h-16 w-16 text-neutral-300" strokeWidth={1.6} />
-  }, [item.imageUrl, item.name])
+  }, [item.imageUrl, item.name, priority])
 
   return (
     <article className="rounded-[16px] border border-neutral-300 bg-white p-3 space-y-3 shadow-[0_2px_12px_rgba(0,0,0,0.03)]">
@@ -66,27 +86,18 @@ export const WardrobeItemCard = ({ item, onDelete }: WardrobeItemCardProps) => {
         <div ref={menuRef} className="relative shrink-0">
           <button
             type="button"
-            onClick={() => setIsMenuOpen((prev) => !prev)}
+            onClick={handleToggleMenu}
             className="flex h-6 w-6 items-center justify-center text-neutral-600"
             aria-label={`${item.name} 更多操作`}
           >
             <EllipsisVertical className="h-3.5 w-3.5" strokeWidth={2.1} />
           </button>
 
-          <WardrobeItemMenu
-            open={isMenuOpen}
-            align="card"
-            onEdit={() => {
-              setIsMenuOpen(false)
-              void router.push(`/wardrobe/${item.id}/edit`)
-            }}
-            onDelete={() => {
-              setIsMenuOpen(false)
-              onDelete(item.id)
-            }}
-          />
+          <WardrobeItemMenu open={isMenuOpen} align="card" onEdit={handleEdit} onDelete={handleDelete} />
         </div>
       </div>
     </article>
   )
 }
+
+export const WardrobeItemCard = memo(WardrobeItemCardComponent)

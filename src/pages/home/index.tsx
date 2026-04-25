@@ -8,6 +8,7 @@ import { showToast } from '@/components/ui/sonner'
 import { ApiError } from '@/lib/api/client'
 import { apiClient } from '@/lib/api/client'
 import type { ApiResponse } from '@/lib/api/types'
+import { getTodayStorageDate, getStorageDate } from '@/lib/date'
 import { AppShell } from '@/modules/common/components/AppShell'
 import { type Occasion } from '@/modules/common/types/occasion'
 import { defaultOccasion } from '@/modules/common/types/occasion'
@@ -71,6 +72,7 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
   const [isOutfitAdjustDrawerOpen, setIsOutfitAdjustDrawerOpen] = useState(false)
   const [isImageLoading, setIsImageLoading] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [mounted, setMounted] = useState(false)
   const dispatch = useAppDispatch()
   const homeState = useAppSelector((state) => state.home)
   const [activeDay, setActiveDay] = useState<'today' | 'tomorrow'>('today')
@@ -80,11 +82,14 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
 
   const getCalendarOccasion = (day: 'today' | 'tomorrow'): Occasion | undefined => {
     if (day === 'today') {
-      return profile.hasTodayCalendarEvent && profile.todayCalendarEventOccasion
+      const hasEvent = profile.hasTodayCalendarEvent || profile.hasTodayCalendarEventWithoutOutfit
+      return hasEvent && profile.todayCalendarEventOccasion
         ? (profile.todayCalendarEventOccasion as Occasion)
         : undefined
     }
-    return profile.hasTomorrowCalendarEvent && profile.tomorrowCalendarEventOccasion
+    const hasEvent =
+      profile.hasTomorrowCalendarEvent || profile.hasTomorrowCalendarEventWithoutOutfit
+    return hasEvent && profile.tomorrowCalendarEventOccasion
       ? (profile.tomorrowCalendarEventOccasion as Occasion)
       : undefined
   }
@@ -93,7 +98,12 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
   const currentOccasion = calendarOccasion ?? homeState[activeDay]?.occasion ?? fallbackOccasion
 
   useEffect(() => {
+    setMounted(true)
     dispatch(mergeUserProfile(profile))
+    if (homeState.today)
+      dispatch(markDaySaved({ day: 'today', isSaved: profile.hasOutfitGeneratedToday }))
+    if (homeState.tomorrow)
+      dispatch(markDaySaved({ day: 'tomorrow', isSaved: profile.hasOutfitGeneratedTomorrow }))
   }, [])
 
   const fetchDayOutfit = async (
@@ -102,8 +112,9 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
   ) => {
     const force = options?.force ?? false
     const calendarOccasion = getCalendarOccasion(day)
-    const targetOccasion =
-      options?.occasion ?? calendarOccasion ?? homeState[day]?.occasion ?? fallbackOccasion
+    const targetOccasion = force
+      ? (options?.occasion ?? calendarOccasion ?? fallbackOccasion)
+      : (options?.occasion ?? calendarOccasion ?? homeState[day]?.occasion ?? fallbackOccasion)
 
     if (homeState[day] && !force) {
       setIsLoading(false)
@@ -121,7 +132,11 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
             dayRecommendation: res,
             outfitImgUrl: '',
             occasion: targetOccasion,
-            isSaved: false,
+            isSaved:
+              day === 'today'
+                ? profile.hasOutfitGeneratedToday
+                : profile.hasOutfitGeneratedTomorrow,
+            calendarOccasion: getCalendarOccasion(day) ?? null,
           },
         }),
       )
@@ -147,18 +162,16 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
   }
 
   useEffect(() => {
-    const today = new Date().toISOString().split('T')[0]
+    const today = getTodayStorageDate()
 
     if (homeState.cacheDate === today) {
-      fetchDayOutfit('today', { force: false, occasion: getCalendarOccasion('today') })
+      const todayCalOccasion = getCalendarOccasion('today')
+      const force = (todayCalOccasion ?? null) !== (homeState['today']?.calendarOccasion ?? null)
+      fetchDayOutfit('today', { force, occasion: todayCalOccasion })
       return
     }
 
-    const yesterday = (() => {
-      const d = new Date()
-      d.setDate(d.getDate() - 1)
-      return d.toISOString().split('T')[0]
-    })()
+    const yesterday = getStorageDate(-1)
 
     if (homeState.cacheDate === yesterday && homeState.tomorrow) {
       dispatch(promoteTomorrowToToday())
@@ -172,8 +185,15 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
 
   const handleDayChange = (day: 'today' | 'tomorrow') => {
     setActiveDay(day)
-    fetchDayOutfit(day, { occasion: getCalendarOccasion(day) })
+    const calOccasion = getCalendarOccasion(day)
+    const force = (calOccasion ?? null) !== (homeState[day]?.calendarOccasion ?? null)
+    fetchDayOutfit(day, { force, occasion: calOccasion })
   }
+
+  const isOccasionLocked =
+    activeDay === 'today'
+      ? profile.hasTodayCalendarEvent || profile.hasTodayCalendarEventWithoutOutfit
+      : profile.hasTomorrowCalendarEvent || profile.hasTomorrowCalendarEventWithoutOutfit
 
   const isBooked =
     activeDay === 'today' ? profile.hasTodayCalendarEvent : profile.hasTomorrowCalendarEvent
@@ -192,6 +212,7 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
         outfitImgUrl: homeState[activeDay]?.outfitImgUrl || '/home/model_man.webp',
         selectedItems: recommendation.selectedItems,
         occasion: recommendation.occasion,
+        outfitDate: activeDay === 'today' ? getStorageDate() : getStorageDate(1),
       })
       dispatch(markDaySaved({ day: activeDay }))
       showToast.info('已新增至我的穿搭', 1500)
@@ -261,6 +282,7 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
   const handleDislikeClick = () => {
     showToast.info('已記錄偏好，重新推薦中', 1500)
     showAdjustPrompt(3000)
+    fetchDayOutfit(activeDay, { force: true, occasion: currentOccasion })
   }
 
   const currentData = homeState[activeDay]
@@ -275,6 +297,7 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
         outfitImgUrl: result.adjustedImageUrl,
         selectedItems: result.selectedItems,
         occasion,
+        outfitDate: activeDay === 'today' ? getStorageDate() : getStorageDate(1),
       })
       dispatch(
         updateDayAdjustResult({
@@ -299,13 +322,13 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
             onDayChange={handleDayChange}
             onOccasionChange={handleOccasionChange}
             selectedOccasion={currentOccasion}
-            isBooked={isBooked}
+            isBooked={isOccasionLocked}
           />
         </div>
         <div className="relative">
           <HomePreviewTopBar
-            weather={currentData?.dayRecommendation.weather}
-            city={currentData?.dayRecommendation.city}
+            weather={mounted ? currentData?.dayRecommendation.weather : undefined}
+            city={mounted ? currentData?.dayRecommendation.city : undefined}
             expanded={isAdjustPromptOpen}
             onClick={() => setIsOutfitAdjustDrawerOpen(true)}
             onCalendarClick={() => {}}
@@ -317,12 +340,13 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
               isLoading={isLoading || isImageLoading || !currentData}
               onDislikeClick={handleDislikeClick}
               onLikeClick={addLikeOutfit}
-              disable={isSaved}
+              isSaved={isSaved}
+              isBooked={isBooked}
             />
           </div>
         </div>
         <HomeInsightsSection
-          content={currentData?.dayRecommendation?.recommendation.reasoning ?? ''}
+          content={mounted ? (currentData?.dayRecommendation?.recommendation.reasoning ?? '') : ''}
         />
         <OutfitAdjustDrawer
           open={isOutfitAdjustDrawerOpen}

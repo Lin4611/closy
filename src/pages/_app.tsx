@@ -14,13 +14,16 @@ import { persistor, store } from '@/store'
 import { useAppSelector } from '@/store/hooks'
 
 const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ''
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '')
+const defaultTitle = 'Closy - 你的穿搭助手'
+const defaultDescription =
+  '每天出門都在煩惱穿什麼？用 Closy 數位化你最常穿的衣物，無腦管理每日穿搭，終結翻箱倒櫃的決策疲勞，讓出門變得省時又省力。'
+const ogImageUrl = siteUrl ? `${siteUrl}/og-image.jpg` : '/og-image.jpg'
 
 const isGuideRoute = (pathname: string) => pathname === '/guide' || pathname.startsWith('/guide/')
 const isWardrobeServerFirstRoute = (pathname: string) => {
   return (
-    pathname === '/wardrobe' ||
-    pathname === '/wardrobe/[id]' ||
-    pathname === '/wardrobe/[id]/edit'
+    pathname === '/wardrobe' || pathname === '/wardrobe/[id]' || pathname === '/wardrobe/[id]/edit'
   )
 }
 
@@ -49,6 +52,9 @@ const isOutfitServerFirstRoute = (pathname: string) => {
     pathname === '/outfit/occasion/[occasionId]'
   )
 }
+const isHomeServerFirstRoute = (pathname: string) => {
+  return pathname === '/home'
+}
 
 type AppRouteKind = 'server-first-protected' | 'client-first-protected' | 'public'
 
@@ -61,7 +67,8 @@ const getAppRouteKind = (pathname: string): AppRouteKind => {
     isWardrobeServerFirstRoute(pathname) ||
     isSettingsServerFirstRoute(pathname) ||
     isCalendarServerFirstRoute(pathname) ||
-    isOutfitServerFirstRoute(pathname)
+    isOutfitServerFirstRoute(pathname) ||
+    isHomeServerFirstRoute(pathname)
   ) {
     return 'server-first-protected'
   }
@@ -143,7 +150,20 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <>
       <Head>
-        <title>Closy</title>
+        <title>{defaultTitle}</title>
+        <meta name="description" content={defaultDescription} key="description" />
+        <meta property="og:type" content="website" key="og:type" />
+        <meta property="og:site_name" content="Closy" key="og:site_name" />
+        <meta property="og:title" content={defaultTitle} key="og:title" />
+        <meta property="og:description" content={defaultDescription} key="og:description" />
+        <meta property="og:image" content={ogImageUrl} key="og:image" />
+        <meta property="og:image:width" content="1200" key="og:image:width" />
+        <meta property="og:image:height" content="630" key="og:image:height" />
+        {siteUrl && <meta property="og:url" content={siteUrl} key="og:url" />}
+        <meta name="twitter:card" content="summary_large_image" key="twitter:card" />
+        <meta name="twitter:title" content={defaultTitle} key="twitter:title" />
+        <meta name="twitter:description" content={defaultDescription} key="twitter:description" />
+        <meta name="twitter:image" content={ogImageUrl} key="twitter:image" />
       </Head>
       <Provider store={store}>
         <GoogleOAuthProvider clientId={googleClientId}>

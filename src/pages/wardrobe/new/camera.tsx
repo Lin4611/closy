@@ -9,7 +9,6 @@ import { showToast } from '@/components/ui/sonner'
 import { useCameraPreview } from '@/modules/wardrobe/hooks/useCameraPreview'
 import { useWardrobeCreationFlow } from '@/modules/wardrobe/hooks/useWardrobeCreationFlow'
 import { getCreationFlowReturnRoute, resolveCreationFlowEntryScope } from '@/modules/wardrobe/utils/creationFlowNavigation'
-import { normalizeRecognitionImage } from '@/modules/wardrobe/utils/normalizeRecognitionImage'
 import { preparePendingRecognitionSource } from '@/modules/wardrobe/utils/preparePendingRecognitionSource'
 
 const WardrobeCameraPage = () => {
@@ -29,15 +28,12 @@ const WardrobeCameraPage = () => {
 
     try {
       const file = await capture()
-      const normalizedFile = await normalizeRecognitionImage(file, {
-        fileNamePrefix: 'closy-camera',
-      })
 
       await preparePendingRecognitionSource({
         router,
         origin: 'camera',
         entryScope,
-        file: normalizedFile,
+        file,
         clearFlow,
         setPendingSource,
       })
@@ -52,16 +48,16 @@ const WardrobeCameraPage = () => {
   const canRetry = status === 'denied' || status === 'unsupported' || status === 'error'
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#18181F] text-white">
-      <header className="flex items-center px-4 pt-4 pb-1">
+    <div className="flex flex-col items-center justify-between min-h-screen pb-[2.5vh] overflow-hidden bg-[#18181F] text-white">
+      <header className="sticky top-0 z-10 flex h-[10vh] w-full items-center px-4">
         <Link href={backHref} className="flex size-10 items-center justify-center" aria-label="返回上一頁">
           <X className="text-white" size={24} strokeWidth={2} />
         </Link>
       </header>
 
-      <div className="">
+      <div className="mt-0 mb-auto">
         <div className="overflow-hidden bg-[#D9D9D9]">
-          <div className="relative flex min-h-[calc(100vh-250px)] items-center justify-center overflow-hidden bg-[#D9D9D9]">
+          <div className="relative flex min-h-[60vh] items-center justify-center overflow-hidden bg-[#D9D9D9]">
             {status === 'loading' && <Skeleton className="h-full min-h-124 w-full rounded-[12px] bg-white/10" />}
 
             <video
@@ -99,24 +95,26 @@ const WardrobeCameraPage = () => {
             ) : null}
           </div>
         </div>
-
-        <div className="absolute right-3 bottom-28 left-3 rounded-[12px] bg-white p-3 text-center font-paragraph-sm text-neutral-500 shadow-[0_6px_16px_rgba(0,0,0,0.12)]">
-          小訣竅：在乾淨的背景上拍攝，辨識更快速！
-        </div>
       </div>
 
-      <div className="absolute right-0 bottom-6 left-0 flex justify-center">
-        <button
-          type="button"
-          aria-label="拍攝衣物"
-          disabled={!isCameraReady || isSubmitting}
-          onClick={() => {
-            void handleCapture()
-          }}
-          className="flex h-17.5 w-17.5 items-center justify-center rounded-full border-6 border-primary-200 bg-transparent disabled:opacity-50"
-        >
-          <span className="h-12 w-12 rounded-full bg-white" />
-        </button>
+      <div className='space-y-5'>
+        <div className="rounded-[12px] bg-white p-3 text-center font-paragraph-sm text-neutral-500 shadow-[0_6px_16px_rgba(0,0,0,0.12)]">
+          小訣竅：在乾淨的背景上拍攝，辨識更快速！
+        </div>
+
+        <div className="flex justify-center">
+          <button
+            type="button"
+            aria-label="拍攝衣物"
+            disabled={!isCameraReady || isSubmitting}
+            onClick={() => {
+              void handleCapture()
+            }}
+            className="flex size-17.5 items-center justify-center rounded-full border-6 border-primary-200 bg-transparent disabled:opacity-50"
+          >
+            <span className="size-12 rounded-full bg-white" />
+          </button>
+        </div>
       </div>
     </div>
   )
