@@ -69,7 +69,7 @@ const AddTopPage = () => {
 
   const openedGuideHint = (
     <div className={OPEN_HINT_BOTTOM_CLASS}>
-      <GuideToolTip text="請選擇一種方式新增上衣" side="top" />
+      <GuideToolTip text="請選擇一種方式新增上衣" side="top" className="top-5" />
     </div>
   )
 

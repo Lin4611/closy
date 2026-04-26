@@ -141,12 +141,17 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
         }),
       )
       setIsLoading(false)
-      setIsImageLoading(true)
-      const result = await generateOutfit(day, {
-        selectedItems: res.recommendation.selectedItems,
-        occasion: targetOccasion,
-      })
-      dispatch(updateDayImageUrl({ day, outfitImgUrl: result.outfitImgUrl }))
+      const demoOutfitUrl = process.env.NEXT_PUBLIC_DEMO_OUTFIT_URL
+      if (demoOutfitUrl) {
+        dispatch(updateDayImageUrl({ day, outfitImgUrl: demoOutfitUrl }))
+      } else {
+        setIsImageLoading(true)
+        const result = await generateOutfit(day, {
+          selectedItems: res.recommendation.selectedItems,
+          occasion: targetOccasion,
+        })
+        dispatch(updateDayImageUrl({ day, outfitImgUrl: result.outfitImgUrl }))
+      }
     } catch (e) {
       if (e instanceof ApiError) {
         if (e.statusCode === 503) {

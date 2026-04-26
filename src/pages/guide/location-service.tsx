@@ -19,7 +19,7 @@ const GuideLocationService = () => {
     const submit = async (latitude: number | null, longitude: number | null) => {
       try {
         await updateLocation({ latitude, longitude })
-        router.push('/guide/google-calendar')
+        router.push('/home')
       } catch (error) {
         if (error instanceof ApiError) {
           showToast.error(error.message)

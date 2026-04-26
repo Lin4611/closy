@@ -109,7 +109,7 @@ export const ONBOARDING_STEPS: OnboardingStepProps[] = [
     targets: [{ id: 'calendarBtn', padding: 0, radius: 999 }],
     title: '行事曆',
     description:
-      '連結 Google 行事曆\n根據行程為你推薦穿搭\n若未連結也可以手動選擇場合與穿搭\n輕鬆紀錄每一天',
+      '事先記錄行程、選擇場合\n當天自動推薦穿搭\n或者先選好穿搭，當天直接顯示\n輕鬆完成每日穿搭',
     cardAnchor: 'bottom',
     cardOffsetX: -151,
     cardOffsetY: 44,
