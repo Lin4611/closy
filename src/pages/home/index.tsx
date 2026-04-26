@@ -9,6 +9,7 @@ import { ApiError } from '@/lib/api/client'
 import { apiClient } from '@/lib/api/client'
 import type { ApiResponse } from '@/lib/api/types'
 import { getTodayStorageDate, getStorageDate } from '@/lib/date'
+import { isDaytime } from '@/lib/weather'
 import { AppShell } from '@/modules/common/components/AppShell'
 import { type Occasion } from '@/modules/common/types/occasion'
 import { defaultOccasion } from '@/modules/common/types/occasion'
@@ -326,7 +327,7 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
           <HomeFilterBar
             onDayChange={handleDayChange}
             onOccasionChange={handleOccasionChange}
-            selectedOccasion={currentOccasion}
+            selectedOccasion={mounted ? currentOccasion : defaultOccasion}
             isBooked={isOccasionLocked}
           />
         </div>
@@ -334,6 +335,7 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
           <HomePreviewTopBar
             weather={mounted ? currentData?.dayRecommendation.weather : undefined}
             city={mounted ? currentData?.dayRecommendation.city : undefined}
+            isDay={mounted ? isDaytime() : true}
             expanded={isAdjustPromptOpen}
             onClick={() => setIsOutfitAdjustDrawerOpen(true)}
             onCalendarClick={() => {}}
@@ -345,7 +347,7 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
               isLoading={isLoading || isImageLoading || !currentData}
               onDislikeClick={handleDislikeClick}
               onLikeClick={addLikeOutfit}
-              isSaved={isSaved}
+              isSaved={mounted ? isSaved : false}
               isBooked={isBooked}
             />
           </div>
