@@ -1,4 +1,4 @@
-import { getWeatherIconUrl, isDaytime } from '@/lib/weather'
+import { getWeatherIconUrl } from '@/lib/weather'
 
 import { AdjustOutfitButton } from './AdjustOutfitButton'
 import { CalendarButton } from './CalendarButton'
@@ -9,6 +9,7 @@ type HomePreviewTopBarProps = {
   disabled?: boolean
   weather?: Weather
   city?: string
+  isDay?: boolean
   onClick?: () => void
   onCalendarClick?: () => void
 }
@@ -18,6 +19,7 @@ export const HomePreviewTopBar = ({
   disabled = false,
   weather,
   city,
+  isDay = true,
   onClick,
   onCalendarClick,
 }: HomePreviewTopBarProps) => {
@@ -27,7 +29,7 @@ export const HomePreviewTopBar = ({
         temperature={weather?.temperature ?? ''}
         conditionLabel={weather?.weather ?? ''}
         cityLabel={city ?? ''}
-        iconSrc={getWeatherIconUrl(weather?.weatherCode ?? '01', isDaytime())}
+        iconSrc={getWeatherIconUrl(weather?.weatherCode ?? '01', isDay)}
       />
       <div className="flex flex-col gap-4">
         <AdjustOutfitButton onClick={onClick} expanded={expanded} disabled={disabled} />
