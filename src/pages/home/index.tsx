@@ -1,6 +1,7 @@
 import type { GetServerSideProps } from 'next'
 import type { InferGetServerSidePropsType } from 'next'
 import dynamic from 'next/dynamic'
+import { useRouter } from 'next/router'
 import { useRef, useState } from 'react'
 import { useEffect } from 'react'
 
@@ -67,7 +68,10 @@ export const getServerSideProps: GetServerSideProps<{
   }
 }
 
+const IS_FLOW2_DEMO = !!process.env.NEXT_PUBLIC_DEMO_OUTFIT_TODAY_URL
+
 const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+  const router = useRouter()
   const [isAdjustPromptOpen, setIsAdjustPromptOpen] = useState(false)
   const [isOnboardingVisible, setIsOnboardingVisible] = useState(false)
   const [isOutfitAdjustDrawerOpen, setIsOutfitAdjustDrawerOpen] = useState(false)
@@ -79,6 +83,7 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
   const [activeDay, setActiveDay] = useState<'today' | 'tomorrow'>('today')
 
   const addLikeRef = useRef(false)
+  const dislikeShownRef = useRef(false)
   const user = useAppSelector((state) => state.user.user)
 
   const getCalendarOccasion = (day: 'today' | 'tomorrow'): Occasion | undefined => {
@@ -109,7 +114,7 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
 
   const fetchDayOutfit = async (
     day: 'today' | 'tomorrow',
-    options?: { force?: boolean; occasion?: Occasion },
+    options?: { force?: boolean; occasion?: Occasion; demoUrl?: string; isOccasionSwitch?: boolean },
   ) => {
     const force = options?.force ?? false
     const calendarOccasion = getCalendarOccasion(day)
@@ -118,6 +123,13 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
       : (options?.occasion ?? calendarOccasion ?? homeState[day]?.occasion ?? fallbackOccasion)
 
     if (homeState[day] && !force) {
+      setIsLoading(false)
+      return
+    }
+
+    // dislike 換圖：直接換圖，不打 API
+    if (options?.demoUrl) {
+      dispatch(updateDayImageUrl({ day, outfitImgUrl: options.demoUrl }))
       setIsLoading(false)
       return
     }
@@ -142,9 +154,18 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
         }),
       )
       setIsLoading(false)
-      const demoOutfitUrl = process.env.NEXT_PUBLIC_DEMO_OUTFIT_URL
-      if (demoOutfitUrl) {
-        dispatch(updateDayImageUrl({ day, outfitImgUrl: demoOutfitUrl }))
+
+      // outfit-social 只在使用者主動切換場合時才顯示，初始載入永遠給 outfit-today
+      const demoUrl = IS_FLOW2_DEMO
+        ? day === 'today'
+          ? options?.isOccasionSwitch && targetOccasion === 'socialGathering'
+            ? process.env.NEXT_PUBLIC_DEMO_OUTFIT_TODAY_SOCIAL_URL
+            : process.env.NEXT_PUBLIC_DEMO_OUTFIT_TODAY_URL
+          : process.env.NEXT_PUBLIC_DEMO_OUTFIT_TOMORROW_URL
+        : process.env.NEXT_PUBLIC_DEMO_OUTFIT_URL
+
+      if (demoUrl) {
+        dispatch(updateDayImageUrl({ day, outfitImgUrl: demoUrl }))
       } else {
         setIsImageLoading(true)
         const result = await generateOutfit(day, {
@@ -221,7 +242,8 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
         outfitDate: activeDay === 'today' ? getStorageDate() : getStorageDate(1),
       })
       dispatch(markDaySaved({ day: activeDay }))
-      showToast.info('已新增至我的穿搭', 1500)
+      showToast.info('已新增至我的穿搭！去我的穿搭查看 →', 3000)
+      setTimeout(() => void router.push('/outfit'), 3000)
     } catch (e) {
       if (e instanceof ApiError) showToast.error(e.message)
     } finally {
@@ -255,7 +277,7 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
 
   const handleOccasionChange = async (nextOccasion: Occasion) => {
     dispatch(setDayOccasion({ day: activeDay, occasion: nextOccasion }))
-    await fetchDayOutfit(activeDay, { force: true, occasion: nextOccasion })
+    await fetchDayOutfit(activeDay, { force: true, occasion: nextOccasion, isOccasionSwitch: true })
   }
 
   const setHideTimer = (duration: number) => {
@@ -288,7 +310,12 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
   const handleDislikeClick = () => {
     showToast.info('已記錄偏好，重新推薦中', 1500)
     showAdjustPrompt(3000)
-    fetchDayOutfit(activeDay, { force: true, occasion: currentOccasion })
+    const demoUrl =
+      IS_FLOW2_DEMO && !dislikeShownRef.current
+        ? '/demo/model_pics/outfit-dislike-1.png'
+        : undefined
+    dislikeShownRef.current = true
+    fetchDayOutfit(activeDay, { force: true, occasion: currentOccasion, demoUrl })
   }
 
   const currentData = homeState[activeDay]
@@ -338,7 +365,7 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
             isDay={mounted ? isDaytime() : true}
             expanded={isAdjustPromptOpen}
             onClick={() => setIsOutfitAdjustDrawerOpen(true)}
-            onCalendarClick={() => {}}
+            onCalendarClick={() => void router.push('/calendar')}
           />
           <div className="flex flex-col items-center justify-center pt-13">
             <HomeOutfitPreview

@@ -104,6 +104,39 @@ export const OutfitAdjustDrawer = ({
   const submitPrompt = async (text: string) => {
     const trimmed = text.trim()
     if (!trimmed) return
+
+    const demoAdjustUrl = process.env.NEXT_PUBLIC_DEMO_ADJUST_URL
+    if (demoAdjustUrl) {
+      const userMsg: OutfitAdjustChatMessage = {
+        id: `user-${Date.now()}`,
+        text: trimmed,
+        role: 'user',
+        status: 'idle',
+      }
+      const assistantMsg: OutfitAdjustChatMessage = {
+        id: `assistant-${Date.now()}`,
+        text: '天氣有點涼，幫你在外面加了一件外套，整體更有層次感！',
+        role: 'assistant',
+        status: 'idle',
+      }
+      setMode('chat')
+      setIsSubmitting(true)
+      setMessages([userMsg])
+      setTimeout(() => {
+        setMessages([userMsg, assistantMsg])
+        setTimeout(() => {
+          setResult({
+            adjustedImageUrl: demoAdjustUrl,
+            selectedItems,
+            text: '天氣有點涼，幫你在外面加了一件外套，整體更有層次感。',
+          })
+          setMode('result')
+          setIsSubmitting(false)
+        }, 1000)
+      }, 1000)
+      return
+    }
+
     if (count === null || count <= 0) return
     if (isSubmitting) return
 

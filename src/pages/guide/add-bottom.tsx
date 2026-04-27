@@ -97,7 +97,7 @@ const GuideAddBottomPage = () => {
 
   const openedGuideHint = (
     <div className={OPEN_HINT_BOTTOM_CLASS}>
-      <GuideToolTip text="再新增一件褲子或裙子吧！" side="top" />
+      <GuideToolTip text="再新增一件褲子或裙子吧！" side="top" className="top-5" />
     </div>
   )
 
