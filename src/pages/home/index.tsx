@@ -132,16 +132,6 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
       return
     }
 
-    // dislike 換圖：短暫 loading 後換圖，不打 API
-    if (options?.demoUrl) {
-      setIsLoading(true)
-      setTimeout(() => {
-        dispatch(updateDayImageUrl({ day, outfitImgUrl: options.demoUrl! }))
-        setIsLoading(false)
-      }, 1500)
-      return
-    }
-
     setIsLoading(true)
     try {
       const res = await getHomeRecommendation(day, targetOccasion)
@@ -163,14 +153,17 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
       )
       setIsLoading(false)
 
-      // outfit-social 只在使用者主動切換場合時才顯示，初始載入永遠給 outfit-today
-      const demoUrl = IS_FLOW2_DEMO
-        ? day === 'today'
-          ? options?.isOccasionSwitch && targetOccasion === 'socialGathering'
-            ? process.env.NEXT_PUBLIC_DEMO_OUTFIT_TODAY_SOCIAL_URL
-            : process.env.NEXT_PUBLIC_DEMO_OUTFIT_TODAY_URL
-          : process.env.NEXT_PUBLIC_DEMO_OUTFIT_TOMORROW_URL
-        : process.env.NEXT_PUBLIC_DEMO_OUTFIT_URL
+      // demo 圖選擇：options.demoUrl（dislike 指定圖）> Flow2 per-day/occasion > Flow1 fallback
+      // getHomeRecommendation 照常打，reasoning 正常更新，只跳過 generateOutfit
+      const demoUrl =
+        options?.demoUrl ??
+        (IS_FLOW2_DEMO
+          ? day === 'today'
+            ? options?.isOccasionSwitch && targetOccasion === 'socialGathering'
+              ? process.env.NEXT_PUBLIC_DEMO_OUTFIT_TODAY_SOCIAL_URL
+              : process.env.NEXT_PUBLIC_DEMO_OUTFIT_TODAY_URL
+            : process.env.NEXT_PUBLIC_DEMO_OUTFIT_TOMORROW_URL
+          : process.env.NEXT_PUBLIC_DEMO_OUTFIT_URL)
 
       if (demoUrl) {
         dispatch(updateDayImageUrl({ day, outfitImgUrl: demoUrl }))
