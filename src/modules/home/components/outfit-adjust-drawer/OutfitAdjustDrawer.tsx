@@ -127,6 +127,7 @@ export const OutfitAdjustDrawer = ({
         setTimeout(() => {
           setResult({
             adjustedImageUrl: demoAdjustUrl,
+            originalImageUrl: outfitImageUrl,
             selectedItems,
             text: '天氣有點涼，幫你在外面加了一件外套，整體更有層次感。',
           })
