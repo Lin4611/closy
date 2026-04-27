@@ -70,6 +70,17 @@ export const getServerSideProps: GetServerSideProps<{
 
 const IS_FLOW2_DEMO = !!process.env.NEXT_PUBLIC_DEMO_OUTFIT_TODAY_URL
 
+const DEMO_REASONING: Record<string, string> = {
+  today_businessCasual:
+    '以黑色 T 恤搭配淺藍色牛仔褲，建立起深淺對比的簡約基礎，展現商務休閒中從容且俐落的專業形象。整體搭配能輕鬆應對 24 至 28 度且體感微熱的天氣，在維持透氣舒適的同時，透過修身剪裁中和了牛仔褲的隨性，確保在辦公室或一般商務拜訪中依然保持體面質感。',
+  dislike_businessCasual:
+    '選用灰藍撞色 Polo 衫搭配深藍色長褲，透過同色系的視覺延伸建立層次感，展現穩重且專業的商務休閒風格。搭配黑色皮鞋能有效提升造型的正式度，在 24 至 28 度且局部多雲的天氣下，既能保持透氣舒適，也能完美應對各種商務社交場合。',
+  today_socialGathering:
+    '選用黑色印花 Polo 衫搭配黑灰色牛仔褲，以全黑單色系組合營造出適合社交聚會的俐落感與個性。這套穿搭能完美應對 24 至 28 度且多雲微熱的天氣，透過深色調的視覺收縮與皮鞋的質感點綴，在維持穿著舒適度的同時，也能確保在社交場合中展現得體且有神采的形象。',
+  tomorrow_campusCasual:
+    '以白色華夫格 T 恤與深棕色長褲建立起溫潤且清爽的色彩基調，展現自在的校園休閒風格。這套搭配能輕鬆應對 23 至 27 度晴朗穩定的天氣，透過寬鬆的剪裁確保全天候的通風舒適，搭配黑色皮鞋則在中和休閒感並注入一絲精緻，適合日常上課與課後社交活動。',
+}
+
 const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const router = useRouter()
   const [isAdjustPromptOpen, setIsAdjustPromptOpen] = useState(false)
@@ -136,11 +147,27 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
     try {
       const res = await getHomeRecommendation(day, targetOccasion)
 
+      let finalRes = res
+      if (IS_FLOW2_DEMO) {
+        const isDislike = options?.demoUrl === '/demo/model_pics/outfit-dislike-1.png'
+        const reasoningKey = isDislike
+          ? 'dislike_businessCasual'
+          : day === 'tomorrow'
+            ? 'tomorrow_campusCasual'
+            : targetOccasion === 'socialGathering'
+              ? 'today_socialGathering'
+              : 'today_businessCasual'
+        const demoReasoning = DEMO_REASONING[reasoningKey]
+        if (demoReasoning) {
+          finalRes = { ...res, recommendation: { ...res.recommendation, reasoning: demoReasoning } }
+        }
+      }
+
       dispatch(
         setDayCache({
           day,
           cache: {
-            dayRecommendation: res,
+            dayRecommendation: finalRes,
             outfitImgUrl: '',
             occasion: targetOccasion,
             isSaved:

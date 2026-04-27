@@ -115,7 +115,7 @@ export const OutfitAdjustDrawer = ({
       }
       const assistantMsg: OutfitAdjustChatMessage = {
         id: `assistant-${Date.now()}`,
-        text: '天氣有點涼，幫你在外面加了一件外套，整體更有層次感！',
+        text: '好的！天氣有點涼，幫你在外面搭上一件拉鍊外套，整體層次更豐富，社交場合也更有型！',
         role: 'assistant',
         status: 'idle',
       }
@@ -131,7 +131,7 @@ export const OutfitAdjustDrawer = ({
               adjustedImageUrl: demoAdjustUrl,
               originalImageUrl: outfitImageUrl,
               selectedItems,
-              text: '天氣有點涼，幫你在外面加了一件外套，整體更有層次感。',
+              text: '這套全黑搭配以印花圖騰 Polo 衫為核心，外加運動風拉鍊外套以應對社交聚會室內外的溫差。透過外套、打褶長褲與德比皮鞋的材質與剪裁差異，在 24 至 28 度多雲的天氣下，建立起具備層次感的單色系造型，同時兼顧體面與穿著舒適度。',
             })
             setMode('result')
             setIsSubmitting(false)
@@ -261,7 +261,7 @@ export const OutfitAdjustDrawer = ({
         {mode === 'initial' && (
           <>
             <div className="flex flex-col items-center justify-center text-center">
-              <h4 className="font-h4 text-neutral-800">{name}</h4>
+              <h4 className="font-h4 text-neutral-800">Leo Closy</h4>
               <p className="font-h3 text-neutral-800">今天的穿搭需要調整嗎？</p>
             </div>
             <div className="hide-scrollbar flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto px-4">
