@@ -9,7 +9,9 @@ export const OutfitComparisonCard = ({ title, imageUrl }: OutfitComparisonCardPr
   return (
     <div className="flex flex-col items-center justify-center gap-5">
       <span className="font-paragraph-md text-neutral-800">{title}</span>
-      <Image src={imageUrl} alt={title} width={117} height={336} />
+      <div className="relative h-84 w-[117px]">
+        <Image src={imageUrl} alt={title} fill className="object-contain object-bottom" />
+      </div>
     </div>
   )
 }

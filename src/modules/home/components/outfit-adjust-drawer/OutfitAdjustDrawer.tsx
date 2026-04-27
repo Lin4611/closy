@@ -125,14 +125,17 @@ export const OutfitAdjustDrawer = ({
       setTimeout(() => {
         setMessages([userMsg, assistantMsg])
         setTimeout(() => {
-          setResult({
-            adjustedImageUrl: demoAdjustUrl,
-            originalImageUrl: outfitImageUrl,
-            selectedItems,
-            text: '天氣有點涼，幫你在外面加了一件外套，整體更有層次感。',
-          })
-          setMode('result')
-          setIsSubmitting(false)
+          setMode('loading')
+          setTimeout(() => {
+            setResult({
+              adjustedImageUrl: demoAdjustUrl,
+              originalImageUrl: outfitImageUrl,
+              selectedItems,
+              text: '天氣有點涼，幫你在外面加了一件外套，整體更有層次感。',
+            })
+            setMode('result')
+            setIsSubmitting(false)
+          }, 1500)
         }, 1000)
       }, 1000)
       return

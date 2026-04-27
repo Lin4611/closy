@@ -114,7 +114,12 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
 
   const fetchDayOutfit = async (
     day: 'today' | 'tomorrow',
-    options?: { force?: boolean; occasion?: Occasion; demoUrl?: string; isOccasionSwitch?: boolean },
+    options?: {
+      force?: boolean
+      occasion?: Occasion
+      demoUrl?: string
+      isOccasionSwitch?: boolean
+    },
   ) => {
     const force = options?.force ?? false
     const calendarOccasion = getCalendarOccasion(day)
@@ -127,10 +132,13 @@ const Home = ({ profile }: InferGetServerSidePropsType<typeof getServerSideProps
       return
     }
 
-    // dislike 換圖：直接換圖，不打 API
+    // dislike 換圖：短暫 loading 後換圖，不打 API
     if (options?.demoUrl) {
-      dispatch(updateDayImageUrl({ day, outfitImgUrl: options.demoUrl }))
-      setIsLoading(false)
+      setIsLoading(true)
+      setTimeout(() => {
+        dispatch(updateDayImageUrl({ day, outfitImgUrl: options.demoUrl! }))
+        setIsLoading(false)
+      }, 1500)
       return
     }
 
