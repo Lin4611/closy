@@ -2,7 +2,7 @@ import { useGoogleLogin } from '@react-oauth/google'
 import { Plus } from 'lucide-react'
 import type { GetServerSideProps, InferGetServerSidePropsType } from 'next'
 import { useRouter } from 'next/router'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { showToast } from '@/components/ui/sonner'
@@ -23,7 +23,7 @@ import {
   getCalendarEntryServerPreviewOutfitId,
   mapCalendarEntryServerPreviewToDisplayModel,
 } from '@/modules/calendar/utils/calendarOutfitAdapter'
-import { EMPTY_CALENDAR_GOOGLE_EVENTS, sortCalendarEntriesForHome } from '@/modules/calendar/utils/calendarRules'
+import { sortCalendarEntriesForHome } from '@/modules/calendar/utils/calendarRules'
 import { AppShell } from '@/modules/common/components/AppShell'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { setGoogleCalendarConnected } from '@/store/slices/userSlice'
@@ -87,9 +87,14 @@ const CalendarPage = ({ initialEntries }: InferGetServerSidePropsType<typeof get
   const dispatch = useAppDispatch()
   const { deleteEntry, hydrateEntriesFromServer } = useCalendarStore()
   const entries = useCalendarServerEntries(initialEntries)
-  const isSynced = useAppSelector((state) => state.user.user?.isGoogleCalendarConnected ?? false)
+  const isGoogleCalendarConnected = useAppSelector((state) => state.user.user?.isGoogleCalendarConnected ?? false)
   const user = useAppSelector((state) => state.user.user)
+  const [isSynced, setIsSynced] = useState(false)
   const [isSyncing, setIsSyncing] = useState(false)
+
+  useEffect(() => {
+    setIsSynced(isGoogleCalendarConnected)
+  }, [isGoogleCalendarConnected])
   const [deletingEntry, setDeletingEntry] = useState<CalendarEntry | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isDeleteSuccessOpen, setIsDeleteSuccessOpen] = useState(false)
@@ -119,6 +124,10 @@ const CalendarPage = ({ initialEntries }: InferGetServerSidePropsType<typeof get
     return monthOptions[0] ?? currentMonthLabel
   }, [currentMonthLabel, monthOptions, requestedMonth, userSelectedMonth])
 
+  const [allGoogleEvents, setAllGoogleEvents] = useState(() =>
+    initialEntries.flatMap((entry) => entry.googleEvents)
+  )
+
   const visibleEntries = useMemo(() => {
     const normalized = selectedMonth.replace('年', '-').replace('月', '')
     return sortCalendarEntriesForHome(entries.filter((entry) => entry.date.startsWith(normalized)))
@@ -133,6 +142,9 @@ const CalendarPage = ({ initialEntries }: InferGetServerSidePropsType<typeof get
       try {
         await connectGoogleCalendar(code)
         dispatch(setGoogleCalendarConnected(true))
+        const nextEntries = await requestCalendarEntries()
+        hydrateEntriesFromServer(nextEntries)
+        setAllGoogleEvents(nextEntries.flatMap((entry) => entry.googleEvents))
       } catch (error) {
         if (error instanceof ApiError) {
           showToast.error(error.message)
@@ -156,6 +168,9 @@ const CalendarPage = ({ initialEntries }: InferGetServerSidePropsType<typeof get
       setIsSyncing(true)
       await disconnectGoogleCalendar()
       dispatch(setGoogleCalendarConnected(false))
+      const nextEntries = await requestCalendarEntries()
+      hydrateEntriesFromServer(nextEntries)
+      setAllGoogleEvents(nextEntries.flatMap((entry) => entry.googleEvents))
     } catch (error) {
       if (error instanceof ApiError) {
         showToast.error(error.message)
@@ -180,6 +195,7 @@ const CalendarPage = ({ initialEntries }: InferGetServerSidePropsType<typeof get
           await requestDeletedCalendarEntry(deletingEntry.serverId)
           const nextEntries = await requestCalendarEntries()
           hydrateEntriesFromServer(nextEntries)
+          setAllGoogleEvents(nextEntries.flatMap((entry) => entry.googleEvents))
         } else {
           deleteEntry(deletingEntry.id)
         }
@@ -235,7 +251,7 @@ const CalendarPage = ({ initialEntries }: InferGetServerSidePropsType<typeof get
                 <CalendarEntryCard
                   key={entry.id}
                   entry={entry}
-                  googleEvents={EMPTY_CALENDAR_GOOGLE_EVENTS}
+                  googleEvents={allGoogleEvents}
                   outfitDisplay={outfitDisplay}
                   onPreviewOutfit={
                     previewOutfitId

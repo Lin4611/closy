@@ -16,5 +16,5 @@ export type UserInfo = {
   tomorrowCalendarEventOccasion: string
   hasOutfitGeneratedToday: boolean
   hasOutfitGeneratedTomorrow: boolean
-   isGoogleCalendarConnected: boolean
+  isGoogleCalendarConnected: boolean
 }

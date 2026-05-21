@@ -57,6 +57,10 @@ export const CalendarEntryCard = ({
       : outfitDisplay.status === 'none'
         ? 'bg-[#FCEEEE] text-[#E35D59]'
         : 'bg-neutral-100 text-neutral-600'
+  const occasionLabel = occasionLabelMap[entry.occasionKey]
+  const occasionClassName = occasionLabel
+    ? 'bg-primary-800 text-white'
+    : 'bg-[#FCEEEE] text-[#E35D59]'
 
   return (
     <article className="rounded-[20px] bg-white px-4 py-3 shadow-[0_1px_4px_rgba(0,0,0,0.06)]">
@@ -106,8 +110,8 @@ export const CalendarEntryCard = ({
             ) : null}
           </div>
           <div className="flex flex-wrap items-center gap-2 pt-2">
-            <span className="rounded-full bg-primary-800 px-2 py-1 font-paragraph-xs text-white">
-              #{occasionLabelMap[entry.occasionKey]}
+            <span className={cn('rounded-full px-2 py-1 font-paragraph-xs', occasionClassName)}>
+              {occasionLabel ? `#${occasionLabel}` : '未選場合'}
             </span>
             <span className={cn('rounded-full px-2 py-1 font-paragraph-xs', outfitStatusClassName)}>{outfitStatusLabel}</span>
           </div>
