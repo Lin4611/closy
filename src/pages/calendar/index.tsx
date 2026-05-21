@@ -1,3 +1,4 @@
+import { useGoogleLogin } from '@react-oauth/google'
 import { Plus } from 'lucide-react'
 import type { GetServerSideProps, InferGetServerSidePropsType } from 'next'
 import { useRouter } from 'next/router'
@@ -7,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { showToast } from '@/components/ui/sonner'
 import { fetchCalendarEntriesBaseline } from '@/lib/api/calendar/shared'
 import { ApiError } from '@/lib/api/client'
+import { connectGoogleCalendar, disconnectGoogleCalendar } from '@/modules/calendar/api/googleCalendar'
 import { requestCalendarEntries, requestDeletedCalendarEntry } from '@/modules/calendar/api/shared'
 import { CalendarDeleteEntryDialog } from '@/modules/calendar/components/CalendarDeleteEntryDialog'
 import { CalendarEmptyState } from '@/modules/calendar/components/CalendarEmptyState'
@@ -23,6 +25,8 @@ import {
 } from '@/modules/calendar/utils/calendarOutfitAdapter'
 import { EMPTY_CALENDAR_GOOGLE_EVENTS, sortCalendarEntriesForHome } from '@/modules/calendar/utils/calendarRules'
 import { AppShell } from '@/modules/common/components/AppShell'
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
+import { setGoogleCalendarConnected } from '@/store/slices/userSlice'
 
 const getCurrentMonthLabel = () => {
   const now = new Date()
@@ -80,9 +84,12 @@ export const getServerSideProps: GetServerSideProps<{ initialEntries: CalendarEn
 
 const CalendarPage = ({ initialEntries }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const router = useRouter()
+  const dispatch = useAppDispatch()
   const { deleteEntry, hydrateEntriesFromServer } = useCalendarStore()
   const entries = useCalendarServerEntries(initialEntries)
-  const [isSynced, setIsSynced] = useState(false)
+  const isSynced = useAppSelector((state) => state.user.user?.isGoogleCalendarConnected ?? false)
+  const user = useAppSelector((state) => state.user.user)
+  const [isSyncing, setIsSyncing] = useState(false)
   const [deletingEntry, setDeletingEntry] = useState<CalendarEntry | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isDeleteSuccessOpen, setIsDeleteSuccessOpen] = useState(false)
@@ -116,6 +123,49 @@ const CalendarPage = ({ initialEntries }: InferGetServerSidePropsType<typeof get
     const normalized = selectedMonth.replace('年', '-').replace('月', '')
     return sortCalendarEntriesForHome(entries.filter((entry) => entry.date.startsWith(normalized)))
   }, [entries, selectedMonth])
+
+  const handleConnect = useGoogleLogin({
+    flow: 'auth-code',
+    scope: 'https://www.googleapis.com/auth/calendar.readonly',
+    hint: user?.email,
+    onSuccess: async ({ code }) => {
+      setIsSyncing(true)
+      try {
+        await connectGoogleCalendar(code)
+        dispatch(setGoogleCalendarConnected(true))
+      } catch (error) {
+        if (error instanceof ApiError) {
+          showToast.error(error.message)
+        } else {
+          showToast.error('連結失敗，請稍後再試')
+        }
+      } finally {
+        setIsSyncing(false)
+      }
+    },
+    onError: () => showToast.error('連結失敗，請稍後再試'),
+  })
+
+  const handleSyncChange = async (checked: boolean) => {
+    if (checked) {
+      handleConnect()
+      return
+    }
+
+    try {
+      setIsSyncing(true)
+      await disconnectGoogleCalendar()
+      dispatch(setGoogleCalendarConnected(false))
+    } catch (error) {
+      if (error instanceof ApiError) {
+        showToast.error(error.message)
+      } else {
+        showToast.error('解除連結失敗，請稍後再試')
+      }
+    } finally {
+      setIsSyncing(false)
+    }
+  }
 
   const handleDeleteConfirm = () => {
     if (!deletingEntry || isDeleting) {
@@ -168,8 +218,9 @@ const CalendarPage = ({ initialEntries }: InferGetServerSidePropsType<typeof get
             month={selectedMonth}
             monthOptions={monthOptions}
             isSynced={isSynced}
+            isSyncing={isSyncing}
             onMonthChange={setUserSelectedMonth}
-            onSyncChange={setIsSynced}
+            onSyncChange={handleSyncChange}
           />
         </div>
         <div className="flex flex-1 flex-col gap-4 px-4 pt-4 pb-20">

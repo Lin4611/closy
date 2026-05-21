@@ -1,23 +1,25 @@
+import { useGoogleLogin } from '@react-oauth/google'
 import type { GetServerSideProps, InferGetServerSidePropsType } from 'next'
 import { useRouter } from 'next/router'
 import { useEffect, useMemo, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { showToast } from '@/components/ui/sonner'
-import { apiClient } from '@/lib/api/client'
+import { ApiError, apiClient } from '@/lib/api/client'
 import {
   buildSettingsSummary,
   getSettingsProtectedBaselineServerSideResult,
   type SettingsProfileBaseline,
 } from '@/lib/api/settings/shared'
+import { connectGoogleCalendar, disconnectGoogleCalendar } from '@/modules/calendar/api/googleCalendar'
 import { AppShell } from '@/modules/common/components/AppShell'
 import { GoogleCalendarSettingCard } from '@/modules/settings/components/GoogleCalendarSettingCard'
 import { SettingSection } from '@/modules/settings/components/SettingSection'
 import { useSettingsProfileHydration } from '@/modules/settings/hooks/useSettingsProfileHydration'
-import { useAppDispatch } from '@/store/hooks'
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { clearDayCache } from '@/store/slices/homeSlice'
 import { clearOutfitCache } from '@/store/slices/outfitSlice'
-import { clearUser } from '@/store/slices/userSlice'
+import { clearUser, setGoogleCalendarConnected } from '@/store/slices/userSlice'
 
 export const getServerSideProps: GetServerSideProps<{
   profileBaseline: SettingsProfileBaseline
@@ -29,9 +31,10 @@ const Setting = ({ profileBaseline }: InferGetServerSidePropsType<typeof getServ
   const router = useRouter()
   const summary = useMemo(() => buildSettingsSummary(profileBaseline), [profileBaseline])
 
-  const [isSynced, setIsSynced] = useState(false)
   const [isSyncing, setIsSyncing] = useState(false)
   const dispatch = useAppDispatch()
+  const isSynced = useAppSelector((state) => state.user.user?.isGoogleCalendarConnected ?? false)
+  const user = useAppSelector((state) => state.user.user)
 
   useSettingsProfileHydration(profileBaseline)
 
@@ -42,18 +45,44 @@ const Setting = ({ profileBaseline }: InferGetServerSidePropsType<typeof getServ
     }
   }, [router, router.query.status])
 
+  const handleConnect = useGoogleLogin({
+    flow: 'auth-code',
+    scope: 'https://www.googleapis.com/auth/calendar.readonly',
+    hint: user?.email,
+    onSuccess: async ({ code }) => {
+      setIsSyncing(true)
+      try {
+        await connectGoogleCalendar(code)
+        dispatch(setGoogleCalendarConnected(true))
+      } catch (error) {
+        if (error instanceof ApiError) {
+          showToast.error(error.message)
+        } else {
+          showToast.error('連結失敗，請稍後再試')
+        }
+      } finally {
+        setIsSyncing(false)
+      }
+    },
+    onError: () => showToast.error('連結失敗，請稍後再試'),
+  })
+
   const handleSyncChange = async (checked: boolean) => {
-    if (!checked) {
-      setIsSynced(false)
+    if (checked) {
+      handleConnect()
       return
     }
 
     try {
       setIsSyncing(true)
-      await new Promise((resolve) => setTimeout(resolve, 2000))
-      setIsSynced(true)
-    } catch {
-      setIsSynced(false)
+      await disconnectGoogleCalendar()
+      dispatch(setGoogleCalendarConnected(false))
+    } catch (error) {
+      if (error instanceof ApiError) {
+        showToast.error(error.message)
+      } else {
+        showToast.error('解除連結失敗，請稍後再試')
+      }
     } finally {
       setIsSyncing(false)
     }
