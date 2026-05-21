@@ -46,6 +46,10 @@ const userSlice = createSlice({
       if (!state.user) return
       state.user.isProfileCompleted = true
     },
+    setGoogleCalendarConnected: (state, action: PayloadAction<boolean>) => {
+      if (!state.user) return
+      state.user.isGoogleCalendarConnected = action.payload
+    },
     mergeUserProfile: (state, action: PayloadAction<UserInfo>) => {
       state.user = {
         userId: state.user?.userId ?? '',
@@ -83,6 +87,7 @@ export const {
   updateUserOccasion,
   updateUserStyles,
   updateUserColors,
+  setGoogleCalendarConnected,
   mergeUserProfile,
 } = userSlice.actions
 export default userSlice.reducer
