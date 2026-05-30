@@ -2,16 +2,18 @@ import { GoogleOAuthProvider } from '@react-oauth/google'
 import type { AppProps } from 'next/app'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { Provider } from 'react-redux'
 import { PersistGate } from 'redux-persist/integration/react'
 
 import '@/styles/globals.css'
 import { Toaster } from '@/components/ui/sonner'
 import { inter } from '@/lib/font'
+import { getUserInfo } from '@/modules/common/api/userInfo'
 import { MobileLayout } from '@/modules/common/components/MobileLayout'
 import { persistor, store } from '@/store'
-import { useAppSelector } from '@/store/hooks'
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
+import { clearUser, mergeUserProfile } from '@/store/slices/userSlice'
 
 const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ''
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '')
@@ -78,27 +80,36 @@ const getAppRouteKind = (pathname: string): AppRouteKind => {
 
 function SplashRedirectController() {
   const router = useRouter()
+  const dispatch = useAppDispatch()
   const isLoggedIn = useAppSelector((state) => state.user.isLoggedIn)
   const isProfileCompleted = useAppSelector((state) => state.user.user?.isProfileCompleted)
   const isSplash = router.pathname === '/'
+  const hasChecked = useRef(false)
 
   useEffect(() => {
-    if (!isSplash) return
+    if (!isSplash || hasChecked.current) return
+    hasChecked.current = true
 
-    if (isLoggedIn && isProfileCompleted) {
-      router.prefetch('/home')
+    if (!isLoggedIn) {
+      const timer = setTimeout(() => router.replace('/guide'), 1000)
+      return () => clearTimeout(timer)
     }
 
-    const timer = setTimeout(() => {
-      if (isLoggedIn) {
+    const checkSession = async () => {
+      try {
+        const profile = await getUserInfo()
+        dispatch(mergeUserProfile(profile))
+        router.prefetch('/home')
         router.replace(isProfileCompleted ? '/home' : '/guide/welcome')
-      } else {
+      } catch {
+        dispatch(clearUser())
+        localStorage.removeItem('persist:user')
         router.replace('/guide')
       }
-    }, 1000)
+    }
 
-    return () => clearTimeout(timer)
-  }, [isLoggedIn, isProfileCompleted, isSplash, router])
+    checkSession()
+  }, [isSplash, isLoggedIn, isProfileCompleted, dispatch, router])
 
   return null
 }
