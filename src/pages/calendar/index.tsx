@@ -78,7 +78,11 @@ export const getServerSideProps: GetServerSideProps<{ initialEntries: CalendarEn
       }
     }
 
-    throw error
+    return {
+      props: {
+        initialEntries: [],
+      },
+    }
   }
 }
 
