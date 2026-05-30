@@ -90,18 +90,31 @@ function SplashRedirectController() {
     if (!isSplash || hasChecked.current) return
     hasChecked.current = true
 
+    // active flag：防止 component unmount 後 async 結果回來還繼續執行 redirect
+    let active = true
+
     if (!isLoggedIn) {
-      const timer = setTimeout(() => router.replace('/guide'), 1000)
-      return () => clearTimeout(timer)
+      // 未登入：等待 splash 動畫結束後導向 guide
+      const timer = setTimeout(() => {
+        if (active) router.replace('/guide')
+      }, 1000)
+      return () => {
+        active = false
+        clearTimeout(timer)
+      }
     }
 
+    // isLoggedIn=true：先驗證 cookie session，避免直接 redirect 造成 /home → / loop
     const checkSession = async () => {
       try {
         const profile = await getUserInfo()
+        if (!active) return
         dispatch(mergeUserProfile(profile))
         router.prefetch('/home')
         router.replace(isProfileCompleted ? '/home' : '/guide/welcome')
       } catch {
+        if (!active) return
+        // session 無效（含 401）：清除 Redux state 與 persisted user，導向 guide
         dispatch(clearUser())
         localStorage.removeItem('persist:user')
         router.replace('/guide')
@@ -109,6 +122,10 @@ function SplashRedirectController() {
     }
 
     checkSession()
+
+    return () => {
+      active = false
+    }
   }, [isSplash, isLoggedIn, isProfileCompleted, dispatch, router])
 
   return null
