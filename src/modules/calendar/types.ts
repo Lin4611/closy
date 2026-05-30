@@ -50,6 +50,7 @@ export type CalendarServerOutfitPreview = {
 
 export type CalendarServerEntry = CalendarEntry & {
   serverId: string
+  googleEvents: CalendarGoogleEvent[]
   serverOutfitPreview: CalendarServerOutfitPreview | null
   serverCreatedAt: string
   serverUpdatedAt: string

@@ -5,7 +5,11 @@ import { useMemo, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { CalendarGoogleEventList } from '@/modules/calendar/components/CalendarGoogleEventList'
 import { CalendarLocalEntryMenu } from '@/modules/calendar/components/CalendarLocalEntryMenu'
-import type { CalendarEntry, CalendarEntryOutfitDisplayModel, CalendarGoogleEvent } from '@/modules/calendar/types'
+import type {
+  CalendarEntry,
+  CalendarEntryOutfitDisplayModel,
+  CalendarGoogleEvent,
+} from '@/modules/calendar/types'
 import {
   getCalendarEventsByDate,
   hasSelectedOutfit,
@@ -37,7 +41,10 @@ export const CalendarEntryCard = ({
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const isGoogleEntry = isGoogleCalendarEntry(entry)
   const isExpired = isCalendarEntryExpired(entry)
-  const events = useMemo(() => getCalendarEventsByDate(entry.date, googleEvents), [entry.date, googleEvents])
+  const events = useMemo(
+    () => getCalendarEventsByDate(entry.date, googleEvents),
+    [entry.date, googleEvents],
+  )
   const hasResolvedOutfit = outfitDisplay.status === 'resolved' && Boolean(outfitDisplay.imageUrl)
   const hasOutfit = hasSelectedOutfit(entry) || hasResolvedOutfit
   const showLoadingIndicator = outfitDisplay.status === 'loading'
@@ -53,14 +60,18 @@ export const CalendarEntryCard = ({
             : '未選穿搭'
   const outfitStatusClassName =
     outfitDisplay.status === 'resolved'
-      ? 'bg-[#E9F6EE] text-[#3AA769]'
+      ? 'bg-success-100/8 text-success-300 border border-success-100'
       : outfitDisplay.status === 'none'
-        ? 'bg-[#FCEEEE] text-[#E35D59]'
+        ? 'bg-danger-100/8 text-danger-300 border border-danger-100'
         : 'bg-neutral-100 text-neutral-600'
+  const occasionLabel = occasionLabelMap[entry.occasionKey]
+  const occasionClassName = occasionLabel
+    ? 'bg-primary-800 text-white'
+    : 'bg-danger-100/8 text-danger-300 border border-danger-100'
 
   return (
     <article className="rounded-[20px] bg-white px-4 py-3 shadow-[0_1px_4px_rgba(0,0,0,0.06)]">
-      <div className="relative flex items-start gap-3">
+      <div className="relative flex items-start gap-5">
         <button
           type="button"
           onClick={onPreviewOutfit}
@@ -92,8 +103,12 @@ export const CalendarEntryCard = ({
         </button>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <p className={cn('font-h4 text-neutral-900', isExpired && 'text-neutral-400')}>{formatDateLabel(entry.date)}</p>
-            {isGoogleEntry ? <span className="font-label-md text-neutral-700">({events.length})</span> : null}
+            <p className={cn('font-h4 text-neutral-900', isExpired && 'text-neutral-400')}>
+              {formatDateLabel(entry.date)}
+            </p>
+            {isGoogleEntry ? (
+              <span className="font-h5 text-neutral-900">({events.length})</span>
+            ) : null}
             {isGoogleEntry && !isExpired ? (
               <button
                 type="button"
@@ -106,21 +121,37 @@ export const CalendarEntryCard = ({
             ) : null}
           </div>
           <div className="flex flex-wrap items-center gap-2 pt-2">
-            <span className="rounded-full bg-primary-800 px-2 py-1 font-paragraph-xs text-white">
-              #{occasionLabelMap[entry.occasionKey]}
+            <span className={cn('font-paragraph-xs rounded-full px-2 py-0.5', occasionClassName)}>
+              {occasionLabel ? `#${occasionLabel}` : '未選場合'}
             </span>
-            <span className={cn('rounded-full px-2 py-1 font-paragraph-xs', outfitStatusClassName)}>{outfitStatusLabel}</span>
+            <span
+              className={cn('font-paragraph-xs rounded-full px-2 py-0.5', outfitStatusClassName)}
+            >
+              {outfitStatusLabel}
+            </span>
           </div>
         </div>
         {isExpired ? (
-          <span className="rounded-full bg-danger-300 px-2 py-0.5 font-paragraph-sm text-white">已過期</span>
+          <span className="bg-danger-300 font-paragraph-sm rounded-full px-2 py-0.5 text-white">
+            已過期
+          </span>
         ) : isGoogleEntry ? (
-          <button type="button" onClick={onEdit} aria-label="編輯行事曆" className="pt-1 text-neutral-700">
+          <button
+            type="button"
+            onClick={onEdit}
+            aria-label="編輯行事曆"
+            className="pt-1 text-neutral-700"
+          >
             <Pencil className="size-5" strokeWidth={2} />
           </button>
         ) : (
           <div className="relative">
-            <button type="button" onClick={() => setIsMenuOpen((value) => !value)} aria-label="更多操作" className="pt-1 text-neutral-700">
+            <button
+              type="button"
+              onClick={() => setIsMenuOpen((value) => !value)}
+              aria-label="更多操作"
+              className="pt-1 text-neutral-700"
+            >
               <EllipsisVertical className="size-5" strokeWidth={2} />
             </button>
             <CalendarLocalEntryMenu
@@ -137,7 +168,9 @@ export const CalendarEntryCard = ({
           </div>
         )}
       </div>
-      {isGoogleEntry && isExpanded && !isExpired ? <CalendarGoogleEventList events={events} /> : null}
+      {isGoogleEntry && isExpanded && !isExpired ? (
+        <CalendarGoogleEventList events={events} />
+      ) : null}
     </article>
   )
 }
