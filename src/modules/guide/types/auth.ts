@@ -29,6 +29,7 @@ export type LoginUser = {
   tomorrowCalendarEventOccasion?: string
   hasOutfitGeneratedToday?: boolean
   hasOutfitGeneratedTomorrow?: boolean
+  isGoogleCalendarConnected?: boolean
 }
 
 export type GoogleLoginData = {

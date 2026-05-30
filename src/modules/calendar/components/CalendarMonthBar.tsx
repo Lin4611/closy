@@ -8,6 +8,7 @@ type CalendarMonthBarProps = {
   month: string
   monthOptions: string[]
   isSynced: boolean
+  isSyncing?: boolean
   onMonthChange: (month: string) => void
   onSyncChange: (checked: boolean) => void
   onAddClick?: () => void
@@ -19,6 +20,7 @@ export const CalendarMonthBar = ({
   month,
   monthOptions,
   isSynced,
+  isSyncing,
   onMonthChange,
   onSyncChange,
   onAddClick,
@@ -44,7 +46,7 @@ export const CalendarMonthBar = ({
         </span>
       </div>
       <div className="ml-auto flex items-center gap-3">
-        <CalendarSyncToggle checked={isSynced} onCheckedChange={onSyncChange} />
+        <CalendarSyncToggle checked={isSynced} disabled={isSyncing} onCheckedChange={onSyncChange} />
         {showAddButton ? (
           <Button
             type="button"
