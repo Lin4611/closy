@@ -2,7 +2,7 @@ import { useGoogleLogin } from '@react-oauth/google'
 import { Plus } from 'lucide-react'
 import type { GetServerSideProps, InferGetServerSidePropsType } from 'next'
 import { useRouter } from 'next/router'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { showToast } from '@/components/ui/sonner'
@@ -93,12 +93,8 @@ const CalendarPage = ({ initialEntries }: InferGetServerSidePropsType<typeof get
   const entries = useCalendarServerEntries(initialEntries)
   const isGoogleCalendarConnected = useAppSelector((state) => state.user.user?.isGoogleCalendarConnected ?? false)
   const user = useAppSelector((state) => state.user.user)
-  const [isSynced, setIsSynced] = useState(false)
+  const isSynced = isGoogleCalendarConnected
   const [isSyncing, setIsSyncing] = useState(false)
-
-  useEffect(() => {
-    setIsSynced(isGoogleCalendarConnected)
-  }, [isGoogleCalendarConnected])
   const [deletingEntry, setDeletingEntry] = useState<CalendarEntry | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isDeleteSuccessOpen, setIsDeleteSuccessOpen] = useState(false)
