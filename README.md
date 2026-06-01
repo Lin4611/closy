@@ -37,7 +37,7 @@ Closy 由四個獨立 repo 組成，各自負責不同的服務層：
 | 去背模型 | [rembg-service](https://github.com/fntxxx/rembg-service) | 衣物圖片去背，部署於 HuggingFace |
 | 辨識模型 | [fashion-attr-service](https://github.com/fntxxx/fashion-attr-service) | 衣物屬性辨識，部署於 HuggingFace |
 
-```
+```text
 使用者
   │
   ▼
