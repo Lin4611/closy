@@ -1,4 +1,4 @@
-# 👕 Closy-穿搭小助手
+# <img src="./public/icons/icon-192x192.png" alt="Closy" width="36" align="center" /> Closy | 我的穿搭小助手
 
 [![Next.js](https://img.shields.io/badge/Next.js-16.1.6-000000?logo=nextdotjs)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.2.3-61DAFB?logo=react)](https://react.dev/)
@@ -7,29 +7,88 @@
 [![Redux Toolkit](https://img.shields.io/badge/Redux_Toolkit-2.11.2-764ABC?logo=redux)](https://redux-toolkit.js.org/)
 [![PWA](https://img.shields.io/badge/PWA-next--pwa-5A0FC8?logo=pwa)](https://web.dev/progressive-web-apps/)
 
-Closy 是一個以 **mobile-first、App-like 體驗** 為核心的 AI 穿搭與智慧衣櫃管理專案。
+> 👉 **[立即試用 Live Demo](https://closy-nine.vercel.app/)** — 建議使用手機開啟
 
-使用者可以透過引導流程建立個人偏好，管理自己的衣櫃，並依照天氣、場合、行事曆情境與穿搭偏好，取得每日穿搭推薦。專案同時整合 Google OAuth、Google Calendar 情境流程、Redux Persist 狀態保存、Next.js API Routes 與 PWA 設定，讓整體體驗更接近行動 App。
+## 🔗 相關資源 | Related Links
+
+| 項目 | 連結 |
+|------|------|
+| 📊 產品簡報 | [Figma Slides →](https://www.figma.com/slides/z2rFIAmzYczFDECBEtkXFh/Closy-%E4%BD%A0%E7%9A%84%E7%A9%BF%E6%90%AD%E5%8A%A9%E6%89%8B?node-id=13-9&t=qHSllj7SsltkCo9i-0) |
+| ✂️ 去背模型 | [rembg-service →](https://github.com/fntxxx/rembg-service) |
+| 👗 辨識模型 | [fashion-attr-service →](https://github.com/fntxxx/fashion-attr-service) |
+| ⚙️ 後端 Repo | [closy-api →](https://github.com/Danny-1211/closy-api) |
+
+---
+
+Closy 是一個以「快速完成每日穿搭決策」為核心的 mobile-first 穿搭推薦應用。
+
+專案整合個人衣櫃、天氣資訊、場合需求、風格與色系偏好，並支援 Google Calendar 情境參考，協助使用者快速取得今日 / 明日穿搭建議，降低每天出門前搭配衣服的決策成本。
+
+---
+
+## 🏗 系統架構 | System Architecture
+
+Closy 由四個獨立 repo 組成，各自負責不同的服務層：
+
+| 服務 | Repo | 說明 |
+|------|------|------|
+| 前端 | closy（本 repo） | Next.js web app，mobile-first UI、BFF API Routes |
+| 後端 | [closy-api](https://github.com/Danny-1211/closy-api) | 業務邏輯、資料存取、AI 穿搭推薦 |
+| 去背模型 | [rembg-service](https://github.com/fntxxx/rembg-service) | 衣物圖片去背，部署於 HuggingFace |
+| 辨識模型 | [fashion-attr-service](https://github.com/fntxxx/fashion-attr-service) | 衣物屬性辨識，部署於 HuggingFace |
+
+```
+使用者
+  │
+  ▼
+前端 closy（Next.js）
+  │  BFF API Routes
+  ▼
+後端 closy-api
+  ├──▶ 去背模型 rembg-service
+  └──▶ 辨識模型 fashion-attr-service
+```
 
 ---
 
 ## 👀 專案預覽 | Project Preview
 
-![總覽](./public/readme/readme-banner.png)
+![Closy Hero](./public/readme/banner-hero.png)
 
 ---
 
 ## 🛠 使用技術 | Technical Stack
 
-- **核心框架 (Core)**：Next.js 16.1.6、React 19.2.3
-- **開發語言 (Language)**：TypeScript
-- **樣式處理 (Styling)**：Tailwind CSS v4、tw-animate-css
-- **狀態管理 (State Management)**：Redux Toolkit、React Redux、Redux Persist
-- **身份驗證 (Authentication)**：Google OAuth
-- **PWA 支援 (PWA Support)**：@ducanh2912/next-pwa
-- **UI / Interaction**：Radix UI、Vaul、Sonner、Lucide React、Hugeicons
-- **工具函式 (Utilities)**：clsx、tailwind-merge、class-variance-authority
-- **程式碼規範 (Code Quality)**：ESLint、Prettier、prettier-plugin-tailwindcss
+### 前端 Frontend — [closy](https://github.com/Lin4611/closy) · 部署於 Vercel
+
+| 類別 | 技術 |
+|------|------|
+| 核心框架 | Next.js、React |
+| 開發語言 | TypeScript |
+| UI / 樣式 | Tailwind CSS、shadcn/ui |
+| 狀態管理 | Redux Toolkit、redux-persist |
+| 身份驗證 | Google OAuth |
+| PWA 支援 | next-pwa |
+| 程式碼規範 | ESLint、Prettier |
+
+### 後端 Backend — [closy-api](https://github.com/Danny-1211/closy-api) · 部署於 Render
+
+| 類別 | 技術 |
+|------|------|
+| 核心框架 | Node.js、Express、TypeScript |
+| 資料庫 | MongoDB、Mongoose |
+| AI 整合 | Google Gemini |
+| 媒體管理 | Cloudinary |
+| 身份驗證 | JWT |
+| 圖片處理 | Sharp |
+| API 文件 | Swagger UI |
+
+### AI 模型服務 AI Services · 部署於 Hugging Face Spaces
+
+| 服務 | 技術 |
+|------|------|
+| [rembg-service](https://github.com/fntxxx/rembg-service)（去背） | Python、FastAPI、rembg |
+| [fashion-attr-service](https://github.com/fntxxx/fashion-attr-service)（辨識） | Python、FastAPI、Marqo FashionSigLIP |
 
 ---
 
@@ -44,7 +103,8 @@ Closy 是一個以 **mobile-first、App-like 體驗** 為核心的 AI 穿搭與�
 
 ```bash
 # 複製專案
-git clone <https://github.com/Lin4611/closy.git>
+git clone https://github.com/Lin4611/closy.git
+cd closy
 
 # 安裝套件
 npm install
@@ -69,131 +129,53 @@ npm run dev
 ### 其他指令
 
 ```bash
-npm run build        # 正式建置
-npm run lint         # 執行 ESLint
-npm run lint:fix     # ESLint 自動修正
-npm run format       # Prettier 格式化
+npm run build         # 正式建置
+npm run start         # 啟動正式環境伺服器
+npm run lint          # 執行 ESLint
+npm run lint:fix      # ESLint 自動修正
+npm run format        # Prettier 格式化
+npm run format:check  # 檢查格式
 ```
 
 ---
 
 ## ✨ 核心功能 | Features
 
-### 🧭 Guide 初始引導流程
+| 功能 | 說明 |
+|------|------|
+| 🧭 初始引導 | 首次使用透過引導流程完成 Google 登入、性別 / 場合 / 位置偏好設定，以及初始衣物新增，建立個人化推薦基礎 |
+| 🏠 每日穿搭推薦 | 首頁依據天氣與個人偏好推薦今日 / 明日穿搭，可標記喜歡 / 不喜歡、收藏穿搭，或進入 AI 調整流程 |
+| 💬 AI 穿搭調整 | 以自然語言描述調整方向（保留特定單品、改變風格或單品類型等），AI 小助手重新生成更符合需求的穿搭建議 |
+| 👚 我的衣櫃 | 管理個人衣物，新增時支援拍照或相簿選取，經 AI 自動辨識類別、顏色、場合等屬性後由使用者審核確認 |
+| 🧥 我的穿搭 | 瀏覽所有收藏或曾產生的穿搭紀錄，可依場合分類查看穿搭詳情 |
+| 📅 行事曆情境搭配 | 可選擇同步 Google Calendar 將行程帶入 App；不論是否同步，皆可在 App 內直接預排場合與穿搭，無需在兩個 App 之間切換 |
+| ⚙️ 設定與偏好 | 管理預設場合、風格偏好與顏色偏好，調整後影響每日穿搭推薦結果 |
+| 📱 PWA 支援 | 可安裝至主畫面，支援 Service Worker、離線 fallback 與圖片快取，使用體驗接近原生 App |
 
-使用者初次進入 App 時，會透過引導流程建立基本資料與穿搭偏好，讓後續推薦結果更符合個人需求。
-
-主要功能包含：
-
-- Google 登入流程
-- 初始歡迎與導覽
-- 性別設定
-- 預設場合設定
-- 位置服務設定
-- Google Calendar 整合設定
-- 初始衣物新增（上衣 / 下身）
-- 使用者資料完成狀態判斷
+![核心功能模組](./public/readme/features-core.png)
 
 ---
 
-### 🏠 首頁每日穿搭推薦
+## 💡 前端實作重點 | Frontend Highlights
 
-首頁會顯示今日與明日的穿搭建議，讓使用者快速完成每日穿搭決策。
-
-主要功能包含：
-
-- 今日穿搭推薦
-- 明日穿搭推薦
-- 天氣資訊顯示
-- 喜歡 / 不喜歡穿搭
-- 穿搭收藏
-- 穿搭調整入口
-- 載入、錯誤與空狀態處理
+- **SSR + BFF 混用策略**：多數頁面使用 `getServerSideProps` 在 server side 取得初始資料，確保首屏直接渲染。首頁的穿搭推薦與配圖生成改走 BFF（API Routes），原因是這兩支需要呼叫 Gemini API，回應時間較長，若走 SSR 會讓使用者在跳轉前卡在上一頁，改為進入首頁後非同步請求可有效改善體驗。
+- **BFF 統一處理 Auth**：所有 API Routes 從 httpOnly cookie 讀取 `accessToken` 並加入 `Authorization: Bearer` header 後轉發後端，前端元件不直接接觸 token。
+- **SSE Streaming 自訂流程**：Next.js BFF 會 buffer response，無法直接 proxy SSE。解法是 client 先打 `GET /api/auth/token` 讓 BFF 將 httpOnly cookie 中的 token 回傳，再由 client 自行建立 EventSource 連線至後端並手動帶上 token。
+- **Redux Toolkit + redux-persist**：以單一 `userSlice` 管理登入狀態、使用者偏好與 Google Calendar 連線狀態，重整後自動從 localStorage 還原，不需重新登入。
+- **PWA**：支援 Web App Manifest、Service Worker、離線 fallback 頁面與圖片 runtime cache（含 Cloudinary 與中央氣象署來源）。
 
 ---
 
-### 💬 穿搭調整流程
+## 🚶 建議使用流程 | Recommended Flow
 
-使用者可以透過調整視窗描述想要修改的方向，例如保留某件單品、改成正式一點、換成褲裝等，讓 AI 穿搭結果更貼近日常需求。
+1. **Google 登入** — 使用 Google 帳號登入，依照引導完成性別、場合、位置偏好設定，並新增第一套衣物
+2. **查看每日推薦** — 首頁依據天氣與偏好顯示今日 / 明日穿搭，按喜歡收藏至「我的穿搭」，按不喜歡重新生成一套
+3. **充實衣櫃** — 持續拍照或從相簿上傳衣物，AI 自動辨識屬性，讓推薦結果更貼近你的實際衣物
+4. **排程行事曆** — 預先建立行程並設定場合（可選擇同步 Google Calendar），首頁當天自動依場合推薦
+5. **切換場合** — 當天行程臨時有變，直接在首頁或設定切換場合，推薦穿搭即時更新
+6. **AI 穿搭調整** — 對推薦不滿意，點選 AI 小助手輸入需求（例如「想加件外套」），重新生成更符合的穿搭
 
-主要功能包含：
-
-- AI小助手 調整視窗
-- 調整次數規則
-- 調整內容輸入
-- 調整結果顯示
-- 對話框與結果頁轉場體驗
-
----
-
-### 👚 我的衣櫃
-
-使用者可以管理自己的衣物資料，建立個人化衣櫃，作為 AI 推薦穿搭的基礎。
-
-主要功能包含：
-
-- 衣物列表
-- 新增衣物（相機拍照 / 相簿選取 → 預覽 → AI 辨識 → 結果審核）
-- 衣物詳細頁
-- 編輯衣物資料
-- 衣物圖片顯示
-- 衣物屬性與標籤管理
-
----
-
-### 🧥 我的穿搭
-
-使用者可以查看已收藏或產生過的穿搭，建立自己的穿搭紀錄。
-
-主要功能包含：
-
-- 穿搭列表
-- 穿搭詳情
-- 穿搭收藏狀態
-- 依場合或資料狀態顯示穿搭內容
-
----
-
-### 📅 行事曆情境搭配
-
-專案整合行事曆情境，讓穿搭建議可以更貼近使用者當天的活動與場合需求。
-
-主要功能包含：
-
-- 行事曆頁面
-- 新增行程與場合設定
-- 行程情境顯示
-- 場合穿搭挑選流程
-- 行程詳細資訊顯示
-
----
-
-### ⚙️ 設定與偏好調整
-
-使用者可以在設定頁管理自己的預設場合、風格偏好與顏色偏好，讓推薦結果更個人化。
-
-主要功能包含：
-
-- 設定首頁
-- 預設場合設定
-- 風格偏好設定
-- 顏色偏好設定
-- 登出流程
-
----
-
-### 📱 PWA 支援
-
-專案已加入 PWA 基本設定，支援更接近 App 的使用體驗。
-
-主要功能包含：
-
-- Web App Manifest
-- Service Worker
-- 離線頁面 fallback
-- Next image runtime cache
-- Cloudinary 圖片來源支援
-- 中央氣象署天氣 icon 圖片來源支援
+![使用流程](./public/readme/flow-usage.png)
 
 ---
 
@@ -244,3 +226,14 @@ closy/
 ├─ package.json                    # 專案依賴與 scripts
 └─ README.md                       # 專案說明文件
 ```
+
+---
+
+## 👥 團隊成員 | Team
+
+| 成員 | 角色 | 負責範疇 |
+|------|------|----------|
+| [Lin](https://github.com/Lin4611) | 前端開發 | 專案架構建置與資料夾結構規劃、Git 規範制定、Splash / Guide / 首頁 / AI 小助手 / 我的穿搭 / 設定頁面切版與 API 串接、首頁新手導覽、Google Calendar 串接 |
+| [尚倫](https://github.com/fntxxx) | 前端開發 | 我的衣櫃頁面、新增衣物完整流程（拍照 / 相簿 → AI 辨識 → 審核）、行事曆頁面、去背模型、辨識模型 |
+| [Danny](https://github.com/Danny-1211) | 後端開發 | API 設計、資料庫、AI 穿搭推薦整合 |
+| [Miya](https://www.figma.com/design/sTbk98QlMNUX2IrhuqyxXL/%E8%A1%A3%E6%AB%83%E7%AE%A1%E7%90%86-wireframe--%E6%96%B0-?node-id=849-7465&t=qqYGXNmIfcNIlrtz-1) | UI / UX 設計 | 視覺設計、Wireframe、設計稿 |
