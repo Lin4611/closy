@@ -106,6 +106,7 @@ Closy 由四個獨立 repo 組成，各自負責不同的服務層：
 ```bash
 # 複製專案
 git clone https://github.com/Lin4611/closy.git
+cd closy
 
 # 安裝套件
 npm install
@@ -130,10 +131,12 @@ npm run dev
 ### 其他指令
 
 ```bash
-npm run build        # 正式建置
-npm run lint         # 執行 ESLint
-npm run lint:fix     # ESLint 自動修正
-npm run format       # Prettier 格式化
+npm run build         # 正式建置
+npm run start         # 啟動正式環境伺服器
+npm run lint          # 執行 ESLint
+npm run lint:fix      # ESLint 自動修正
+npm run format        # Prettier 格式化
+npm run format:check  # 檢查格式
 ```
 
 ---
@@ -155,14 +158,24 @@ npm run format       # Prettier 格式化
 
 ---
 
+## 💡 前端實作重點 | Frontend Highlights
+
+- **SSR + BFF 混用策略**：多數頁面使用 `getServerSideProps` 在 server side 取得初始資料，確保首屏直接渲染。首頁的穿搭推薦與配圖生成改走 BFF（API Routes），原因是這兩支需要呼叫 Gemini API，回應時間較長，若走 SSR 會讓使用者在跳轉前卡在上一頁，改為進入首頁後非同步請求可有效改善體驗。
+- **BFF 統一處理 Auth**：所有 API Routes 從 httpOnly cookie 讀取 `accessToken` 並加入 `Authorization: Bearer` header 後轉發後端，前端元件不直接接觸 token。
+- **SSE Streaming 自訂流程**：Next.js BFF 會 buffer response，無法直接 proxy SSE。解法是 client 先打 `GET /api/auth/token` 讓 BFF 將 httpOnly cookie 中的 token 回傳，再由 client 自行建立 EventSource 連線至後端並手動帶上 token。
+- **Redux Toolkit + redux-persist**：以單一 `userSlice` 管理登入狀態、使用者偏好與 Google Calendar 連線狀態，重整後自動從 localStorage 還原，不需重新登入。
+- **PWA**：支援 Web App Manifest、Service Worker、離線 fallback 頁面與圖片 runtime cache（含 Cloudinary 與中央氣象署來源）。
+
+---
+
 ## 🚶 建議使用流程 | Recommended Flow
 
 1. **Google 登入** — 使用 Google 帳號登入，依照引導完成性別、場合、位置偏好設定，並新增第一套衣物
-2. **查看每日推薦** — 首頁依據天氣與偏好顯示今日 / 明日穿搭，按喜歡確認、按不喜歡換一套
+2. **查看每日推薦** — 首頁依據天氣與偏好顯示今日 / 明日穿搭，按喜歡收藏至「我的穿搭」，按不喜歡重新生成一套
 3. **充實衣櫃** — 持續拍照或從相簿上傳衣物，AI 自動辨識屬性，讓推薦結果更貼近你的實際衣物
 4. **排程行事曆** — 預先建立行程並設定場合（可選擇同步 Google Calendar），首頁當天自動依場合推薦
 5. **切換場合** — 當天行程臨時有變，直接在首頁或設定切換場合，推薦穿搭即時更新
-6. **AI 穿搭調整** — 對推薦不滿意，點選 AI 小助理輸入需求（例如「想加件外套」），重新生成更符合的穿搭
+6. **AI 穿搭調整** — 對推薦不滿意，點選 AI 小助手輸入需求（例如「想加件外套」），重新生成更符合的穿搭
 
 ![使用流程](./public/readme/flow-usage.png)
 
@@ -222,7 +235,7 @@ closy/
 
 | 成員 | 角色 | 負責範疇 |
 |------|------|----------|
-| [Lin](https://github.com/Lin4611) | 前端開發 | 前端架構、頁面開發、BFF API Routes |
-| [尚倫](https://github.com/fntxxx) | 前端開發 | 前端頁面開發、去背模型、辨識模型 |
+| [Lin](https://github.com/Lin4611) | 前端開發 | 專案架構建置與資料夾結構規劃、Git 規範制定、Splash / Guide / 首頁 / AI 小助手 / 我的穿搭 / 設定頁面切版與 API 串接、首頁新手導覽、Google Calendar 串接 |
+| [尚倫](https://github.com/fntxxx) | 前端開發 | 我的衣櫃頁面、新增衣物完整流程（拍照 / 相簿 → AI 辨識 → 審核）、行事曆頁面、去背模型、辨識模型 |
 | [Danny](https://github.com/Danny-1211) | 後端開發 | API 設計、資料庫、AI 穿搭推薦整合 |
 | [Miya](https://www.figma.com/design/sTbk98QlMNUX2IrhuqyxXL/%E8%A1%A3%E6%AB%83%E7%AE%A1%E7%90%86-wireframe--%E6%96%B0-?node-id=849-7465&t=qqYGXNmIfcNIlrtz-1) | UI / UX 設計 | 視覺設計、Wireframe、設計稿 |
