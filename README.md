@@ -63,34 +63,32 @@ Closy 由四個獨立 repo 組成，各自負責不同的服務層：
 
 | 類別 | 技術 |
 |------|------|
-| 核心框架 | Next.js 16.1.6、React 19.2.3 |
+| 核心框架 | Next.js、React |
 | 開發語言 | TypeScript |
-| 樣式處理 | Tailwind CSS v4、tw-animate-css |
-| 狀態管理 | Redux Toolkit、React Redux、Redux Persist |
+| UI / 樣式 | Tailwind CSS、shadcn/ui |
+| 狀態管理 | Redux Toolkit、redux-persist |
 | 身份驗證 | Google OAuth |
-| PWA 支援 | @ducanh2912/next-pwa |
-| UI / Interaction | Radix UI、Vaul、Sonner、Lucide React、Hugeicons |
-| 工具函式 | clsx、tailwind-merge、class-variance-authority |
-| 程式碼規範 | ESLint、Prettier、prettier-plugin-tailwindcss |
+| PWA 支援 | next-pwa |
+| 程式碼規範 | ESLint、Prettier |
 
 ### 後端 Backend — [closy-api](https://github.com/Danny-1211/closy-api) · 部署於 Render
 
 | 類別 | 技術 |
 |------|------|
-| 核心框架 | Node.js + Express 5.2.1、TypeScript |
-| 資料庫 | MongoDB + Mongoose 9.3.0 |
+| 核心框架 | Node.js、Express、TypeScript |
+| 資料庫 | MongoDB、Mongoose |
 | AI 整合 | Google Gemini |
-| 媒體管理 | Cloudinary 2.9.0 |
+| 媒體管理 | Cloudinary |
 | 身份驗證 | JWT |
-| 圖片處理 | Sharp 0.34.5 |
+| 圖片處理 | Sharp |
 | API 文件 | Swagger UI |
 
 ### AI 模型服務 AI Services · 部署於 Hugging Face Spaces
 
 | 服務 | 技術 |
 |------|------|
-| [rembg-service](https://github.com/fntxxx/rembg-service)（去背） | Python + FastAPI + rembg |
-| [fashion-attr-service](https://github.com/fntxxx/fashion-attr-service)（辨識） | Python + FastAPI + Marqo FashionSigLIP |
+| [rembg-service](https://github.com/fntxxx/rembg-service)（去背） | Python、FastAPI、rembg |
+| [fashion-attr-service](https://github.com/fntxxx/fashion-attr-service)（辨識） | Python、FastAPI、Marqo FashionSigLIP |
 
 ---
 
