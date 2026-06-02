@@ -87,7 +87,11 @@ function SplashRedirectController() {
   const hasChecked = useRef(false)
 
   useEffect(() => {
-    if (!isSplash || hasChecked.current) return
+    if (!isSplash) {
+      hasChecked.current = false
+      return
+    }
+    if (hasChecked.current) return
     hasChecked.current = true
 
     // active flag：防止 component unmount 後 async 結果回來還繼續執行 redirect
