@@ -2,7 +2,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google'
 import type { AppProps } from 'next/app'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { Provider } from 'react-redux'
 import { PersistGate } from 'redux-persist/integration/react'
 
@@ -84,11 +84,8 @@ function SplashRedirectController() {
   const isLoggedIn = useAppSelector((state) => state.user.isLoggedIn)
   const isProfileCompleted = useAppSelector((state) => state.user.user?.isProfileCompleted)
   const isSplash = router.pathname === '/'
-  const hasChecked = useRef(false)
-
   useEffect(() => {
-    if (!isSplash || hasChecked.current) return
-    hasChecked.current = true
+    if (!isSplash) return
 
     // active flag：防止 component unmount 後 async 結果回來還繼續執行 redirect
     let active = true
