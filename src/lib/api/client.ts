@@ -74,12 +74,14 @@ export const apiClient = async <TResponse, TBody = unknown>({
       }
     }
     const message =
-      typeof data === 'object' &&
-      data !== null &&
-      'message' in data &&
-      typeof (data as { message?: unknown }).message === 'string'
-        ? (data as { message: string }).message
-        : '請求失敗'
+      response.status === 503
+        ? '目前 AI 繁忙中，請稍後再試'
+        : typeof data === 'object' &&
+            data !== null &&
+            'message' in data &&
+            typeof (data as { message?: unknown }).message === 'string'
+          ? (data as { message: string }).message
+          : '請求失敗'
 
     throw new ApiError(message, response.status, data)
   }
