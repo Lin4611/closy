@@ -49,6 +49,7 @@ export const getServerSideProps: GetServerSideProps<{
   const accessToken = context.req.cookies.accessToken
 
   if (!accessToken) {
+    context.res.setHeader('Set-Cookie', 'accessToken=; Path=/; HttpOnly; Max-Age=0')
     return { redirect: { destination: '/', permanent: false } }
   }
 
@@ -62,6 +63,7 @@ export const getServerSideProps: GetServerSideProps<{
     return { props: { profile: res.data } }
   } catch (e) {
     if (e instanceof ApiError && e.statusCode === 401) {
+      context.res.setHeader('Set-Cookie', 'accessToken=; Path=/; HttpOnly; Max-Age=0')
       return { redirect: { destination: '/', permanent: false } }
     }
     throw e

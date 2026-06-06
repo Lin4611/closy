@@ -1,4 +1,5 @@
 import type {
+  CalendarGoogleEvent,
   CalendarServerEntry,
   CalendarServerOutfitPreview,
   CalendarServerOutfitPreviewItem,
@@ -7,6 +8,7 @@ import { toCalendarDashedDate, toCalendarSlashedDate } from '@/modules/calendar/
 
 import type {
   CalendarApiEntry,
+  CalendarApiGoogleEvent,
   CalendarApiOutfitItem,
   CalendarApiOutfitPreview,
   CreateCalendarEntryRequest,
@@ -40,18 +42,31 @@ const mapCalendarApiOutfitPreview = (
   }
 }
 
+const mapCalendarApiGoogleEvent = (
+  event: CalendarApiGoogleEvent,
+  date: string,
+): CalendarGoogleEvent => ({
+  id: event.googleEventId,
+  date,
+  title: event.title,
+  startTime: event.startTime,
+  endTime: event.endTime,
+})
+
 export const mapCalendarApiEntryToCalendarServerEntry = (entry: CalendarApiEntry): CalendarServerEntry => {
   const createdAtTime = new Date(entry.createdAt).getTime()
   const updatedAtTime = new Date(entry.updatedAt).getTime()
+  const date = toCalendarDashedDate(entry.scheduleDate)
 
   return {
     id: entry._id,
     serverId: entry._id,
-    date: toCalendarDashedDate(entry.scheduleDate),
+    date,
     occasionKey: entry.calendarEventOccasion,
     selectedOutfitId: entry.outfitId ?? entry.outfit?._id ?? null,
-    sourceType: 'local',
+    sourceType: entry.source,
     googleEventId: null,
+    googleEvents: (entry.googleEvents ?? []).map((event) => mapCalendarApiGoogleEvent(event, date)),
     createdAt: Number.isFinite(createdAtTime) ? createdAtTime : 0,
     updatedAt: Number.isFinite(updatedAtTime) ? updatedAtTime : 0,
     serverOutfitPreview: mapCalendarApiOutfitPreview(entry.outfit),

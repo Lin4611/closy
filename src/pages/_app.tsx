@@ -9,9 +9,11 @@ import { PersistGate } from 'redux-persist/integration/react'
 import '@/styles/globals.css'
 import { Toaster } from '@/components/ui/sonner'
 import { inter } from '@/lib/font'
+import { getUserInfo } from '@/modules/common/api/userInfo'
 import { MobileLayout } from '@/modules/common/components/MobileLayout'
 import { persistor, store } from '@/store'
-import { useAppSelector } from '@/store/hooks'
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
+import { clearUser, mergeUserProfile } from '@/store/slices/userSlice'
 
 const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ''
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '')
@@ -78,27 +80,50 @@ const getAppRouteKind = (pathname: string): AppRouteKind => {
 
 function SplashRedirectController() {
   const router = useRouter()
+  const dispatch = useAppDispatch()
   const isLoggedIn = useAppSelector((state) => state.user.isLoggedIn)
   const isProfileCompleted = useAppSelector((state) => state.user.user?.isProfileCompleted)
   const isSplash = router.pathname === '/'
-
   useEffect(() => {
     if (!isSplash) return
 
-    if (isLoggedIn && isProfileCompleted) {
-      router.prefetch('/home')
+    // active flag：防止 component unmount 後 async 結果回來還繼續執行 redirect
+    let active = true
+
+    if (!isLoggedIn) {
+      // 未登入：等待 splash 動畫結束後導向 guide
+      const timer = setTimeout(() => {
+        if (active) router.replace('/guide')
+      }, 1000)
+      return () => {
+        active = false
+        clearTimeout(timer)
+      }
     }
 
-    const timer = setTimeout(() => {
-      if (isLoggedIn) {
+    // isLoggedIn=true：先驗證 cookie session，避免直接 redirect 造成 /home → / loop
+    const checkSession = async () => {
+      try {
+        const profile = await getUserInfo()
+        if (!active) return
+        dispatch(mergeUserProfile(profile))
+        router.prefetch('/home')
         router.replace(isProfileCompleted ? '/home' : '/guide/welcome')
-      } else {
+      } catch {
+        if (!active) return
+        // session 無效（含 401）：清除 Redux state 與 persisted user，導向 guide
+        dispatch(clearUser())
+        localStorage.removeItem('persist:user')
         router.replace('/guide')
       }
-    }, 1000)
+    }
 
-    return () => clearTimeout(timer)
-  }, [isLoggedIn, isProfileCompleted, isSplash, router])
+    checkSession()
+
+    return () => {
+      active = false
+    }
+  }, [isSplash, isLoggedIn, isProfileCompleted, dispatch, router])
 
   return null
 }

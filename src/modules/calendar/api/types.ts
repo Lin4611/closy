@@ -18,11 +18,20 @@ export type CalendarApiOutfitPreview = {
   createdDateSimply?: string
 }
 
+export type CalendarApiGoogleEvent = {
+  googleEventId: string
+  title: string
+  startTime: string
+  endTime: string
+}
+
 export type CalendarApiEntry = {
   _id: string
   userId: string
   scheduleDate: string
   calendarEventOccasion: CalendarApiOccasion
+  source: 'local' | 'google'
+  googleEvents?: CalendarApiGoogleEvent[]
   createdAt: string
   updatedAt: string
   outfitId?: string | null
